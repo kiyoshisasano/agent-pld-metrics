@@ -1,6 +1,6 @@
 # **PLD Taxonomy Alignment Log**
 
-Status: Working Draft — Finalized Alignment Record (Ready for v2.1 Proposal)  
+Status: Working Draft — Finalized Alignment Record 
 Audience: Contributors, reviewers, and implementation testers involved in PLD v2 alignment work.
 
 ---
