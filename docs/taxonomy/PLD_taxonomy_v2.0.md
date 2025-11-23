@@ -1,4 +1,4 @@
-Status: Working Draft
+Status: Working Draft 
 Version: 2.0.4
 Authority Level Scope: Level 3 — Operational Standards (Conditional)  
 Purpose/Scope: Defines event classification. All structural and numeric conflicts resolved. Final operational rules added for C0, D9, and M-Prefix to ensure high implementer quality.  
