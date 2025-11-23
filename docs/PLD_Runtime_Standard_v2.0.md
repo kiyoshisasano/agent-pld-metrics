@@ -1,5 +1,3 @@
-===== FILE: PLD_Runtime_Standard_v2.0 =====
-
 # **PLD_Runtime_Standard_v2.0**
 
 ## **Front Matter**
@@ -218,5 +216,3 @@ These additions clarify operational ambiguities in session lifecycle management 
 
 * All content conflicts resolved.
 * **Confidence Score: 5.0 / 5.0**
-
-===== END =====
