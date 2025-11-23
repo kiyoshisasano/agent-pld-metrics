@@ -1,9 +1,9 @@
 # PLD_Event_Semantic_Spec_v2.0.md
 
-**Status:** Normative
-**Layer:** Level 2 — Semantic Rules
-**Applies To:** All PLD-compliant runtimes and ingestion pipelines
-**Document Scope:** Defines event–semantic constraints, interpretation behavior, allowable mappings, and validation conditions.
+**Status:** Normative  
+**Layer:** Level 2 — Semantic Rules  
+**Applies To:** All PLD-compliant runtimes and ingestion pipelines  
+**Document Scope:** Defines event–semantic constraints, interpretation behavior, allowable mappings, and validation conditions.  
 This document SHALL defer to: `pld_event.schema.json` and `event_matrix.yaml`.
 
 ---
