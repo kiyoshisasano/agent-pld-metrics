@@ -135,8 +135,8 @@ This example is intentionally invalid to support validator testing.
 - `turn_sequence` decreases across events (non-monotonic)
 - `phase` and event_type mapping do not align (`repair_triggered` but phase=`continue`)
 
-  ```json
-  {
+```json
+{
   "schema_version": "2.0",
   "event_id": "ff4dd0ed-508c-4e79-a671-09c67c825051",
   "timestamp": "2025-02-01T00:23:55Z",
