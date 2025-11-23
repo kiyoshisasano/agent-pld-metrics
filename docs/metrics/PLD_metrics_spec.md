@@ -147,7 +147,9 @@ Output: ratio (0–1)
 
 Formula:
 
-$$\text{FR} = \frac{\text{count}(\text{failover_triggered})}{\text{count}(\text{lifecycle_events})}$$
+```math
+FR = \frac{\operatorname{count}(\text{failover_triggered})}{\operatorname{count}(\text{lifecycle_events})}
+```
 
 `fallback_executed` MUST count only when its phase is `failover`.
 
