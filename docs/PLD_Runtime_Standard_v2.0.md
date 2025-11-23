@@ -200,7 +200,7 @@ The following taxonomy elements are currently defined but remain in the Provisio
 
 ## **Change Log**
 
-### Version 2.0.1 (Current)
+### Version 2.0.0 (Current)
 
 **Added:**
 - RUN-006: Session Initialization Rule
