@@ -48,6 +48,16 @@ These elements are expected to evolve as testing, implementation experience, and
 | Examples | Updated example events to conform to lifecycle rules and event types |
 | Metadata Consolidation | Historical and distributed metadata merged under `/meta/` |
 
+#### 🔧 Update: Metrics & Traceability Alignment (Post-schema refinement)
+
+- Added `docs/validation/PLD_v2_Traceability_Map.md` as a traceability and compliance reference  
+- Updated `metrics_schema.yaml` to the Hybrid Compliance Model (non-breaking)  
+- Updated `PLD_metrics_spec.md` to align with PLD Taxonomy v2 and Level-2 Event Matrix semantics  
+- Clarified handling of **provisional** and **pending** taxonomy codes  
+- Clarified numeric classifier role (**MAY be used for segmentation; MUST NOT determine metric eligibility**)  
+
+**Classification:** Minor update (non-breaking, still under 2.0 scope)
+
 ---
 
 ### Breaking Changes
