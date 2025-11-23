@@ -1,41 +1,114 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
 # version: 2.0.0
-# status: draft (runtime template, experimental)
-# authority: Level 5 — runtime implementation (consumes Levels 1–3)
-# purpose: Normalizes PLD events according to semantic rules and validation modes.
-# scope: Applies Level 2 semantic alignment post-schema validation; retains legacy role/turn normalization for compatibility.
-# dependencies: Level 1 schema; Level 2 event matrix; Level 3 operational validation mode rules.
-# change_classification: runtime-only, non-breaking (example/template modernization)
-"""
+# status: draft (runtime extension)
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: Ingestion-time normalization and validation shim for PLD runtime events,
+#          enforcing Level 1 structure and Level 2 semantics without mutating
+#          persisted logs.
+# change_classification: runtime-only, non-breaking (message text + TODO notes)
+# dependencies: Level 1–3 PLD specifications (schema, event matrix, runtime standard)
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Literal, Union
-
-# ---------------------------------------------------------------------------
-# Shared neutral types (Core Technical Issue: inverted dependency resolved)
-# ---------------------------------------------------------------------------
-from ..types import NormalizedTurn, Role  # NOTE: Migration target for shared runtime models
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple, Callable, Mapping
+import copy
 
 
-# ---------------------------------------------------------------------------
-# Semantic normalization constants
-# ---------------------------------------------------------------------------
+# ──────────────────────────────────────────────────────────────────────────────
+# Public API
+# ──────────────────────────────────────────────────────────────────────────────
 
-VALID_PHASES: tuple[str, ...] = (
-    "drift",
-    "repair",
-    "reentry",
-    "continue",
-    "outcome",
-    "failover",
-    "none",
+class ValidationMode(str, Enum):
+    STRICT = "strict"
+    WARN = "warn"
+    NORMALIZE = "normalize"
+
+
+class ViolationLevel(str, Enum):
+    MUST = "MUST"
+    SHOULD = "SHOULD"
+
+
+@dataclass
+class Violation:
+    level: ViolationLevel
+    code: str
+    message: str
+    field_path: str
+    normalized: bool = False
+
+
+@dataclass
+class NormalizationResult:
+    event: Dict[str, Any]
+    violations: List[Violation]
+    mode: ValidationMode
+    is_schema_valid: bool = field(default=False)
+
+    @property
+    def is_matrix_valid(self) -> bool:
+        return not any(v.level == ViolationLevel.MUST and not v.normalized for v in self.violations)
+
+    @property
+    def is_pld_valid(self) -> bool:
+        return self.is_schema_valid and self.is_matrix_valid
+
+
+SchemaValidator = Callable[[Dict[str, Any]], Tuple[bool, List[str]]]
+
+
+def normalize_event(
+    event: Dict[str, Any],
+    *,
+    mode: ValidationMode = ValidationMode.STRICT,
+    schema_validator: Optional[SchemaValidator] = None,
+    context: Optional[Dict[str, Any]] = None,
+) -> NormalizationResult:
+    ctx = context or {}
+    working = copy.deepcopy(event)
+    violations: List[Violation] = []
+
+    result = NormalizationResult(event=working, violations=violations, mode=mode)
+
+    # Level 1 schema validation
+    if schema_validator:
+        schema_ok, schema_messages = schema_validator(working)
+        result.is_schema_valid = schema_ok
+        if not schema_ok:
+            for msg in schema_messages:
+                violations.append(
+                    Violation(
+                        level=ViolationLevel.MUST,
+                        code="SCHEMA_INVALID",
+                        message=msg,
+                        field_path="",
+                        normalized=False,
+                    )
+                )
+
+            # TODO: Should SchemaValidator provide field-level error metadata?
+            # (Open Question #1)
+            return result
+    else:
+        result.is_schema_valid = True
+
+    _enforce_schema_version(working, mode, violations)
+    _normalize_and_validate_semantics(working, mode, violations, ctx)
+    _validate_runtime_operational_rules(working, mode, violations)
+
+    return result
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Level 2 semantic rules
+# ──────────────────────────────────────────────────────────────────────────────
+
+_VALID_PHASES = (
+    "drift", "repair", "reentry", "continue", "outcome", "failover", "none"
 )
 
-PREFIX_TO_PHASE: Dict[str, str] = {
+_PREFIX_TO_PHASE: Mapping[str, str] = {
     "D": "drift",
     "R": "repair",
     "RE": "reentry",
@@ -44,7 +117,7 @@ PREFIX_TO_PHASE: Dict[str, str] = {
     "F": "failover",
 }
 
-MUST_PHASE_MAP: Dict[str, str] = {
+_MUST_PHASE_MAP: Mapping[str, str] = {
     "drift_detected": "drift",
     "drift_escalated": "drift",
     "repair_triggered": "repair",
@@ -55,337 +128,239 @@ MUST_PHASE_MAP: Dict[str, str] = {
     "failover_triggered": "failover",
 }
 
-SHOULD_PHASE_MAP: Dict[str, str] = {
+_SHOULD_PHASE_MAP: Mapping[str, str] = {
     "evaluation_pass": "outcome",
     "evaluation_fail": "outcome",
     "session_closed": "outcome",
     "info": "none",
 }
 
-MAY_EVENTS: set[str] = {
-    "latency_spike",
-    "pause_detected",
-    "fallback_executed",
-    "handoff",
-}
+_MAY_EVENTS = ("latency_spike", "pause_detected", "fallback_executed", "handoff")
 
 
-# ---------------------------------------------------------------------------
-# Utility helpers
-# ---------------------------------------------------------------------------
-
-def extract_prefix(code: str) -> Optional[str]:
-    """Extract lifecycle/non-lifecycle prefix from pld.code."""
-    if not code:
-        return None
-    head = code.split("_", 1)[0]
-    i = len(head)
-    while i > 0 and head[i - 1].isdigit():
-        i -= 1
-    return (head[:i] or head) or None
+def _enforce_schema_version(event, mode, violations):
+    if event.get("schema_version") != "2.0":
+        violations.append(
+            Violation(
+                level=ViolationLevel.MUST,
+                code="SCHEMA_VERSION_MISMATCH",
+                message="schema_version must equal '2.0'.",
+                field_path="schema_version",
+            )
+        )
 
 
-# ---------------------------------------------------------------------------
-# Issue and normalization result dataclasses
-# ---------------------------------------------------------------------------
-
-@dataclass
-class NormalizationIssue:
-    code: str
-    message: str
-    severity: Literal["info", "warning", "error"]
-    path: str
-    fixed: bool = False
-
-
-@dataclass
-class NormalizationResult:
-    event: Dict[str, Any]
-    issues: List[NormalizationIssue]
-    accepted: bool
-
-    @property
-    def has_errors(self) -> bool:
-        return any(i.severity == "error" and not i.fixed for i in self.issues)
-
-
-# ---------------------------------------------------------------------------
-# Core semantic normalizer
-# ---------------------------------------------------------------------------
-
-def normalize_event(
-    event: Dict[str, Any],
-    mode: Literal["strict", "warn", "normalize"] = "normalize",
-) -> NormalizationResult:
-    """
-    Normalize PLD event semantics based on Level 2 and Level 3 rules.
-
-    # NOTE: Migration difference from older ingestion normalization logic.
-    """
-    if mode not in ("strict", "warn", "normalize"):
-        raise ValueError(f"Unsupported validation mode: {mode!r}")
-
-    normalized = dict(event)
-    issues: List[NormalizationIssue] = []
-
-    pld = normalized.get("pld") or {}
-    event_type = normalized.get("event_type")
+def _normalize_and_validate_semantics(event, mode, violations, context):
+    pld = event.get("pld") or {}
     phase = pld.get("phase")
     code = pld.get("code")
+    event_type = event.get("event_type")
 
-    if event_type is None or phase is None or code is None:
-        issues.append(
-            NormalizationIssue(
-                code="SEMANTIC_MISSING_FIELDS",
-                message="event_type, pld.phase, and pld.code required.",
-                severity="error",
-                path=".",
+    if phase not in _VALID_PHASES:
+        violations.append(
+            Violation(
+                level=ViolationLevel.MUST,
+                code="INVALID_PHASE",
+                message=f"Invalid pld.phase '{phase}'.",
+                field_path="pld.phase",
             )
         )
-        return NormalizationResult(normalized, issues, False)
+        # TODO: Should invalid phase be eligible for deterministic correction?
+        # (Open Question #2)
+        return
 
-    must_phase = MUST_PHASE_MAP.get(event_type)
-    if must_phase and phase != must_phase:
-        issue = NormalizationIssue(
-            code="SEMANTIC_PHASE_MISMATCH_MUST",
-            message=f"event_type={event_type!r} requires phase={must_phase!r}, found={phase!r}",
-            severity="error",
-            path="pld.phase",
+    required_from_type = _MUST_PHASE_MAP.get(event_type)
+    required_from_prefix: Optional[str] = None
+    prefix: Optional[str] = None
+
+    if isinstance(code, str):
+        prefix = _extract_prefix(code)
+        required_from_prefix = _PREFIX_TO_PHASE.get(prefix)
+
+    # Conflict check
+    if required_from_type and required_from_prefix and required_from_type != required_from_prefix:
+        winning_phase = required_from_type
+        if mode == ValidationMode.NORMALIZE:
+            pld["phase"] = winning_phase
+            violations.append(
+                Violation(
+                    level=ViolationLevel.MUST,
+                    code="PHASE_CONFLICT_RESOLVED",
+                    message=f"phase updated based on event_type rule (required='{winning_phase}').",
+                    field_path="pld.phase",
+                    normalized=True,
+                )
+            )
+        else:
+            # Message-only refinement: provide actionable required/found values
+            violations.append(
+                Violation(
+                    level=ViolationLevel.MUST,
+                    code="CONFLICT_EVENTTYPE_PREFIX",
+                    message=(
+                        "phase requirements conflict between event_type and prefix "
+                        f"rules; required='{winning_phase}', found='{phase}'."
+                    ),
+                    field_path="pld.phase",
+                )
+            )
+        return
+
+    # Unified required phase (non-conflict)
+    final_required = required_from_type or required_from_prefix
+    source = "event_type" if required_from_type else "prefix" if required_from_prefix else None
+
+    if final_required and phase != final_required:
+        if mode == ValidationMode.NORMALIZE:
+            pld["phase"] = final_required
+            violations.append(
+                Violation(
+                    level=ViolationLevel.MUST,
+                    code="PHASE_NORMALIZED",
+                    message=f"phase updated based on required mapping ('{final_required}').",
+                    field_path="pld.phase",
+                    normalized=True,
+                )
+            )
+        else:
+            violations.append(
+                Violation(
+                    level=ViolationLevel.MUST,
+                    code="PHASE_MISMATCH_REQUIRED",
+                    message=f"phase '{phase}' does not match required value '{final_required}'.",
+                    field_path="pld.phase",
+                )
+            )
+
+    _enforce_event_type_phase(pld, event_type, mode, violations)
+
+    if isinstance(code, str):
+        _enforce_prefix_phase(pld, mode, violations)
+
+    # TODO: SHOULD vs MAY precedence for phase inference is not yet formally
+    #       specified in Level 2. Current behavior may emit both
+    #       SHOULD_PHASE_MISMATCH and PHASE_INFERENCE_DIFFERENCE for the same
+    #       event. Any suppression/prioritization logic must be coordinated
+    #       with semantic spec evolution before changing this behavior.
+    #       (Issue #2 — design-level, no behavior change here)
+
+    if mode == ValidationMode.NORMALIZE and event_type in _MAY_EVENTS:
+        inferred = _infer_phase_for_may_event(event_type, context, pld.get("phase"))
+        if inferred != pld.get("phase"):
+            violations.append(
+                Violation(
+                    level=ViolationLevel.SHOULD,
+                    code="PHASE_INFERENCE_DIFFERENCE",
+                    message=f"phase differs from inferred value ('{inferred}').",
+                    field_path="pld.phase",
+                )
+            )
+
+
+def _enforce_event_type_phase(pld, event_type, mode, violations):
+    if event_type in _SHOULD_PHASE_MAP:
+        recommended = _SHOULD_PHASE_MAP[event_type]
+        if pld.get("phase") != recommended:
+            violations.append(
+                Violation(
+                    level=ViolationLevel.SHOULD,
+                    code="SHOULD_PHASE_MISMATCH",
+                    message=f"phase SHOULD be '{recommended}' for this event_type.",
+                    field_path="pld.phase",
+                )
+            )
+
+
+def _extract_prefix(code: str) -> str:
+    head = code.split("_", 1)[0] if "_" in code else code
+    while head and head[-1].isdigit():
+        head = head[:-1]
+    return head
+
+
+def _enforce_prefix_phase(pld, mode, violations):
+    code = pld.get("code")
+    phase = pld.get("phase")
+    prefix = _extract_prefix(code)
+
+    if phase == "none" and prefix in _PREFIX_TO_PHASE:
+        violations.append(
+            Violation(
+                level=ViolationLevel.MUST,
+                code="NONE_PHASE_LIFECYCLE_PREFIX",
+                message="lifecycle prefix not permitted when phase='none'.",
+                field_path="pld.code",
+            )
         )
-        if mode == "normalize":
-            pld = dict(pld)
-            pld["phase"] = must_phase
-            normalized["pld"] = pld
-            issue.fixed = True
-            issue.severity = "warning"
-            phase = must_phase
-        issues.append(issue)
+        # TODO: Are additional non-lifecycle constraints required?
+        # (Open Question #5)
+        return
 
-    should_phase = SHOULD_PHASE_MAP.get(event_type)
-    if should_phase and phase != should_phase:
-        issues.append(
-            NormalizationIssue(
-                code="SEMANTIC_PHASE_MISMATCH_SHOULD",
-                message=f"event_type={event_type!r} expected phase={should_phase!r}, found={phase!r}",
-                severity="warning",
-                path="pld.phase",
+
+def _infer_phase_for_may_event(event_type, context, current_phase):
+    ctx_phase = context.get("current_phase")
+
+    # TODO: Clarify authoritative source for context['current_phase'].
+    # (Open Question #3)
+
+    if event_type == "fallback_executed":
+        return ctx_phase if ctx_phase in ("repair", "failover") else "failover"
+
+    if event_type in ("latency_spike", "pause_detected", "handoff"):
+        return ctx_phase or "none"
+
+    return current_phase
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Level 3 operational validation
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _validate_runtime_operational_rules(event, mode, violations):
+    pld = event.get("pld") or {}
+    code = pld.get("code")
+    event_type = event.get("event_type")
+    phase = pld.get("phase")
+
+    if event_type == "session_closed" and phase not in ("outcome", "none"):
+        violations.append(
+            Violation(
+                level=ViolationLevel.SHOULD,
+                code="SESSION_CLOSED_PHASE_SHOULD",
+                message="session_closed SHOULD use outcome or none.",
+                field_path="pld.phase",
             )
         )
 
-    prefix = extract_prefix(code)
-    if prefix in PREFIX_TO_PHASE and phase != PREFIX_TO_PHASE[prefix]:
-        issue = NormalizationIssue(
-            code="SEMANTIC_PREFIX_PHASE_MISMATCH",
-            message=f"prefix={prefix!r} implies {PREFIX_TO_PHASE[prefix]!r}, found={phase!r}",
-            severity="error",
-            path="pld.phase",
-        )
-        if mode == "normalize":
-            if not must_phase or must_phase == PREFIX_TO_PHASE[prefix]:
-                pld = dict(pld)
-                pld["phase"] = PREFIX_TO_PHASE[prefix]
-                normalized["pld"] = pld
-                issue.fixed = True
-                issue.severity = "warning"
-        issues.append(issue)
-
-    accepted = not any(i.severity == "error" and not i.fixed for i in issues)
-    return NormalizationResult(normalized, issues, accepted)
+    if isinstance(code, str) and code.startswith("M"):
+        if event_type != "info" or phase != "none":
+            violations.append(
+                Violation(
+                    level=ViolationLevel.MUST,
+                    code="M_PREFIX_MAPPING",
+                    message="M-prefix events require event_type='info' and phase='none'.",
+                    field_path="pld.code",
+                )
+            )
 
 
-# ---------------------------------------------------------------------------
-# Legacy (deprecated) NormalizedTurn helpers
-# ---------------------------------------------------------------------------
+# ──────────────────────────────────────────────────────────────────────────────
+# Optional jsonschema adapter
+# ──────────────────────────────────────────────────────────────────────────────
 
-_CANONICAL_ROLES = {
-    "user": "user",
-    "human": "user",
-    "customer": "user",
-    "client": "user",
-    "assistant": "assistant",
-    "ai": "assistant",
-    "bot": "assistant",
-    "agent": "assistant",
-    "system": "system",
-    "orchestrator": "system",
-    "router": "system",
-}
+def make_jsonschema_validator(schema):
+    try:
+        import jsonschema
+    except ImportError:
+        raise RuntimeError("jsonschema required.")
 
-# TODO: Clarify role normalization fidelity:
-#       orchestrator/router currently collapsed into 'system'.
-#       Assess impact on PLD analysis and debugging of control-plane issues.
-def normalize_role(raw_role: str) -> Role:
-    key = (raw_role or "").strip().lower()
-    return _CANONICAL_ROLES.get(key, "user")  # type: ignore[return-value]
+    def _validate(event):
+        try:
+            jsonschema.validate(event, schema)
+            return True, []
+        except jsonschema.ValidationError as e:
+            return False, [str(e)]
 
+    return _validate
 
-def make_turn(
-    *,
-    session_id: str,
-    turn_id: str,
-    role: Union[str, Role],
-    text: str,
-    runtime: Optional[Dict[str, Any]] = None,
-) -> NormalizedTurn:
-    canonical_role = normalize_role(role) if isinstance(role, str) else role
-    return NormalizedTurn(
-        session_id=str(session_id),
-        turn_id=str(turn_id),
-        role=canonical_role,
-        text=str(text or ""),
-        runtime=dict(runtime or {}),
-    )
-
-
-def from_chat_message(
-    *,
-    session_id: str,
-    msg_id: str,
-    role: Union[str, Role],
-    content: str,
-    latency_ms: Optional[int] = None,
-    source: Optional[str] = None,
-    expected_format: Optional[str] = None,
-    extra_runtime: Optional[Dict[str, Any]] = None,
-) -> NormalizedTurn:
-    runtime: Dict[str, Any] = {}
-    if latency_ms is not None:
-        runtime["latency_ms"] = int(latency_ms)
-    if source is not None:
-        runtime["source"] = str(source)
-    if expected_format is not None:
-        runtime["expected_format"] = str(expected_format)
-    if extra_runtime:
-        runtime.update(extra_runtime)
-
-    return make_turn(
-        session_id=session_id,
-        turn_id=msg_id,
-        role=role,
-        text=content,
-        runtime=runtime,
-    )
-
-
-def from_tool_call(
-    *,
-    session_id: str,
-    call_id: str,
-    tool_name: str,
-    request_repr: str,
-    response_repr: str,
-    latency_ms: Optional[int] = None,
-    role: Union[str, Role] = "assistant",
-    success: Optional[bool] = None,
-    extra_runtime: Optional[Dict[str, Any]] = None,
-) -> NormalizedTurn:
-    text = "\n".join([
-        f"[TOOL_CALL] name={tool_name}",
-        f"[REQUEST] {request_repr}",
-        f"[RESPONSE] {response_repr}",
-    ])
-
-    runtime: Dict[str, Any] = {
-        "tool_used": tool_name,
-        "latency_ms": latency_ms,
-        "tool_success": success,
-    }
-    runtime = {k: v for k, v in runtime.items() if v is not None}
-    if extra_runtime:
-        runtime.update(extra_runtime)
-
-    return make_turn(
-        session_id=session_id,
-        turn_id=call_id,
-        role=role,
-        text=text,
-        runtime=runtime,
-    )
-
-
-def from_system_event(
-    *,
-    session_id: str,
-    event_id: str,
-    description: str,
-    reason: Optional[str] = None,
-    reset_flag: bool = False,
-    extra_runtime: Optional[Dict[str, Any]] = None,
-) -> NormalizedTurn:
-    text = f"[SYSTEM] {description}"
-    if reason:
-        text += f" (reason: {reason})"
-
-    runtime: Dict[str, Any] = {"reset_flag": bool(reset_flag)}
-    if extra_runtime:
-        runtime.update(extra_runtime)
-
-    return make_turn(
-        session_id=session_id,
-        turn_id=event_id,
-        role="system",
-        text=text,
-        runtime=runtime,
-    )
-
-
-def from_dialog_turn_dict(
-    *,
-    dialog: Dict[str, Any],
-    turn: Dict[str, Any],
-    session_key: str = "dialog_id",
-    turn_key: str = "turn_id",
-    role_key: str = "role",
-    text_key: str = "text",
-    runtime_prefix: str = "runtime_",
-) -> NormalizedTurn:
-    session_id = str(dialog.get(session_key, "unknown"))
-    turn_id = str(turn.get(turn_key, "0"))
-    role = str(turn.get(role_key, "user"))
-    text = str(turn.get(text_key, ""))
-
-    runtime: Dict[str, Any] = {
-        k[len(runtime_prefix):]: v
-        for k, v in turn.items()
-        if k.startswith(runtime_prefix)
-    }
-
-    return make_turn(
-        session_id=session_id,
-        turn_id=turn_id,
-        role=role,
-        text=text,
-        runtime=runtime,
-    )
-
-
-# ---------------------------------------------------------------------------
-# Public exports
-# ---------------------------------------------------------------------------
-
-__all__ = [
-    "NormalizationIssue",
-    "NormalizationResult",
-    "normalize_event",
-    "normalize_role",
-    "make_turn",
-    "from_chat_message",
-    "from_tool_call",
-    "from_system_event",
-    "from_dialog_turn_dict",
-]
-
-
-# ---------------------------------------------------------------------------
-# Deferred for later phase
-# ---------------------------------------------------------------------------
-"""
-Future-Stage Considerations:
-
-- Whether pld.code prefix should overwrite SHOULD-based phase mismatches
-  in normalize mode when the MUST map is also absent.
-- Whether normalization should rewrite or generate codes when invalid.
-- Role mapping fidelity question: system/orchestrator/router distinctions.
-- Architecture refactor separating presentation roles from PLD-event semantics.
-"""
 
