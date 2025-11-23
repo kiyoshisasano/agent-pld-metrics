@@ -1,11 +1,11 @@
-📄 docs/metrics/PLD_metrics_spec.md
-Status: Hybrid-Aligned Candidate
-Version: 2.0.0
+📄 docs/metrics/PLD_metrics_spec.md  
+Status: Hybrid-Aligned Candidate  
+Version: 2.0.0  
 Audience: Engineers and researchers implementing PLD-compatible runtimes
-Dependencies:
-Level 1: pld_event.schema.json
-Level 2: event_matrix.yaml + PLD_Event_Semantic_Spec_v2.0.md
-Level 3: PLD_taxonomy_v2.0.md
+Dependencies:  
+Level 1: pld_event.schema.json  
+Level 2: event_matrix.yaml + PLD_Event_Semantic_Spec_v2.0.md  
+Level 3: PLD_taxonomy_v2.0.md  
 
 # 1. Purpose
 
@@ -91,7 +91,7 @@ The following metrics comprise the PLD v2 canonical baseline set.
 
 Category: Drift+Repair Cross Phase Metric
 Status: Canonical
-Version: v2.1.0
+Version: v2.0.0
 Output Unit: percent (0–100)
 
 ### Definition
@@ -120,7 +120,7 @@ Numeric classifiers MAY be used as aggregation dimensions but MUST NOT change el
 
 Category: Recovery Efficiency
 Status: Canonical
-Version: v2.1.0
+Version: v2.0.0
 Output: seconds / turns
 
 Recovery cycle:
@@ -142,7 +142,7 @@ If no recovery event arrives within cutoff, result is `NaN`.
 
 Category: Failover Stability Index
 Status: Canonical
-Version: v2.1.0
+Version: v2.0.0
 Output: ratio (0–1)
 
 Formula:
