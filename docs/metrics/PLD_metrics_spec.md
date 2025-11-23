@@ -145,11 +145,11 @@ Status: Canonical
 Version: v2.0.0
 Output: ratio (0–1)
 
-Formula:
+Formula
 
-```math
-FR = \frac{\operatorname{count}(\text{failover_triggered})}{\operatorname{count}(\text{lifecycle_events})}
-```
+$$
+\mathrm{FR} = \frac{\mathrm{count}( \text{failover\_triggered} )}{\mathrm{count}( \text{lifecycle\_events} )}
+$$
 
 `fallback_executed` MUST count only when its phase is `failover`.
 
