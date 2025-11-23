@@ -1,5 +1,3 @@
-===== FILE: 01_PLd_for_Agent_Engineers_v2.0.md =====
-
 # **01_PLd_for_Agent_Engineers_v2.0**
 
 ---
@@ -189,5 +187,3 @@ These MAY appear in telemetry or research datasets but MUST NOT affect runtime b
 - No schema or matrix changes made.
 
 **Confidence Score: 4.7 / 5**
-
-===== END =====
