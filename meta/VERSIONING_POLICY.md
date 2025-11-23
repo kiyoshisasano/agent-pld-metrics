@@ -8,6 +8,8 @@
 This document defines how versions are applied, incremented, and interpreted across the PLD repository.  
 It is intended to provide consistency as the project evolves and to support future collaboration.
 
+This policy governs modification of Level 1, Level 2, and Level 3 specification assets and ensures alignment across schema, taxonomy, event semantics, runtime enforcement, and metrics artifacts.
+
 ---
 
 ## 1. Overview
@@ -17,7 +19,6 @@ The PLD project uses **Semantic Versioning (SemVer)** as a guiding model:
 ```
 MAJOR.MINOR.PATCH
 ```
-
 
 However, because the project is still in an exploratory and refinement stage, versioning rules are applied pragmatically.
 
@@ -53,7 +54,6 @@ Although the repository uses SemVer, event payloads in runtime logs reference a 
 ```
 schema_version: "2.x"
 ```
-
 
 Where:
 
@@ -109,14 +109,38 @@ Validation modes (strict / warn / normalize) influence how version mismatches ar
 
 ---
 
+## 6.1 Rules for Metrics, Taxonomy, and Event Matrix Alignment (Added in v2.0 Non-Breaking Update)
+
+To maintain consistency across the PLD ecosystem:
+
+- Updates involving the **Metrics Specification**, **Metrics Schema**, or **Traceability Mapping**  
+  MUST NOT require a version increment unless they alter normative behavior.
+- Alignment changes such as:
+  - consolidating terminology  
+  - documenting numeric classifier policy  
+  - updating Traceability Maps  
+  - clarifying how provisional and pending taxonomy codes are handled  
+  count as **MINOR** changes unless they affect runtime enforcement.
+
+Hybrid Compliance Model Rules:
+
+| Asset | Eligibility Condition Role | Version Impact |
+|-------|----------------------------|----------------|
+| Event Matrix | MUST enforce semantics | MAY trigger MINOR or MAJOR depending on scope |
+| Taxonomy Code Prefixes | SHOULD inform grouping | PATCH or MINOR only |
+| Numeric Classifier (D1–D5, R-series, etc.) | MAY support segmentation | Never MAJOR (non-binding) |
+| Traceability Map | Documentation alignment | PATCH unless behavior changes |
+
+---
+
 ## 7. Deprecation Process (Early Stage Policy)
 
 As the project matures, certain schemas, field names, or lifecycle codes may become deprecated.
 
 Deprecation SHOULD follow these phases:
 
-1. **Documented Notice** (non-breaking)
-2. **Marked as Deprecated in Schema**
+1. **Documented Notice** (non-breaking)  
+2. **Marked as Deprecated in Schema**  
 3. **Removal in next MAJOR version**
 
 Deprecations SHOULD be recorded in the CHANGELOG.
@@ -150,6 +174,4 @@ Until a formal RFC process exists, proposed changes MAY be submitted via:
 
 Maintainer: **Kiyoshi Sasano**
 
-
 Schema versions follow:
-
