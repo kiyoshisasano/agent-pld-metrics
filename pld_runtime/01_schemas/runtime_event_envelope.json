@@ -1,145 +1,224 @@
+# version: "2.0.0"
+# status: "draft"
+# authority_level_scope: "Level 5 — runtime implementation"
+# purpose: "Runtime envelope template overlaying the Level 1 PLD event schema for valid event emission."
+# change_classification: "runtime extension + compliance annotation + TODO resolution + editorial clarification"
+# dependencies: "docs/schemas/pld_event.schema.json, docs/event_matrix.yaml, docs/PLD_Runtime_Standard_v2.0.md"
+# notes: "Resolved TODO: Derived metric staging data (PRDR, VRL) should be stored in 'runtime' field to remain compatible with Level 3 metrics rules and avoid coupling Level 5 staging data into canonical metrics artifacts."
+
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/schemas/runtime_event_envelope.schema.json",
   "title": "PLD Runtime Event Envelope",
-  "version": "2.0",
-  "description": "A lightweight transport envelope for delivering PLD events with runtime context. The nested PLD event object remains the source of truth for lifecycle semantics.",
-
+  "description": "Level 5 runtime overlay schema used as a template for generating PLD runtime events that comply with Level 1 structure and Level 2 semantics.",
   "type": "object",
 
-  "required": [
-    "envelope_id",
-    "timestamp",
-    "version",
-    "session",
-    "runtime",
-    "event"
-  ],
-
-  "properties": {
-
-    "envelope_id": {
-      "type": "string",
-      "description": "Unique identifier for this envelope instance (UUIDv4 recommended). Represents a single transport instance, not the semantic event identity."
+  "allOf": [
+    {
+      "$ref": "../../../docs/schemas/pld_event.schema.json"
     },
-
-    "timestamp": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Envelope creation timestamp (ISO 8601). May differ from event.timestamp."
-    },
-
-    "version": {
-      "type": "string",
-      "enum": ["2.0"],
-      "description": "Envelope schema version (distinct from PLD event schema_version)."
-    },
-
-    "session": {
+    {
       "type": "object",
-      "required": ["session_id"],
-      "description": "Logical session metadata. Must align with the PLD event.",
       "properties": {
+        "schema_version": {
+          "const": "2.0",
+          "description": "Runtime envelope is pinned to PLD schema version 2.0. See Level 2 semantic spec for compatibility guidance."
+        },
+
+        "event_id": {
+          "type": "string",
+          "description": "Runtime MUST generate a unique identifier per event (UUIDv4 RECOMMENDED)."
+        },
+
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Runtime MUST emit RFC 3339 / ISO-8601 timestamps in UTC."
+        },
+
         "session_id": {
           "type": "string",
-          "description": "MUST equal event.session_id."
+          "description": "Runtime session correlation identifier (UUID RECOMMENDED)."
         },
-        "user_id": {
-          "type": "string",
-          "description": "Optional user or external system identifier."
-        },
-        "platform": {
-          "type": "string",
-          "enum": [
-            "assistants_api",
-            "langgraph",
-            "vertex_ai",
-            "rasa",
-            "batch_eval",
-            "custom",
-            "unknown"
-          ],
-          "default": "unknown",
-          "description": "Canonical platform type. Use `custom` when not listed."
-        },
-        "platform_detail": {
-          "type": "string",
-          "description": "Free-form detail such as internal system name, model version, etc."
-        }
-      },
-      "additionalProperties": true
-    },
 
-    "trace": {
-      "type": "object",
-      "description": "Optional trace metadata for debugging and observability. NOT authoritative for PLD lifecycle ordering.",
-      "properties": {
-        "trace_id": {
-          "type": "string",
-          "description": "Logical identifier for related runtime steps or distributed trace."
-        },
-        "turn_index": {
+        "turn_sequence": {
           "type": "integer",
-          "minimum": 0,
-          "description": "Debugging-only ordering helper. NOT authoritative—use event.turn_sequence for lifecycle ordering."
+          "minimum": 1,
+          "description": "Authoritative ordering key. MUST be monotonic and 1-based within a session."
         },
-        "parent_trace_id": {
-          "type": "string",
-          "description": "Optional parent identifier used for forks or conversation branches."
-        }
-      },
-      "additionalProperties": true
-    },
 
-    "runtime": {
-      "type": "object",
-      "required": ["environment"],
-      "description": "Runtime execution context. May contain experimental fields.",
-      "properties": {
-        "environment": {
+        "turn_id": {
+          "type": "string",
+          "description": "Optional semantic turn identifier. MUST NOT override ordering defined by turn_sequence."
+        },
+
+        "source": {
           "type": "string",
           "enum": [
-            "production",
-            "staging",
-            "sandbox",
-            "local"
+            "user",
+            "assistant",
+            "runtime",
+            "controller",
+            "detector",
+            "system"
           ],
-          "description": "Where the runtime executed."
+          "description": "Logical origin of the event emission."
         },
-        "mode": {
+
+        "event_type": {
           "type": "string",
           "enum": [
-            "stream",
-            "batch",
-            "debug",
-            "audit"
+            "drift_detected",
+            "drift_escalated",
+            "repair_triggered",
+            "repair_escalated",
+            "reentry_observed",
+            "continue_allowed",
+            "continue_blocked",
+            "failover_triggered",
+            "latency_spike",
+            "pause_detected",
+            "fallback_executed",
+            "handoff",
+            "evaluation_pass",
+            "evaluation_fail",
+            "session_closed",
+            "info"
           ],
-          "default": "stream",
-          "description": "Execution/logging intention."
+          "description": "Event type MUST satisfy event_type → phase mapping defined in Level 2 event matrix."
         },
-        "tags": {
+
+        "pld": {
           "type": "object",
-          "description": "Optional metadata used for grouping (tenant, region, experiment, shard, etc.).",
-          "additionalProperties": true
+          "required": ["phase", "code"],
+          "properties": {
+            "phase": {
+              "type": "string",
+              "enum": [
+                "drift",
+                "repair",
+                "reentry",
+                "continue",
+                "outcome",
+                "failover",
+                "none"
+              ],
+              "description": "Lifecycle phase. MUST match lifecycle prefix of pld.code for lifecycle events."
+            },
+
+            "code": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9]*(?:[0-9]+)?(?:_[a-z0-9]+(?:_[a-z0-9]+)*)?$",
+              "description": "Taxonomy-aligned classification code. MUST follow prefix/phase rules from Level 2 and taxonomy from Level 3."
+            },
+
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Optional classifier confidence score."
+            },
+
+            "metadata": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "Metadata for taxonomy governance and compliance tracking. NOTE: When using Provisional codes (e.g., D9_unspecified or M-prefix events), Level 3 rules MAY require justification fields such as taxonomy_status, reason, or evaluator notes."
+            }
+          }
+        },
+
+        "payload": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Runtime- and product-specific payload. Level 1 does not constrain its internal shape."
+        },
+
+        "runtime": {
+          "type": "object",
+          "properties": {
+            "latency_ms": {
+              "type": "number",
+              "description": "End-to-end runtime latency in milliseconds, when available."
+            },
+
+            "model": {
+              "type": "string",
+              "description": "Model identifier used for this turn, when applicable."
+            },
+
+            "tool": {
+              "type": "string",
+              "description": "Non-empty only when a tool invocation occurred."
+            },
+
+            "agent_state": {
+              "type": "string",
+              "description": "Optional opaque agent state identifier."
+            }
+          },
+          "additionalProperties": true,
+          "description": "Runtime execution metadata. Additional fields MAY be added at runtime for observability or metric derivation (e.g., storing staging data for M-prefix events)."
+        },
+
+        "ux": {
+          "type": "object",
+          "required": ["user_visible_state_change"],
+          "properties": {
+            "user_visible_state_change": {
+              "type": "boolean",
+              "default": false,
+              "description": "Indicates whether this event results in a user-visible output. Default false is permitted at Level 5 as a runtime convenience."
+            }
+          },
+          "additionalProperties": false
+        },
+
+        "metrics": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "description": "Optional runtime metrics snapshot. MUST NOT override downstream metric computation rules."
+        },
+
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "description": "Reserved space for experiment tracking and runtime-local extensions."
+        }
+      }
+    }
+  ],
+
+  "examples": [
+    {
+      "schema_version": "2.0",
+      "event_id": "00000000-0000-4000-8000-000000000000",
+      "timestamp": "2025-01-01T00:00:00Z",
+      "session_id": "SESSION_ID_PLACEHOLDER",
+      "turn_sequence": 1,
+      "source": "runtime",
+      "event_type": "continue_allowed",
+      "pld": {
+        "phase": "continue",
+        "code": "C0_normal",
+        "confidence": 1.0,
+        "metadata": {
+          "taxonomy_status": "canonical"
         }
       },
-      "additionalProperties": true
-    },
-
-    "event": {
-      "$ref": "../../docs/schemas/pld_event.schema.json",
-      "x-note": "Adjust the $ref path depending on your folder layout or replace with a URI registry reference.",
-      "description": "Nested PLD event. MUST be validated using the PLD event specification."
+      "payload": {},
+      "runtime": {
+        "model": "MODEL_ID_PLACEHOLDER",
+        "latency_ms": 0
+      },
+      "ux": {
+        "user_visible_state_change": false
+      },
+      "metrics": {},
+      "extensions": {
+        "environment": "dev",
+        "validation_mode": "strict"
+      }
     }
-  },
-
-  "additionalProperties": false,
-
-  "x-validation": {
-    "session_id_consistency": {
-      "rule": "session.session_id == event.session_id",
-      "description": "Envelope MUST reference the same session as the contained event.",
-      "note": "This is NOT automatically enforced by JSON Schema. Implementations MUST enforce this check in the ingestion/validation layer."
-    }
-  }
+  ]
 }
