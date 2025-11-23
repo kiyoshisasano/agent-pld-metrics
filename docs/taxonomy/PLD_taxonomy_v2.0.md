@@ -1,5 +1,3 @@
----
-
 Status: Working Draft
 Version: 2.0.4
 Authority Level Scope: Level 3 — Operational Standards (Conditional)  
@@ -7,8 +5,6 @@ Purpose/Scope: Defines event classification. All structural and numeric conflict
 Change Classification: Documentation Clarity / Rule Consolidation  
 Dependencies: PLD\_Event\_Semantic\_Spec\_v2.0.md, pld\_event.schema.json
 Stability Expectation: Medium (non-breaking, alignment-focused)
-
----
 
 
 # **📄 PLD v2 Taxonomy Proposal — Draft v0.1 *(Hybrid Governance Mode — With Rationale Annotations)***
