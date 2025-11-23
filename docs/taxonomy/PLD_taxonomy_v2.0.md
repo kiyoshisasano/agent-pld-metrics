@@ -1,7 +1,8 @@
 Status: Working Draft  
 Version: 2.0.4  
 Authority Level Scope: Level 3 — Operational Standards (Conditional)   
-Purpose/Scope: Defines event classification. All structural and numeric conflicts resolved. Final operational rules added for C0, D9, and M-Prefix to ensure high implementer quality.   
+Purpose/Scope: Defines event classification. All structural and numeric conflicts resolved.  
+operational rules added for C0, D9, and M-Prefix to ensure high implementer quality.   
 Change Classification: Documentation Clarity / Rule Consolidation  
 Dependencies: PLD\_Event\_Semantic\_Spec\_v2.0.md, pld\_event.schema.json
 Stability Expectation: Medium (non-breaking, alignment-focused)
@@ -62,15 +63,22 @@ It formalizes the PLD code system across **detection → repair → continuation
 
 ### **Rule 3.1.1: C0 Nominal Flow Exemption**
 
-The numeric value 0 within the C prefix signifies the **Nominal Flow** meta-category. C0\_normal, C0\_user\_turn, and C0\_system\_turn are **explicitly exempted** from the unique numeric ordering rule, as they represent **orthogonal states** within the common flow. Implementations MUST distinguish them by their full pld.code string, not by the numeric component alone.
+The numeric value 0 within the C prefix signifies the **Nominal Flow** meta-category.  
+C0\_normal, C0\_user\_turn, and C0\_system\_turn are **explicitly exempted** from the unique numeric ordering rule,  
+as they represent **orthogonal states** within the common flow.   
+Implementations MUST distinguish them by their full pld.code string, not by the numeric component alone.
 
 ### **Rule 3.1.2: D0 Baseline Issuance**
 
-To prevent high-volume noise and ensure semantic clarity, D0\_none **SHOULD** only be emitted when an agent or system module **explicitly runs a Drift Health Check** and returns a negative (no drift) result. It MUST NOT be emitted passively on every turn. Its purpose is to track the volume of active health checks.
+To prevent high-volume noise and ensure semantic clarity,  D0\_none **SHOULD** only be emitted  
+when an agent or system module **explicitly runs a Drift Health Check** and returns a negative (no drift) result.   
+It MUST NOT be emitted passively on every turn. Its purpose is to track the volume of active health checks.
 
 ### **Rule 3.1.3: D9 Unspecified Trigger**
 
-D9\_unspecified (Catch-all anomaly) **SHOULD** only be utilized when the confidence score (pld.confidence) of all other classifiers (D1-D6) falls below a predefined threshold (e.g., 0.5), or when the underlying event structure prevents classification mapping. This ensures D9 volume tracks true classification coverage gaps.
+D9\_unspecified (Catch-all anomaly) **SHOULD** only be utilized when the confidence score (pld.confidence) of all other classifiers (D1-D6) 
+falls below a predefined threshold (e.g., 0.5), or when the underlying event structure prevents classification mapping.   
+This ensures D9 volume tracks true classification coverage gaps.
 
 ## **4\. Provisional Registry (Exploratory Zone)**
 
