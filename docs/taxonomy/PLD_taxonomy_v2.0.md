@@ -26,8 +26,6 @@ It formalizes the PLD code system across **detection → repair → continuation
 
 **Annotation:** Hybrid governance ensures evolution without uncontrolled fragmentation. All numeric collisions are resolved.
 
----
-
 ## **2\. Design Principles**
 
 ### **Prefix Hierarchy Rules**
@@ -40,15 +38,11 @@ It formalizes the PLD code system across **detection → repair → continuation
 | O | Outcome | Terminal lifecycle result |
 | M | Derived Metrics/Analytics | Signals aggregated results (Provisional) |
 
----
-
 ### **Numeric System Rules**
 
 * 0 → baseline or neutral state (Exemptions apply for C0)  
 * Higher number (1–99) → escalation, severity, or specificity hierarchy  
 * Numeric ordering **MUST** remain unique within a prefix, **EXCEPT** for C0.
-
----
 
 ## **3\. Canonical Registry (Stable Zone)**
 
@@ -68,27 +62,19 @@ It formalizes the PLD code system across **detection → repair → continuation
 | R5\_hard\_reset | R | 5 | reset | full recovery | repair\_triggered | risk / failure severity | state wipe & reinit | stable |
 | O0\_session\_closed | O | 0 | closed | lifecycle terminal | session\_closed | completion metric | terminal | stable |
 
----
-
 ## **3.1 Exception and Operational Rules (Consolidated)**
 
 ### **Rule 3.1.1: C0 Nominal Flow Exemption**
 
 The numeric value 0 within the C prefix signifies the **Nominal Flow** meta-category. C0\_normal, C0\_user\_turn, and C0\_system\_turn are **explicitly exempted** from the unique numeric ordering rule, as they represent **orthogonal states** within the common flow. Implementations MUST distinguish them by their full pld.code string, not by the numeric component alone.
 
----
-
 ### **Rule 3.1.2: D0 Baseline Issuance**
 
 To prevent high-volume noise and ensure semantic clarity, D0\_none **SHOULD** only be emitted when an agent or system module **explicitly runs a Drift Health Check** and returns a negative (no drift) result. It MUST NOT be emitted passively on every turn. Its purpose is to track the volume of active health checks.
 
----
-
 ### **Rule 3.1.3: D9 Unspecified Trigger**
 
 D9\_unspecified (Catch-all anomaly) **SHOULD** only be utilized when the confidence score (pld.confidence) of all other classifiers (D1-D6) falls below a predefined threshold (e.g., 0.5), or when the underlying event structure prevents classification mapping. This ensures D9 volume tracks true classification coverage gaps.
-
----
 
 ## **4\. Provisional Registry (Exploratory Zone)**
 
@@ -105,8 +91,6 @@ D9\_unspecified (Catch-all anomaly) **SHOULD** only be utilized when the confide
 | failure\_mode\_clustering | aggregate signal | not event | could map to taxonomy revisions | Low | taxonomy maturity |
 | session\_closure\_typology | meta-analysis | not runtime event | not likely to become event code | Low | final governance |
 
----
-
 ## **4.1 Provisional M-Prefix Operational Rules**
 
 The Provisional M prefix is governed by the following strict rules to prevent runtime contamination and circular dependencies:
@@ -114,8 +98,6 @@ The Provisional M prefix is governed by the following strict rules to prevent ru
 1. **Generation Timing:** M-events **SHOULD** be generated as a batch at the end of a session (session\_closed) or upon a significant state change (e.g., drift/repair loop completion). **MUST NOT** be generated more frequently than once per 5 turns.  
 2. **Aggregation Scope:** M-events **MUST** calculate metrics over the *preceding sequence* of core lifecycle events (D/R/RE/C/O/F) **within the current session\_id**.  
 3. **Circular Dependency Prevention (MUST):** M-events **MUST NOT** be used as input for the calculation of *any other* M-event.
-
----
 
 ## **5\. Governance and Evolution Flow**
 
@@ -127,8 +109,6 @@ Taxonomy codes follow a clear path to stability:
 * **Canonical:** Requires minimum 6 months of stability, proof of metric traceability, and formal governance sign-off.  
 * **Pending:** Reserved for conflicts (now all resolved) or items requiring major policy changes (none currently).
 
----
-
 ### **5.2 Change Protocol**
 
 Any proposal to move a code from Provisional to Canonical, or to modify an existing Provisional code, **MUST** be justified against the following criteria:
@@ -136,8 +116,6 @@ Any proposal to move a code from Provisional to Canonical, or to modify an exist
 1. **Level 1/2 Compliance:** MUST NOT introduce structural or semantic violations.  
 2. **Metric Traceability:** MUST contribute clearly to an established metric category (as per metrics\_alignment\_table.md).  
 3. **Ambiguity Reduction:** MUST demonstrate lower volume for D9\_unspecified.
-
----
 
 ## **6. Cross-System Mapping**
 
@@ -156,8 +134,6 @@ Aligned except for D5/D0 contamination.
 ### 6.5 → Failover & Escalation  
 Hard reset path validated but governed.
 
----
-
 ## **7. Diagram: Structural Overview**
 
 > **(Included separately as taxonomy_proposal_diagram.svg)**  
@@ -165,8 +141,6 @@ Legend:
 - **Solid** = Canonical  
 - **Dotted** = Provisional  
 - **Dashed cluster** = Pending Governance
-
----
 
 ## **8\. Path to v0.2 and Validation Plan**
 
@@ -183,8 +157,6 @@ Legend:
 * Structural readiness: **High**  
 * Governance unresolved areas: **Formal Canonicalization of Provisional Layer**
 
----
-
 ## 9. Feedback & Participation
 
 This document is in an iterative research phase.
@@ -192,7 +164,5 @@ Feedback, objections, refinement proposals, and real-world implementation report
 
 Preferred channel: TBD (GitHub issues / shared doc / direct review)
 Review cadence: aligned with governance milestones for the PLD v2 event schema.
-
----
 
 ### ✔️ Draft complete.
