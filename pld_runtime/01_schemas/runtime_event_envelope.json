@@ -1,10 +1,12 @@
-# version: "2.0.0"
-# status: "draft"
-# authority_level_scope: "Level 5 — runtime implementation"
-# purpose: "Runtime envelope template overlaying the Level 1 PLD event schema for valid event emission."
-# change_classification: "runtime extension + compliance annotation + TODO resolution + editorial clarification"
-# dependencies: "docs/schemas/pld_event.schema.json, docs/event_matrix.yaml, docs/PLD_Runtime_Standard_v2.0.md"
-# notes: "Resolved TODO: Derived metric staging data (PRDR, VRL) should be stored in 'runtime' field to remain compatible with Level 3 metrics rules and avoid coupling Level 5 staging data into canonical metrics artifacts."
+{
+  "version": "2.0.0",
+  "status": "draft",
+  "authority_level_scope": "Level 5 — runtime implementation",
+  "purpose": "Runtime envelope template overlaying the Level 1 PLD event schema for valid event emission.",
+  "change_classification": "runtime extension + compliance annotation + TODO resolution + editorial clarification",
+  "dependencies": "docs/schemas/pld_event.schema.json, docs/event_matrix.yaml, docs/PLD_Runtime_Standard_v2.0.md",
+  "notes": "Resolved TODO: Derived metric staging data (PRDR, VRL) should be stored in 'runtime' field to remain compatible with Level 3 metrics rules and avoid coupling Level 5 staging data into canonical metrics artifacts."
+}
 
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -222,3 +224,4 @@
     }
   ]
 }
+
