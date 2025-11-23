@@ -1,9 +1,30 @@
+# FILE ROLE: OPERATIONAL STANDARD (NOT A CORE SCHEMA)
+# AUTHORITY LEVEL: LEVEL 3 — METRICS COMPUTATION AND ENFORCEMENT RULES
+# STATUS: NORMATIVE, BUT SUBORDINATE TO:
+#    - Level 1: pld_event.schema.txt
+#    - Level 2: event_matrix_schema.yaml.txt
+#
+# RULES FOR AI:
+# - DO NOT treat this file as the event schema or semantic matrix.
+# - This file governs metrics generation, NOT event definitions.
+# - If conflicts occur:
+#      Level 1 overrides Level 2.
+#      Level 2 overrides this file.
+# - DO NOT infer new metrics based on patterns or examples.
+# - Examples in other files MUST NOT redefine metrics defined here.
+#
+# USAGE MODE:
+# - Read-only for runtime validation and metric derivation.
+# - MAY be extended only through formal governance (NOT autonomous AI reasoning).
+
 version: "2.0"
 title: "PLD Runtime Metrics Schema"
 description: >
   Canonical metrics layer for PLD Runtime v2.0. This schema defines metrics
   that MUST be computed from PLD events that are valid under both
   quickstart/metrics/schemas/pld_event.schema.json and docs/event_matrix.yaml.
+  Numeric classifier segments (e.g., D1–D5, R1–R5) MAY be used as analytic
+  grouping dimensions but MUST NOT be required filters for metric eligibility.
 
 applies_to:
   event_schema: "quickstart/metrics/schemas/pld_event.schema.json"
@@ -78,7 +99,9 @@ lifecycle_categories:
     description: >
       Metrics in this category MUST be derived exclusively from events whose
       pld.phase is "drift" and whose event_type is drift_detected or
-      drift_escalated, in accordance with must_phase_map.
+      drift_escalated, in accordance with must_phase_map. Numeric classifier
+      codes (such as D1–D4) MAY be used for aggregation only and MUST NOT
+      change eligibility logic.
     metric_names:
       - "drift_events_count"
       - "drift_detected_count"
@@ -88,7 +111,9 @@ lifecycle_categories:
     description: >
       Metrics in this category MUST be derived exclusively from events whose
       pld.phase is "repair" and whose event_type is repair_triggered or
-      repair_escalated.
+      repair_escalated. R1–R5-style numeric classifiers MAY be used for
+      semantic grouping but MUST NOT be treated as mandatory conditions
+      for counting.
     metric_names:
       - "repair_events_count"
       - "repair_triggered_count"
@@ -106,7 +131,8 @@ lifecycle_categories:
     description: >
       Metrics in this category MUST be derived exclusively from events whose
       pld.phase is "continue" and whose event_type is continue_allowed or
-      continue_blocked.
+      continue_blocked. Numeric subclasses (e.g., C0 variants) MAY appear
+      in taxonomy but MUST NOT be required for eligibility.
     metric_names:
       - "continue_events_count"
       - "continue_allowed_count"
@@ -141,7 +167,8 @@ lifecycle_categories:
       from MAY-level events. They MAY be derived from latency_spike,
       pause_detected, handoff, fallback_executed, and info events, independent
       of pld.phase, provided that prefix/phase rules for pld.code are still
-      satisfied.
+      satisfied. These events MUST NOT be normalized into lifecycle phases; their
+      taxonomy mapping is advisory only.
     metric_names:
       - "latency_spike_count"
       - "pause_detected_count"
@@ -186,6 +213,754 @@ metrics:
     unit: "events"
     description: >
       Number of drift_detected events per session. Only events with
+      event_type = "drift_detected" and pld.phase = "drift" MUST be counted.
+    event_selector:
+      event_type: "drift_detected"
+    phase_constraint:
+      must_phase: "drift"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events in the session whose event_type is "drift_detected"
+        and whose pld.phase is "drift".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  drift_escalated_count:
+    category: "drift"
+    phase: "drift"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of drift_escalated events per session. Only events with
+      event_type = "drift_escalated" and pld.phase = "drift" MUST be counted.
+    event_selector:
+      event_type: "drift_escalated"
+    phase_constraint:
+      must_phase: "drift"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events in the session whose event_type is "drift_escalated"
+        and whose pld.phase is "drift".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  repair_events_count:
+    category: "repair"
+    phase: "repair"
+    type: "integer"
+    unit: "events"
+    description: >
+      Total number of repair-related events in a trace. This metric MUST count
+      only events whose event_type is repair_triggered or repair_escalated and
+      whose pld.phase is "repair".
+    event_selector:
+      any_of:
+        - event_type: "repair_triggered"
+        - event_type: "repair_escalated"
+    phase_constraint:
+      must_phase: "repair"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        For a given session_id, the value MUST equal the number of events in
+        the trace that satisfy the selector under the active validation_mode.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  repair_triggered_count:
+    category: "repair"
+    phase: "repair"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of repair_triggered events per session. Only events with
+      event_type = "repair_triggered" and pld.phase = "repair" MUST be counted.
+    event_selector:
+      event_type: "repair_triggered"
+    phase_constraint:
+      must_phase: "repair"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events in the session whose event_type is "repair_triggered"
+        and whose pld.phase is "repair".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  repair_escalated_count:
+    category: "repair"
+    phase: "repair"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of repair_escalated events per session. Only events with
+      event_type = "repair_escalated" and pld.phase = "repair" MUST be counted.
+    event_selector:
+      event_type: "repair_escalated"
+    phase_constraint:
+      must_phase: "repair"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events in the session whose event_type is "repair_escalated"
+        and whose pld.phase is "repair".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  reentry_events_count:
+    category: "reentry"
+    phase: "reentry"
+    type: "integer"
+    unit: "events"
+    description: >
+      Total number of reentry_observed events per session. Only events with
+      event_type = "reentry_observed" and pld.phase = "reentry" MUST be counted.
+    event_selector:
+      event_type: "reentry_observed"
+    phase_constraint:
+      must_phase: "reentry"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events in the session whose event_type is "reentry_observed"
+        and whose pld.phase is "reentry".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  reentry_observed_count:
+    category: "reentry"
+    phase: "reentry"
+    type: "integer"
+    unit: "events"
+    description: >
+      Alias for reentry_events_count with identical selector and aggregation.
+      Implementations MAY treat these two metrics as the same series.
+    event_selector:
+      event_type: "reentry_observed"
+    phase_constraint:
+      must_phase: "reentry"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Same as reentry_events_count.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  continue_events_count:
+    category: "continue"
+    phase: "continue"
+    type: "integer"
+    unit: "events"
+    description: >
+      Total number of continue_allowed and continue_blocked events per session.
+      Only events with pld.phase = "continue" MUST be counted.
+    event_selector:
+      any_of:
+        - event_type: "continue_allowed"
+        - event_type: "continue_blocked"
+    phase_constraint:
+      must_phase: "continue"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all continue_allowed and continue_blocked events in the
+        session whose pld.phase is "continue".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  continue_allowed_count:
+    category: "continue"
+    phase: "continue"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of continue_allowed events per session. Only events with
+      event_type = "continue_allowed" and pld.phase = "continue" MUST be
+      counted.
+    event_selector:
+      event_type: "continue_allowed"
+    phase_constraint:
+      must_phase: "continue"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events in the session whose event_type is "continue_allowed"
+        and whose pld.phase is "continue".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  continue_blocked_count:
+    category: "continue"
+    phase: "continue"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of continue_blocked events per session. Only events with
+      event_type = "continue_blocked" and pld.phase = "continue" MUST be
+      counted.
+    event_selector:
+      event_type: "continue_blocked"
+    phase_constraint:
+      must_phase: "continue"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events in the session whose event_type is "continue_blocked"
+        and whose pld.phase is "continue".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  outcome_events_count:
+    category: "outcome"
+    phase: "outcome"
+    type: "integer"
+    unit: "events"
+    description: >
+      Total number of outcome-related events per session. This metric SHOULD
+      count evaluation_pass, evaluation_fail, and session_closed events whose
+      pld.phase is "outcome".
+    event_selector:
+      any_of:
+        - event_type: "evaluation_pass"
+        - event_type: "evaluation_fail"
+        - event_type: "session_closed"
+    phase_constraint:
+      should_phase: "outcome"
+      enforcement: "SHOULD"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all evaluation_pass, evaluation_fail, and session_closed events
+        in the session whose pld.phase is "outcome". In normalize mode,
+        implementations MAY normalize pld.phase to "outcome" for these
+        event_types before counting, in accordance with the Event Matrix.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  evaluation_pass_count:
+    category: "outcome"
+    phase: "outcome"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of evaluation_pass events per session. pld.phase SHOULD be
+      "outcome".
+    event_selector:
+      event_type: "evaluation_pass"
+    phase_constraint:
+      should_phase: "outcome"
+      enforcement: "SHOULD"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events whose event_type is "evaluation_pass". In strict
+        mode, only events whose pld.phase is "outcome" SHOULD be used; others
+        MAY be ignored.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  evaluation_fail_count:
+    category: "outcome"
+    phase: "outcome"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of evaluation_fail events per session. pld.phase SHOULD be
+      "outcome".
+    event_selector:
+      event_type: "evaluation_fail"
+    phase_constraint:
+      should_phase: "outcome"
+      enforcement: "SHOULD"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events whose event_type is "evaluation_fail". In strict
+        mode, only events whose pld.phase is "outcome" SHOULD be used; others
+        MAY be ignored.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  session_closed_outcome_count:
+    category: "outcome"
+    phase: "outcome"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of session_closed events that represent semantic outcomes. Events
+      with pld.phase = "outcome" SHOULD be counted. Events with pld.phase =
+      "none" MAY be excluded or reported separately.
+    event_selector:
+      event_type: "session_closed"
+    phase_constraint:
+      should_phase: "outcome"
+      alternative_phase: "none"
+      enforcement: "SHOULD"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all session_closed events whose pld.phase is "outcome". In
+        normalize mode, events with phase = "none" MAY be reclassified to
+        "outcome" only when they are known to represent semantic closure.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  failover_events_count:
+    category: "failover"
+    phase: "failover"
+    type: "integer"
+    unit: "events"
+    description: >
+      Total number of failover-related events per session. This metric MUST
+      count failover_triggered events with pld.phase = "failover" and MAY count
+      fallback_executed events when pld.phase = "failover".
+    event_selector:
+      any_of:
+        - event_type: "failover_triggered"
+        - event_type: "fallback_executed"
+    phase_constraint:
+      must_phase: "failover"
+      enforcement: "MUST_FOR_FAILOVER_TRIGGERED"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all failover_triggered events (MUST) and fallback_executed
+        events (MAY) whose pld.phase is "failover".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  failover_triggered_count:
+    category: "failover"
+    phase: "failover"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of failover_triggered events per session. Only events with
+      event_type = "failover_triggered" and pld.phase = "failover" MUST be
+      counted.
+    event_selector:
+      event_type: "failover_triggered"
+    phase_constraint:
+      must_phase: "failover"
+      enforcement: "MUST"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events whose event_type is "failover_triggered" and whose
+        pld.phase is "failover".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  fallback_executed_failover_count:
+    category: "failover"
+    phase: "failover"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of fallback_executed events per session that are handled as
+      failover. Only events with pld.phase = "failover" MAY be counted.
+    event_selector:
+      event_type: "fallback_executed"
+    phase_constraint:
+      may_phase: "failover"
+      enforcement: "MAY"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all fallback_executed events whose pld.phase is "failover".
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  latency_spike_count:
+    category: "observability"
+    phase: "any"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of latency_spike events per session. These events MAY occur in any
+      phase.
+    event_selector:
+      event_type: "latency_spike"
+    phase_constraint:
+      allowed_phases:
+        - "drift"
+        - "repair"
+        - "reentry"
+        - "continue"
+        - "outcome"
+        - "failover"
+        - "none"
+      enforcement: "MAY"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events whose event_type is "latency_spike", regardless of
+        pld.phase, provided the event is semantically valid under the Event
+        Matrix.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+        - "runtime.latency_ms"
+
+  pause_detected_count:
+    category: "observability"
+    phase: "any"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of pause_detected events per session. These events MAY occur in
+      any phase.
+    event_selector:
+      event_type: "pause_detected"
+    phase_constraint:
+      allowed_phases:
+        - "drift"
+        - "repair"
+        - "reentry"
+        - "continue"
+        - "outcome"
+        - "failover"
+        - "none"
+      enforcement: "MAY"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events whose event_type is "pause_detected", regardless of
+        pld.phase.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  handoff_count:
+    category: "observability"
+    phase: "any"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of handoff events per session. These events MAY occur in any
+      phase.
+    event_selector:
+      event_type: "handoff"
+    phase_constraint:
+      allowed_phases:
+        - "drift"
+        - "repair"
+        - "reentry"
+        - "continue"
+        - "outcome"
+        - "failover"
+        - "none"
+      enforcement: "MAY"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events whose event_type is "handoff", regardless of
+        pld.phase.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  fallback_executed_count:
+    category: "observability"
+    phase: "any"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of fallback_executed events per session, regardless of phase.
+    event_selector:
+      event_type: "fallback_executed"
+    phase_constraint:
+      allowed_phases:
+        - "drift"
+        - "repair"
+        - "reentry"
+        - "continue"
+        - "outcome"
+        - "failover"
+        - "none"
+      enforcement: "MAY"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events whose event_type is "fallback_executed", regardless
+        of pld.phase.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+  info_count:
+    category: "observability"
+    phase: "none"
+    type: "integer"
+    unit: "events"
+    description: >
+      Number of info events per session. pld.phase SHOULD be "none".
+    event_selector:
+      event_type: "info"
+    phase_constraint:
+      should_phase: "none"
+      enforcement: "SHOULD"
+    aggregation:
+      scope: "per_session"
+      semantics: >
+        Count of all events whose event_type is "info". Implementations SHOULD
+        include only events whose pld.phase is "none" in accordance with the
+        Event Matrix.
+    metadata:
+      required:
+        - "session_id"
+      optional:
+        - "schema_version"
+        - "source"
+        - "pld.code"
+
+compatibility:
+  schema_versioning:
+    description: >
+      This metrics schema is defined for PLD Runtime schema_version "2.0".
+      Implementations MUST NOT apply it to events whose schema_version differs
+      from "2.0".
+  forward_compatibility:
+    description: >
+      Future minor versions of the PLD Runtime MAY introduce new event fields
+      or metrics without breaking this schema, provided that existing fields
+      and semantics are preserved. New lifecycle phases or event_types MUST NOT
+      be assumed by this schema and MUST be explicitly added in a new version.
+  backward_compatibility:
+    description: >
+      This schema is not guaranteed to be backward compatible with
+      schema_version values older than "2.0". Implementations MAY choose to
+      implement adapters, but such adapters are out of scope for this schema.
+
+examples:
+  - name: "drift_detected_strict_example"
+    description: >
+      Single drift_detected event with metrics in strict validation mode. This
+      payload is valid under pld_event.schema.json and consistent with
+      docs/event_matrix.yaml.
+    validation_mode: "strict"
+    event:
+      schema_version: "2.0"
+      event_id: "11111111-1111-4111-8111-111111111111"
+      timestamp: "2025-11-20T10:15:30Z"
+      session_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+      turn_sequence: 1
+      source: "detector"
+      event_type: "drift_detected"
+      pld:
+        phase: "drift"
+        code: "D1_drift_detected"
+        confidence: 0.98
+        metadata:
+          detector_name: "example_drift_detector"
+          payload: {}
+      runtime:
+        latency_ms: 120.5
+      ux:
+        user_visible_state_change: false
+      metrics:
+        drift_detected_count: 1
+        drift_events_count: 1
+
+  - name: "evaluation_fail_outcome_warn_example"
+    description: >
+      evaluation_fail outcome event with metrics in warn validation mode. The
+      phase and code prefix are aligned with the Event Matrix.
+    validation_mode: "warn"
+    event:
+      schema_version: "2.0"
+      event_id: "22222222-2222-4222-8222-222222222222"
+      timestamp: "2025-11-20T10:16:00Z"
+      session_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+      turn_sequence: 5
+      source: "runtime"
+      event_type: "evaluation_fail"
+      pld:
+        phase: "outcome"
+        code: "O1_eval_fail"
+        confidence: 0.9
+        metadata:
+          evaluator: "example_evaluator"
+          payload:
+            score: 0.3
+      runtime:
+        latency_ms: 210.0
+        model: "example-model"
+      ux:
+        user_visible_state_change: true
+      metrics:
+        evaluation_fail_count: 1
+        outcome_events_count: 1
+
+  - name: "info_none_observability_normalize_example"
+    description: >
+      info event with phase = "none" and non-lifecycle prefix in pld.code,
+      demonstrating observability metrics in normalize mode.
+    validation_mode: "normalize"
+    event:
+      schema_version: "2.0"
+      event_id: "33333333-3333-4333-8333-333333333333"
+      timestamp: "2025-11-20T10:17:00Z"
+      session_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+      turn_sequence: 10
+      source: "system"
+      event_type: "info"
+      pld:
+        phase: "none"
+        code: "INFO_debug"
+        confidence: 1.0
+        metadata:
+          message: "background maintenance complete"
+          payload:
+            detail: "no-op"
+      runtime:
+        agent_state: "idle"
+      ux:
+        user_visible_state_change: false
+      metrics:
+        info_count: 1
+
+  - name: "latency_spike_observability_example"
+    description: >
+      latency_spike event contributing to observability metrics. This event MAY
+      appear in any phase; here it is recorded with phase = "none".
+    validation_mode: "warn"
+    event:
+      schema_version: "2.0"
+      event_id: "44444444-4444-4444-8444-444444444444"
+      timestamp: "2025-11-20T10:18:00Z"
+      session_id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+      turn_sequence: 3
+      source: "runtime"
+      event_type: "latency_spike"
+      pld:
+        phase: "none"
+        code: "INFO_latency_spike"
+        confidence: 0.95
+        metadata:
+          threshold_ms: 500
+          payload:
+            observed_latency_ms: 750.0
+      runtime:
+        latency_ms: 750.0
+        model: "example-model"
+      ux:
+        user_visible_state_change: true
+      metrics:
+        latency_spike_count: 1
       event_type = "drift_detected" and pld.phase = "drift" MUST be counted.
     event_selector:
       event_type: "drift_detected"
