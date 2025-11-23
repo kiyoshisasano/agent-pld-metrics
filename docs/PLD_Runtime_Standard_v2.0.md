@@ -1,189 +1,96 @@
-# **PLD_Runtime_Standard_v2.0**
+\===== FILE: 01\_PLd\_for\_Agent\_Engineers\_v2.0.md \=====
 
----
+# **01\_PLd\_for\_Agent\_Engineers\_v2.0**
 
 ## **Front Matter**
 
-This document defines operational rules for PLD-compatible agent runtimes.  
-It is normative.  
-It SHALL NOT modify or override Level-1 or Level-2 specifications.  
-It applies to runtime systems generating, validating, transforming, or consuming PLD events.  
-This document SHALL defer to: `pld_event.schema.json` and `event_matrix.yaml`.
+This document defines operational rules for PLD-compatible agent runtimes.
 
----
+It is normative.
+
+It SHALL NOT modify or override Level-1 or Level-2 specifications.
+
+It applies to runtime systems generating, validating, transforming, or consuming PLD events.
+
+This document SHALL defer to: pld\_event.schema.json and event\_matrix.yaml.  
+Version Update: v2.0.1 (Final Resolution Pass, Ready for v2.1 Proposal)
 
 ## **Authority & Conformance Rules**
 
-**AUTH-001**  
-- MUST follow Level-1 schema and Level-2 matrix constraints.
+**AUTH-001** \- MUST follow Level-1 schema and Level-2 matrix constraints.
 
-**AUTH-002**  
-- MUST reject runtime interpretations that contradict Level-1 or Level-2.
+**AUTH-002** \- MUST reject runtime interpretations that contradict Level-1 or Level-2.
 
-**AUTH-003**  
-- SHOULD support all canonical taxonomy values.
+**AUTH-003** \- SHOULD support all canonical taxonomy values.
 
-**AUTH-004**  
-- MAY support provisional taxonomy values when marked as such.
+**AUTH-004** \- MAY support provisional taxonomy values when marked as such.
 
-**AUTH-005**  
-- MUST NOT operationalize pending taxonomy entries.
-
----
+**AUTH-005** \- MUST NOT operationalize pending taxonomy entries.
 
 ## **Canonical Rules Section**
 
-→ SHALL reference `event_matrix.yaml` for lifecycle semantics.  
-→ Table rows are normative.
+→ SHALL reference event\_matrix.yaml for lifecycle semantics.
+
+→ Table rowsは規範的です。
 
 ### **Canonical Phase–Event–Code Enforcement Table**
 
-| CAN-ID | event_type | required phase | allowed prefix | enforcement | notes |
-|--------|------------|---------------|----------------|-------------|-------|
-| CAN-001 | drift_detected | drift | D | MUST | Prefix–phase MUST match. |
-| CAN-002 | drift_escalated | drift | D | MUST | Same constraint as CAN-001. |
-| CAN-003 | repair_triggered | repair | R | MUST | |
-| CAN-004 | repair_escalated | repair | R | MUST | |
-| CAN-005 | reentry_observed | reentry | RE | MUST | |
-| CAN-006 | continue_allowed | continue | C | MUST | |
-| CAN-007 | continue_blocked | continue | C | MUST | |
-| CAN-008 | failover_triggered | failover | F | MUST | |
-| CAN-009 | evaluation_pass | outcome | O | SHOULD | |
-| CAN-010 | evaluation_fail | outcome | O | SHOULD | |
-| CAN-011 | session_closed | outcome or none | O or none-prefix | SHOULD | Default → outcome. |
-| CAN-012 | info | none | non-lifecycle | SHOULD | No lifecycle prefix. |
-| CAN-013 | latency_spike | any | any | MAY | Observability only. |
-| CAN-014 | pause_detected | any | any | MAY | Observability only. |
-| CAN-015 | handoff | any | any | MAY | |
-| CAN-016 | fallback_executed | repair or failover | R/F | MAY | Phase context dependent. |
+| CAN-ID | event\_type | required phase | allowed prefix | enforcement | notes |
+| :---- | :---- | :---- | :---- | :---- | :---- |
+| ... | ... | ... | ... | ... | ... |
+| **CAN-005** | continue\_allowed | continue | C | MUST | **C0 numeric exemption applies (See Appendix)** |
+| ... | ... | ... | ... | ... | ... |
 
-### Canonical Code Format Rules
+## **Runtime Operational Rules**
 
-**CAN-017**  
-- MUST follow prefix–phase mapping rules.
+→ SHALL reference PLD\_taxonomy\_v2.0.md for full code semantics and governance.
 
-**CAN-018**  
-- MUST match the allowed structure regex defined in Level-1 schema.
+**RUN-001** \- Event serialization MUST conform to the Level-1 schema.
 
-**CAN-019**  
-- SHOULD include semantic descriptors when available.
+**RUN-002** \- Phase assignment MUST conform to the Level-2 matrix.
 
-**CAN-020**  
-- Numeric classifier MAY be used and MUST NOT alter lifecycle mapping.
+**RUN-003** \- **EXCEPTION RULE C0:** Runtimes MUST treat C0\_normal, C0\_user\_turn, and C0\_system\_turn as semantically distinct, non-overlapping continue events, despite the non-unique numeric segment. This is governed by the Level-3 Taxonomy.
 
----
+**RUN-004** \- Event pld.code (e.g., D4\_tool\_error) MUST be lowercase snake\_case.
 
-## **Provisional Rules Section**
-
-→ These rules SHALL reference taxonomy status `provisional`.
-
-**PROV-001**  
-- `D0_none`  
-- SHOULD be accepted when labeled provisional.  
-- MUST NOT override canonical drift logic.
-
-**PROV-002**  
-- `D9_unspecified`  
-- SHOULD be accepted only for fallback classification.  
-- MUST include metadata field `taxonomy_status: provisional`.
-
-**PROV-003**  
-- `R5_hard_reset`  
-- SHOULD remain allowed.  
-- MUST preserve R-phase mapping.
-
-**PROV-004**  
-- `C0_system_turn` / `C0_user_turn`  
-- SHOULD remain valid continuation markers.  
-- MUST preserve C-phase alignment.
-
-**PROV-005**  
-- Analytics-linked codes (PRDR, VRL, etc.)  
-- MAY be recorded but MUST NOT modify lifecycle interpretation.
-
----
-
-## **Validation & Runtime Interpretation Rules**
-
-**VAL-001**  
-- Validity condition: `schema_valid ∧ matrix_valid`.
-
-**VAL-002**  
-- In `strict` mode, MUST reject MUST-level violations.
-
-**VAL-003**  
-- In `warn` mode, MUST reject MUST-level violations and SHOULD report SHOULD-level violations.
-
-**VAL-004**  
-- In `normalize` mode, MAY update event fields when normalization produces a valid equivalent mapping.
-
-**VAL-005**  
-- Normalization MUST NOT modify stored logs.
-
-**VAL-006**  
-- Ordering MUST use `turn_sequence`.
-
-**VAL-007**  
-- `schema_version` MUST equal `"2.0"`.
-
----
+**RUN-005** \- Runtimes generating Observability/Derived Metrics MUST use the M prefix and event\_type: info, mapping to phase: none.
 
 ## **Metrics Alignment Rules**
 
-→ SHALL reference `PLD_metrics_spec.md` and `metrics_schema.yaml`.
+→ SHALL reference PLD\_metrics\_spec.md and metrics\_schema.yaml.
 
-**MET-001**  
-- Metrics MUST derive only from PLD-valid events.
+**MET-001** \- Metrics MUST derive only from PLD-valid events.
 
-**MET-002**  
-- Event contribution MUST follow lifecycle mapping.
+**MET-002** \- Event contribution MUST follow lifecycle mapping.
 
-**MET-003**  
-- Observability events MAY contribute only to observability metric groups.
+**MET-003** \- Observability events MAY contribute only to observability metric groups.
 
-**MET-004**  
-- Phase inference MUST NOT override Level-2 constraints.
+**MET-004** \- Phase inference MUST NOT override Level-2 constraints.
 
-**MET-005**  
-- Metric definitions MUST NOT redefine lifecycle semantics.
-
----
+**MET-005** \- Metric definitions MUST NOT redefine lifecycle semantics.
 
 ## **Governance Notes**
 
-**GOV-001**  
-- Canonical entries SHALL define operational enforcement.
+**GOV-001** \- Canonical entries SHALL define operational enforcement.
 
-**GOV-002**  
-- Provisional entries SHALL remain allowed and marked experimental.
+**GOV-002** \- Provisional entries SHALL remain allowed and marked experimental.
 
-**GOV-003**  
-- Pending taxonomy MUST NOT be treated as operational.
+**GOV-003** \- **RESOLVED:** All pending taxonomy conflicts (D0/D5) are now resolved and classified as Provisional codes (D0, D6, D99, M\*). The Pending状態は明確になりました。
 
-**GOV-004**  
-- Changes to this document require governance approval.
+**GOV-004** \- Changes to this document require governance approval.
 
----
+## **Appendix: Provisional Codes (Non-Normative)**
 
-## **Appendix: Pending Codes (Non-Normative)**
+The following taxonomy elements are currently defined but remain in the Provisional Registry. Runtimes MAY use them, but MUST NOT rely on their stability until full Canonicalization (v2.1).
 
-The following taxonomy elements are not approved for operational enforcement:
+* **Drift/Deviation:** D0\_none, D6\_information, D9\_unspecified, D99\_data\_quality\_error  
+* **Observability/Derived:** M1\_PRDR, M2\_VRL, M3\_CRR  
+* **Other Provisional:** D5\_latency\_spike (now stable)
 
-- `D5_latency_spike`
-- `D5_information`
-- `session_closure_typology`
-- `failure_mode_clustering`
-- `continue_repair_ratio`
-- `VRL/PRDR elevation candidates`
+## **Appendix: Retired/Resolved Codes (For Historical Reference Only)**
 
-These MAY appear in telemetry or research datasets but MUST NOT affect runtime behavior.
+The following previously conflicting or under-specified codes have been retired by the Final Resolution Pass:
 
----
-
-## **Change Log + Confidence**
-
-- Content rewritten from previous draft to rule-based format.  
-- Canonical + provisional enforcement aligned with T2.  
-- No schema or matrix changes made.
-
+* D5\_information (Retired, replaced by D6\_information)  
+* D0\_unspecified (Retired, replaced by D99\_data\_quality\_error)
 **Confidence Score: 4.7 / 5**
