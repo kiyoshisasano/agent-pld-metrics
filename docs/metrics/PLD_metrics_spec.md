@@ -1,4 +1,4 @@
-# 📄 docs/metrics/PLD_metrics_spec.md
+# docs/metrics/PLD_metrics_spec.md
 
 **Status:** Hybrid-Aligned Candidate  
 **Version:** 2.0.0  
