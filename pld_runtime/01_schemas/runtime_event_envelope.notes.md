@@ -17,6 +17,8 @@ This is the canonical reference for engineers implementing runtime ingestion, lo
 
 ---
 
+> Example payloads — including valid, invalid, and experimental forms — are maintained separately in `runtime_event_envelope.examples.md` to support validator testing and operational evaluation.
+
 ## 1. Purpose of the Envelope
 
 The Envelope represents the **transport and observability layer** for PLD runtime activity.
