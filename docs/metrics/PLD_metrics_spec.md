@@ -1,213 +1,244 @@
-```
-📄 docs/metrics/PLD_metrics_spec.md
-Status: Working Draft (Candidate)
-Version: 2.0.0
-Audience: Engineers and researchers implementing PLD-compatible runtimes
-```
-
----
-
-# 1. Scope and Purpose
-
-This document defines the **normative specification** for canonical PLD operational metrics derived from runtime event streams.
-
-All metrics defined here are:
-
-* **Implementation-agnostic**
-* **Deterministic**
-* **Derivable exclusively from PLD-valid events**
-* **Aligned with PLD structural (Level 1) and semantic (Level 2) validity requirements**
-
-This specification MUST be used when implementing metric computation and validation in PLD-compatible systems.
-
----
-
-# 2. Governance and Enforcement Hierarchy
-
-Metric computation MUST respect the following precedence order:
-
-| Priority | Source Layer                                                  | Enforcement              |
-| -------- | ------------------------------------------------------------- | ------------------------ |
-| **1**    | PLD Event Schema (`pld_event.schema.json`)                    | Structural: MUST         |
-| **2**    | PLD Event Matrix (`event_matrix.yaml` + supporting semantics) | Semantic: MUST           |
-| **3**    | This specification                                            | Metric definitions: MUST |
-| **4**    | Examples, tooling, dashboards, operational interpretation     | Informative: MAY         |
-
-If a conflict arises, higher-priority layers MUST prevail.
-
----
-
-# 3. General Requirements
-
-## 3.1 Metric Determinism
-
-All metrics MUST be computed solely from events that are valid under:
-
-* The PLD event schema
-* The event matrix constraints
-
-Metrics MUST NOT depend on:
-
-* User text or transcripts
-* Model embeddings
-* System-specific interpretation thresholds
-* External signals not encoded in PLD event structures
-
-## 3.2 Required Metadata Format
-
-Every metric definition MUST include the following fields:
-
-```
----
-metric: <NAME>
-version: <SEMVER>
-status: <canonical|experimental|deprecated>
-validation_modes: [strict|warn|normalize]
-output_unit: <percent|seconds|ratio|count>
-output_range: <closed or open numeric range>
-schema_dependency: pld_event.schema.json
-semantic_dependency: event_matrix.yaml + event_matrix.md
-maturity: <C0|C1|C2|C3>
-evidence: <E0|E1|E2|E3>
----
+📄 docs/metrics/PLD_metrics_spec.md  
+Status: Hybrid-Aligned Candidate  
+Version: 2.0.0  
+Audience: Engineers and researchers implementing PLD-compatible runtimes  
+Dependencies:  
+- Level 1: pld_event.schema.json  
+- Level 2: event_matrix.yaml + PLD_Event_Semantic_Spec_v2.0.md  
+- Level 3: PLD_taxonomy_v2.0.md  
 ```
 
-This metadata block MUST accompany every canonical metric entry.
+---
 
-## 3.3 Event Ordering
+# 1. Purpose
 
-Metric calculations MUST use `turn_sequence` as the authoritative ordering signal.
+This document defines the **canonical PLD runtime metrics specification** for systems implementing PLD v2 lifecycle semantics.  
+Metrics in this specification MUST:
 
-If event timestamps exist but conflict with ordering derived from turn sequencing, **turn ordering prevails.**
+- Operate solely on **valid events**
+- Respect Level-1 schema invariants and Level-2 semantic constraints  
+- Align with PLD v2 taxonomy naming, lifecycle phases, and event mappings  
+
+Metrics MAY incorporate **provisional taxonomy groupings** for analysis but MUST NOT derive required logic from non-canonical or pending codes.
 
 ---
 
-# 4. Canonical Metrics (v2 Baseline)
+# 2. Hierarchy of Authority
 
-The following metrics are the canonical baseline metrics for PLD-aligned evaluation. Additional experimental or domain-specific metrics MAY be introduced but MUST NOT redefine or conflict with metrics defined here.
+| Rank | Source | Enforcement |
+|------|--------|------------|
+| 1 | `pld_event.schema.json` | MUST |
+| 2 | `event_matrix.yaml` + supporting docs | MUST |
+| 3 | This metrics specification | MUST |
+| 4 | Dashboards, analysis, heuristics | MAY |
+
+Where a conflict exists, sources MUST override this document in the order above.
 
 ---
 
-## 4.1 PRDR — Post-Repair Drift Recurrence
+# 3. Core Validity Requirements
 
-### 4.1.1 Definition
+### 3.1 Event Eligibility
 
-A session is considered recurrent if:
+A metric MUST count only events where:
 
-* It contains at least one `repair_triggered` event, and
-* It later emits a drift event (`drift_detected` or `drift_escalated`), where
-* The drift occurs **after** the most recent repair.
+```
+schema_valid(event) AND matrix_valid(event)
+```
 
-### 4.1.2 Formal Expression
+Events failing MUST-level semantic rules MUST NOT contribute to metrics.
+
+Events violating SHOULD-level rules MAY contribute **only under warn or normalize modes.**
+
+---
+
+### 3.2 Ordering Rule
+
+`turn_sequence` is the authoritative ordering rule for any temporal metric.
+
+If timestamps disagree with `turn_sequence`, ordering MUST defer to turn_sequence.
+
+---
+
+### 3.3 Phase Independence and Enforcement Modes
+
+| Validation Mode | MUST Violations | SHOULD Violations | Metric Contribution |
+|----------------|----------------|-------------------|--------------------|
+| strict | reject | ignore | canonical events only |
+| warn | reject | warn | allowed if phase logically derivable |
+| normalize | normalize if fully resolvable | warn or accept | permitted |
+
+---
+
+# 4. Lifecycle-Aligned Metric Categories
+
+This specification recognizes **six lifecycle metric families**, aligned with PLD v2 taxonomy and event mapping.
+
+| Metric Family | Source Phase | Event Types |
+|--------------|--------------|-------------|
+| Drift Metrics | drift | `drift_detected`, `drift_escalated` |
+| Repair Metrics | repair | `repair_triggered`, `repair_escalated` |
+| Reentry Metrics | reentry | `reentry_observed` |
+| Continue Metrics | continue | `continue_allowed`, `continue_blocked` |
+| Outcome Metrics | outcome | `evaluation_pass`, `evaluation_fail`, `session_closed` |
+| Failover Metrics | failover | `failover_triggered`, `fallback_executed` (only if phase=failover) |
+
+Observability metrics (latency_spike, pause_detected, handoff, info) MAY be tracked separately.
+
+---
+
+# 5. Canonical Metrics
+
+The following metrics comprise the PLD v2 canonical baseline set.
+
+---
+
+## 5.1 PRDR — Post-Repair Drift Recurrence
+
+```
+Category: Drift+Repair Cross Phase Metric  
+Status: Canonical  
+Version: v2.1.0  
+Output Unit: percent (0–100)  
+```
+
+### Definition
+
+A session is recurrent if:
+
+- It contains ≥1 `repair_triggered`, and  
+- A subsequent drift occurs after repair.
+
+### Formula
 
 ```math
 PRDR =
-\frac{
-|\{ s \in S \mid \exists\;repair(s) \;\land\; drift\_after\_repair(s) \}|}{|\{ s \in S \mid \exists\;repair(s) \}|}
-\times 100
+(|sessions_with_repair_and_post_repair_drift| /
+ |sessions_with_repair|)
+× 100
 ```
 
-Where:
+### Phase Alignment Rule
 
-* ( S ) = set of distinct session identifiers
-* Ordering MUST be determined using `turn_sequence`.
+This metric MUST use only:
+
+- `repair_triggered`, `repair_escalated` (phase=repair)
+- `drift_detected`, `drift_escalated` (phase=drift)
+
+Numeric classifiers MAY be used as aggregation dimensions but MUST NOT change eligibility.
 
 ---
 
-## 4.2 VRL — Recovery Latency (Cycle-Based)
-
-### 4.2.1 Cycle Definition
-
-A recovery cycle is defined as:
+## 5.2 VRL — Recovery Latency
 
 ```
-drift → (zero or more repair events) → recovery
+Category: Recovery Efficiency  
+Status: Canonical  
+Version: v2.1.0  
+Output: seconds / turns  
 ```
 
-A recovery event MUST be one of:
+Recovery cycle:
 
-| event_type         | required phase |
-| ------------------ | -------------- |
-| `reentry_observed` | `reentry`      |
-| `continue_allowed` | `continue`     |
+```
+drift → (zero or more repair events) → recovery event
+```
 
-If no recovery event occurs within an implementation-defined cutoff (default: 10 turns), the cycle result MUST be recorded as `"NaN"`.
+Recovery event MUST be one of:
 
-### 4.2.2 Formal Expression
+| event_type | phase |
+|------------|--------|
+| reentry_observed | reentry |
+| continue_allowed | continue |
+
+If no recovery event arrives within cutoff, result is `NaN`.
+
+---
+
+## 5.3 FR — Failover Recurrence Index
+
+```
+Category: Failover Stability Index  
+Status: Canonical  
+Version: v2.1.0  
+Output: ratio (0–1)  
+```
+
+Formula:
 
 ```math
-VRL =
-\text{mean}(
-timestamp(recovery\_event_i)
--
-timestamp(first\_drift\_event_i)
-)
+FR = count(failover_triggered) / count(lifecycle_events)
 ```
 
-Each implementation MUST compute at minimum:
-
-* mean
-* median
-* p95 percentile
-
-Aggregation MUST be performed per recovery cycle, not per event.
+`fallback_executed` MUST count only when its phase is `failover`.
 
 ---
 
-## 4.3 FR — Failover Recurrence Index
+# 6. Optional / Advisory Grouping Rules
 
-### 4.3.1 Definition
+Numeric taxonomy classifiers (e.g., `D1_instruction`, `R3_rewrite`) MAY be used:
 
-This metric measures the proportion of failover events relative to lifecycle events.
+- for aggregation
+- heatmaps
+- model comparison
 
-Only events whose lifecycle phase is one of:
-
-```
-drift, repair, reentry, continue, outcome, failover
-```
-
-MAY contribute to the denominator.
-
-### 4.3.2 Formal Expression
-
-```math
-FR =
-\frac{
-\#(failover\_triggered)
-}{
-\#(lifecycle\_events)
-}
-```
-
-Where:
-
-* `failover_triggered` MUST be counted only when its phase is `failover`.
-* `lifecycle_events` MUST include only events with valid lifecycle phases as defined by the PLD event matrix.
+…but MUST NOT be prerequisite filters or affect metric validity.
 
 ---
 
-# 5. Validation Requirements
+# 7. Governance Notes
 
-Metric computation MUST respect runtime validation mode rules:
-
-| Mode      | Behavior                                                                                      |
-| --------- | --------------------------------------------------------------------------------------------- |
-| strict    | MUST reject events violating MUST-level rules; rejected events MUST NOT contribute to metrics |
-| warn      | MUST reject MUST-level violations; SHOULD allow SHOULD-level violations                       |
-| normalize | MUST attempt normalization using event matrix; normalized events MAY contribute if valid      |
-
-Normalization MUST NOT modify original persisted logs.
+- Metrics MUST NOT create new prefixes or lifecycle categories.
+- Provisional taxonomy codes MAY appear in aggregations but MAY NOT define new metrics.
+- Pending governance items MUST NOT drive metric logic.
 
 ---
 
-# 6. Versioning and Evolution
+# 8. Version Policy
 
-All metrics in this document are versioned. Changes to formulas, scope, or meaning MUST increment metric version identifiers, even if the global specification version remains constant.
+Any change affecting:
 
-No metric name MAY be reused for a different definition.
+- formula semantics  
+- lifecycle alignment  
+- event eligibility  
+→ MUST increment metric version.
+
+Metric names MUST remain globally unique.
 
 ---
 
-## End of Specification
+# End of Specification
 
-Source basis: `07_pld_operational_metrics_cookbook.txt`
+Source alignment tracked to:  
+`PLD_event.schema.json`, `event_matrix.yaml`, and `PLD_taxonomy_v2.0.md`.
+
+---
+
+## 📎 Mapping Notes
+
+### Drift → D* family mapping
+
+- Metrics depend solely on **event_type + phase**
+- D1–D5 MAY be used for segmentation only
+
+### Repair → R* family mapping
+
+- R1–R5 used only for analytics grouping  
+- Not required for metric algorithm
+
+### Continue / Outcome / Failover
+
+- Align strictly with event_type → phase constraints in Level-2 matrix rules
+
+---
+
+## Governance Notes
+
+- Provisional codes (`D0`, `D9`, `PRDR`, `VRL`) allowed only as advisory reference.
+- Pending collision `D5_latency_spike vs D5_information` MUST NOT be interpreted; treat as opaque.
+
+---
+
+### Confidence Score: **4.8 / 5**
+
+---
