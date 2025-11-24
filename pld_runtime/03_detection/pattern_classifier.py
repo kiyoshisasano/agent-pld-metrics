@@ -1,277 +1,167 @@
-# PLD Runtime Pattern Classifier
-# version: 2.0.0
-# status: experimental merge candidate
-# authority: Level 5 — runtime implementation
-# scope: Per-turn drift pattern classification for PLD-aligned runtimes
-# purpose: Unified runtime classifier supporting structured signals and optional heuristic/LLM fallback
-# change_classification: runtime-only merge
-# dependencies: PLD event schema v2.x, PLD event matrix v2.x
+# version: 0.1.1
+# status: draft runtime_template (experimental)
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: Pattern classification runtime template for producing taxonomy-aligned signals to feed PLD v2 event generation.
+# change_classification: runtime-only, non-breaking + technical review alignment
+# dependencies: PLD event schema v2.0, PLD Event Matrix v2.0, PLD Runtime Standard v2.0, PLD Taxonomy v2.0
+# notes: Template only. Does not emit PLD events directly; integrates with Level 5 runtime envelope and detectors.
+
+"""
+Pattern classifier template for PLD-compatible runtimes.
+
+This module remains Level 5 (runtime implementation only). It assists in
+classifying runtime state and generating hints for downstream components
+but does NOT emit PLD-valid events.
+
+Changes applied per technical review:
+- Added required Level 1-aligned source hint to PatternClassification.
+
+All open questions have been converted into TODOs and must not be resolved yet.
+"""
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass, field, asdict
-from enum import Enum
-from typing import Any, Dict, Mapping, Optional, Sequence, Literal
+import dataclasses
+import typing as _t
 
 
-# -----------------------------------------------------------------------------
-# Canonical Drift Codes
-# -----------------------------------------------------------------------------
-
-class DriftCode(str, Enum):
-    # Core Issue 1 Fix: add missing canonical codes for LLM classification usefulness
-    D0_NONE = "D0_none"
-    D1_INSTRUCTION = "D1_instruction"       # Newly added
-    D2_CONTEXT = "D2_context"               # Newly added
-    D3_REPEATED_PLAN = "D3_repeated_plan"
-    D4_TOOL_ERROR = "D4_tool_error"
-    D5_LATENCY_SPIKE = "D5_latency_spike"
-    D9_UNSPECIFIED = "D9_unspecified"
+# ──────────────────────────────────────────────────────────────────────────────
+# Public Data Structures
+# ──────────────────────────────────────────────────────────────────────────────
 
 
-# -----------------------------------------------------------------------------
-# Runtime Context Models
-# -----------------------------------------------------------------------------
+@dataclasses.dataclass
+class TurnSnapshot:
+    """
+    Minimal view of a single turn or step in the runtime.
 
-@dataclass(frozen=True)
-class TurnContext:
-    session_id: str
+    The classifier remains agnostic to PLD schema here; mapping responsibility
+    belongs to the PatternClassifier or downstream event builders.
+
+    NOTE:
+    This accepts implementation-specific role values.
+    The corresponding PLD-conforming source MUST be output in PatternClassification.
+    """
+
     turn_sequence: int
-    source: str
-    model_name: Optional[str] = None
-    tools_called: Sequence[str] = ()
+    role: str
+    content: str | None = None
+    metadata: dict[str, _t.Any] = dataclasses.field(default_factory=dict)
 
 
-@dataclass(frozen=True)
-class TurnSignals:
-    tool_error: bool = False
-    latency_ms: Optional[float] = None
-    repeated_plan_detected: bool = False
-    external_drift_code: Optional[str] = None
-    extra: Mapping[str, Any] = field(default_factory=dict)
+@dataclasses.dataclass
+class PatternClassification:
+    """
+    Output from the PatternClassifier for a single analyzed unit.
+
+    Now includes `source_hint` to satisfy Level 1 source alignment expectations.
+    """
+
+    code: str
+    phase: str | None = None
+    event_type_hint: str | None = None
+    confidence: float | None = None
+
+    # NEW — resolves Core Technical Issue #1:
+    source_hint: str = dataclasses.field()
+    """
+    REQUIRED — MUST contain a Level 1-valid source enum value.
+    Example valid values per Level 1 schema:
+        "user", "assistant", "runtime", "controller", "detector", "system"
+
+    Classifiers MUST set this explicitly — the event builder must not infer it.
+    """
+
+    tags: list[str] = dataclasses.field(default_factory=list)
+    extra: dict[str, _t.Any] = dataclasses.field(default_factory=dict)
+
+    # TODO: Confirm whether classifier should validate taxonomy correctness
+    # (e.g., ensure D* → phase=drift before returning).
+    # Current assumption: downstream builder performs authoritative enforcement.
 
 
-@dataclass(frozen=True)
-class DriftClassification:
-    code: DriftCode
-    confidence: float
-    reason: str
-    auxiliary: Mapping[str, Any] = field(default_factory=dict)
+@dataclasses.dataclass
+class PatternClassifierContext:
+    """
+    Session-scoped or run-scoped context for pattern classification.
+
+    Does NOT contain PLD schema-specific values.
+    """
+
+    session_id: str
+    enable_drift_patterns: bool = True
+    enable_repair_patterns: bool = True
+    enable_continue_patterns: bool = True
+    enable_observability_patterns: bool = True
+
+    max_repetition_window: int = 8
+    loop_threshold: int = 3
+
+    options: dict[str, _t.Any] = dataclasses.field(default_factory=dict)
 
 
-# -----------------------------------------------------------------------------
-# Configuration
-# -----------------------------------------------------------------------------
+# ──────────────────────────────────────────────────────────────────────────────
+# Core Template Class
+# ──────────────────────────────────────────────────────────────────────────────
 
-ClassificationSource = Literal["heuristic", "signal", "llm", "llm_fallback_heuristic", "none"]
-
-
-@dataclass
-class PatternClassifierConfig:
-    latency_spike_threshold_ms: float = 3500.0
-    min_confidence_default: float = 1.0
-    tool_error_confidence: float = 0.95
-    repeated_plan_confidence: float = 0.80
-    latency_spike_confidence: float = 0.70
-    allow_external_override: bool = True
-
-    # legacy behavior
-    use_llm: bool = False
-    model: str = "gpt-4o-mini"
-    temperature: float = 0.0
-    min_confidence: float = 0.35
-
-
-# -----------------------------------------------------------------------------
-# Optional legacy heuristic fallback
-# -----------------------------------------------------------------------------
-
-def _normalize(text: str) -> str:
-    return text.strip().lower()
-
-
-def _heuristic_classify_text(text: str, *, min_confidence_target: float) -> Optional[DriftClassification]:
-    t = _normalize(text)
-    
-    # TODO (Open Question 1): Clarify semantics of empty-text classification
-    if not t:
-        return DriftClassification(
-            code=DriftCode.D0_NONE,
-            confidence=0.0,
-            reason="Empty text heuristic.",
-        )
-
-    if any(k in t for k in ["wrong", "inaccurate", "not what i asked"]):
-        return DriftClassification(
-            DriftCode.D1_INSTRUCTION,
-            0.7,
-            "Heuristic: user flagged intent mismatch.",
-        )
-
-    if any(k in t for k in ["you forgot", "lost context", "we already said"]):
-        return DriftClassification(
-            DriftCode.D2_CONTEXT,
-            0.65,
-            "Heuristic: user indicates context inconsistency.",
-        )
-
-    if any(k in t for k in ["resume", "continue where we left"]):
-        return DriftClassification(
-            DriftCode.D0_NONE,
-            0.6,
-            "Heuristic continuation phrasing detected.",
-        )
-
-    return None
-
-
-# -----------------------------------------------------------------------------
-# LLM fallback module
-# -----------------------------------------------------------------------------
-
-def _classify_with_llm(text: str, config: PatternClassifierConfig) -> Optional[DriftClassification]:
-    # TODO (Open Question 2): Consider prompt enhancement with brief code definitions
-    try:
-        from openai import OpenAI  # type: ignore
-        client = OpenAI()
-    except Exception:
-        return None
-
-    allowed = [c.value for c in DriftCode]
-
-    prompt = (
-        "Classify conversational drift using PLD codes.\n"
-        "Return JSON with keys: { code, confidence, reason }\n\n"
-        f"Allowed codes: {allowed}"
-    )
-
-    try:
-        resp = client.chat.completions.create(
-            model=config.model,
-            messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": text},
-            ],
-            temperature=config.temperature,
-        )
-        parsed = json.loads(resp.choices[0].message.content or "{}")
-
-        code_raw = str(parsed.get("code", DriftCode.D9_UNSPECIFIED.value))
-        code_enum = DriftCode(code_raw) if code_raw in allowed else DriftCode.D9_UNSPECIFIED
-
-        confidence = float(parsed.get("confidence", 0.0))
-        if confidence < config.min_confidence:
-            return None
-
-        reason = parsed.get("reason", "LLM classification")
-        return DriftClassification(code_enum, confidence, reason)
-
-    except Exception:
-        return None
-
-
-# -----------------------------------------------------------------------------
-# Final Unified Classifier
-# -----------------------------------------------------------------------------
 
 class PatternClassifier:
     """
-    Primary drift detector.
+    Base template for Level 5 pattern classifiers.
 
-    NOTE: Core Issue 2 acknowledgment:
-    This classifier intentionally surfaces ONLY the dominant detected condition.
-    It does NOT emit an array of signals.
+    This class ONLY produces PatternClassification objects — never PLD events.
+
+    Subclasses should implement actual classification rules in `_classify()`.
     """
 
-    def __init__(self, config: Optional[PatternClassifierConfig] = None) -> None:
-        self._config = config or PatternClassifierConfig()
+    def __init__(self, ctx: PatternClassifierContext) -> None:
+        self._ctx = ctx
 
-    def classify(
+        # History is append-only unless reset manually.
+        # TODO: Clarification needed — should this be bounded (deque) instead of unbounded?
+        self._history: list[TurnSnapshot] = []
+
+    def observe_and_classify(
         self,
-        context: TurnContext,
-        signals: TurnSignals,
-        text: Optional[str] = None,
-    ) -> DriftClassification:
+        turn: TurnSnapshot,
+    ) -> list[PatternClassification]:
+        """
+        Store the turn and compute pattern classifications.
 
-        # External override (respects dynamic controlled override)
-        external = self._classify_external(signals)
-        if external:
-            return external
+        Current behavior: turn is added BEFORE classification.
 
-        # Priority evaluation
-        if signals.tool_error:
-            return DriftClassification(
-                DriftCode.D4_TOOL_ERROR,
-                self._config.tool_error_confidence,
-                "Tool error detected.",
-            )
+        TODO: Clarification needed — should classification see history BEFORE or AFTER adding the new turn?
+              (i.e., should this append occur before or after invoking `_classify()`?)
+        """
 
-        if signals.repeated_plan_detected:
-            return DriftClassification(
-                DriftCode.D3_REPEATED_PLAN,
-                self._config.repeated_plan_confidence,
-                "Repeated plan detected.",
-            )
+        self._history.append(turn)
+        return self._classify(turn, history=self._history)
 
-        if signals.latency_ms and signals.latency_ms > self._config.latency_spike_threshold_ms:
-            return DriftClassification(
-                DriftCode.D5_LATENCY_SPIKE,
-                self._config.latency_spike_confidence,
-                "Latency spike detected.",
-            )
+    def _classify(
+        self,
+        turn: TurnSnapshot,
+        *,
+        history: list[TurnSnapshot],
+    ) -> list[PatternClassification]:
+        """
+        IMPLEMENTATION HOOK to detect behavioral/runtime patterns.
 
-        # Fallback heuristics before LLM
-        if text and not self._config.use_llm:
-            h = _heuristic_classify_text(text, min_confidence_target=self._config.min_confidence)
-            if h:
-                return h
+        Default: no detected patterns.
+        """
+        return []
 
-        if text and self._config.use_llm:
-            llm = _classify_with_llm(text, self._config)
-            if llm:
-                return llm
+    @property
+    def context(self) -> PatternClassifierContext:
+        return self._ctx
 
-        return DriftClassification(
-            DriftCode.D0_NONE,
-            self._config.min_confidence_default,
-            "No drift detected.",
-        )
+    @property
+    def history(self) -> tuple[TurnSnapshot, ...]:
+        return tuple(self._history)
 
-    def _classify_external(self, signals: TurnSignals) -> Optional[DriftClassification]:
-        raw = signals.external_drift_code
-        if not raw or not self._config.allow_external_override or not raw.startswith("D"):
-            return None
+    def reset_history(self) -> None:
+        """
+        Clears stored turn history.
 
-        for c in DriftCode:
-            if c.value == raw:
-                return DriftClassification(
-                    c,
-                    self._config.min_confidence_default,
-                    "External override provided (trusted).",
-                )
-
-        return DriftClassification(
-            DriftCode.D9_UNSPECIFIED,
-            self._config.min_confidence_default,
-            "External override provided (unrecognized, normalized).",
-            auxiliary={"external_code": raw},
-        )
-
-
-__all__ = [
-    "PatternClassifier",
-    "PatternClassifierConfig",
-    "DriftClassification",
-    "TurnContext",
-    "TurnSignals",
-    "DriftCode",
-]
-
-
-# -----------------------------------------------------------------------------
-# Deferred for later phase
-# -----------------------------------------------------------------------------
-# - Multi-signal reporting and aggregation strategy
-# - LLM prompt enrichment with human-readable semantic definitions
-# - Confidence semantics standardization across empty-text vs valid-text cases
+        Caller is responsible for ensuring this aligns with PLD session semantics.
+        """
+        self._history.clear()
