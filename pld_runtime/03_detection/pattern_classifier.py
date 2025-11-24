@@ -1,4 +1,4 @@
-# version: 0.1.1
+# version: 2.0.0
 # status: draft runtime_template (experimental)
 # authority_level_scope: Level 5 — runtime implementation
 # purpose: Pattern classification runtime template for producing taxonomy-aligned signals to feed PLD v2 event generation.
@@ -165,3 +165,4 @@ class PatternClassifier:
         Caller is responsible for ensuring this aligns with PLD session semantics.
         """
         self._history.clear()
+
