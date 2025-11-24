@@ -1,345 +1,226 @@
-"""
-# version: 2.0.0
-# status: runtime
-# authority: Level 5 — runtime implementation
-# purpose: Enforces PLD event validation and ingestion response policy.
-# scope: Maps validation mode and violation set to enforcement decisions without modifying Level 1–3 assets.
-# dependencies: Read-only Level 1–3 PLD event, event matrix, and metrics specifications.
-# change_classification: runtime-only, non-breaking extension (assumes v2.0 event/matrix/metrics contracts)
-"""
+# version: "2.0.0"
+# status: "draft / runtime_template / runtime_extension"
+# authority_level_scope: "Level 5 — runtime implementation"
+# purpose: "Map PLD v2 runtime events to high-level response policies without altering event semantics."
+# scope: "Advisory response policy; assumes Level 1 schema and Level 2 matrix validation are handled upstream."
+# change_classification: "runtime-only update (addresses review alignment)"
+# dependencies: "pld_event.schema.json v2.x, event_matrix.yaml v2.x, PLD_Runtime_Standard_v2.0.md, PLD_taxonomy_v2.0.md"
 
 from __future__ import annotations
 
-import enum
-import logging
-import os
 from dataclasses import dataclass
-from typing import Any, Callable, List, Mapping, MutableMapping, Optional, Sequence, Tuple
+from enum import Enum
+from typing import Any, Dict, Mapping, Optional
 
-logger = logging.getLogger(__name__)
+# ──────────────────────────────────────────────────────────────────────────────
+# TODO (Open Question #1): Clarify expected role of phase input if not used
+# TODO (Open Question #2): Determine whether observability events may influence future lifecycle control paths
+# TODO (Open Question #3): Confirm explicit boundary between state tracking ownership vs. policy evaluation
+# ──────────────────────────────────────────────────────────────────────────────
+
+PLDEvent = Mapping[str, Any]
 
 
-# ---------------------------------------------------------------------------
-# Validation Modes (Level 3-aligned)
-# ---------------------------------------------------------------------------
-
-class ValidationMode(str, enum.Enum):
-    """
-    PLD validation modes.
-    """
-
+class ValidationMode(str, Enum):
     STRICT = "strict"
     WARN = "warn"
     NORMALIZE = "normalize"
 
-    @classmethod
-    def from_env(cls, value: Optional[str]) -> "ValidationMode":
-        if not value:
-            return cls.STRICT
-        normalized = value.strip().lower()
-        for mode in cls:
-            if mode.value == normalized:
-                return mode
-        logger.warning(
-            "Unknown PLD validation mode '%s'; falling back to 'strict'.",
-            value,
-        )
-        return cls.STRICT
 
-
-DEFAULT_VALIDATION_MODE: ValidationMode = ValidationMode.from_env(
-    os.getenv("PLD_VALIDATION_MODE", "strict")
-)
-
-
-# ---------------------------------------------------------------------------
-# Violation classification (runtime-only abstraction)
-# ---------------------------------------------------------------------------
-
-class ViolationKind(str, enum.Enum):
+class PolicyDecisionType(str, Enum):
     """
-    Runtime-only violation categorization.
+    Updated for Core Issue #1:
+
+    The previous names implied imperative execution (e.g., REQUIRE_REPAIR).
+    Updated naming clarifies whether decisions mandate a runtime obligation or
+    are purely advisory.
+
+    - POLICY_REPAIR_MANDATED replaces REQUIRE_REPAIR
+    - POLICY_FAILOVER_MANDATED replaces REQUIRE_FAILOVER
     """
 
-    SCHEMA = "schema"
-    SEMANTIC_MUST = "semantic_must"
-    SEMANTIC_SHOULD = "semantic_should"
-    NORMALIZATION_ERROR = "normalization_error"
-    RUNTIME_ERROR = "runtime_error"
+    CONTINUE = "continue"
+    BLOCK = "block"
+    POLICY_REPAIR_MANDATED = "policy_repair_mandated"
+    POLICY_FAILOVER_MANDATED = "policy_failover_mandated"
+    OBSERVE_ONLY = "observe_only"
+    NOOP = "noop"
 
 
 @dataclass(frozen=True)
-class Violation:
-    kind: ViolationKind
-    message: str
-    code: Optional[str] = None
-    details: Optional[Mapping[str, Any]] = None
-
-
-# ---------------------------------------------------------------------------
-# Policy decisions
-# ---------------------------------------------------------------------------
-
-class Decision(str, enum.Enum):
-    ACCEPT = "accept"
-    ACCEPT_WITH_WARNINGS = "accept_with_warnings"
-    NORMALIZE_AND_ACCEPT = "normalize_and_accept"
-    REJECT = "reject"
-
-
-@dataclass
-class PolicyResult:
-    decision: Decision
-    normalized_event: Optional[Mapping[str, Any]]
-    violations: Sequence[Violation]
-    warnings: Sequence[str]
-
-
-Normalizer = Callable[
-    [Mapping[str, Any], Sequence[Violation]],
-    Tuple[Optional[Mapping[str, Any]], Sequence[Violation]],
-]
-
-
-class ResponsePolicy:
+class ResponsePolicyDecision:
     """
-    Enforcement policy for PLD event ingestion.
+    The "suggested_next_event_type" field remains advisory (per design intent).
+
+    Core Issue #2 updated behavior:
+    - When event rules imply constrained allowed next steps,
+      this field MAY now contain the "most probable / default" selection,
+      but does NOT become mandatory or authoritative.
     """
 
-    def __init__(
-        self,
-        mode: ValidationMode = DEFAULT_VALIDATION_MODE,
-        normalizer: Optional[Normalizer] = None,
-    ) -> None:
-        self.mode = mode
-        self._normalizer = normalizer
+    decision: PolicyDecisionType
+    reason: str
+    suggested_next_event_type: Optional[str] = None
+    notes: Optional[str] = None
 
-    def apply(
-        self,
-        event: Mapping[str, Any],
-        violations: Sequence[Violation],
-    ) -> PolicyResult:
 
-        schema_violations = [v for v in violations if v.kind is ViolationKind.SCHEMA]
-        if schema_violations:
-            return self._reject_with(
-                "Schema violation detected; rejecting event in all modes.",
-                violations,
-            )
+def evaluate_response_policy(
+    event: PLDEvent,
+    mode: ValidationMode = ValidationMode.STRICT,
+) -> ResponsePolicyDecision:
 
-        if self.mode is ValidationMode.STRICT:
-            return self._apply_strict(event, violations)
-        if self.mode is ValidationMode.WARN:
-            return self._apply_warn(event, violations)
-        if self.mode is ValidationMode.NORMALIZE:
-            return self._apply_normalize(event, violations)
+    schema_version = event.get("schema_version")
+    event_type = event.get("event_type")
+    pld = event.get("pld") or {}
+    phase = pld.get("phase")
+    code = pld.get("code")
 
-        fallback_violation = Violation(
-            kind=ViolationKind.RUNTIME_ERROR,
-            message=f"Unknown validation mode: {self.mode!r}",
-        )
-        return self._reject_with("Runtime configuration error.", violations + [fallback_violation])
-
-    def _apply_strict(
-        self,
-        event: Mapping[str, Any],
-        violations: Sequence[Violation],
-    ) -> PolicyResult:
-
-        must_violations = _filter_violations(violations, ViolationKind.SEMANTIC_MUST)
-        if must_violations:
-            return self._reject_with(
-                "MUST-level semantic violation in strict mode.",
-                violations,
-            )
-
-        should_violations = _filter_violations(violations, ViolationKind.SEMANTIC_SHOULD)
-        warnings: List[str] = []
-        if should_violations:
-            warnings.append(
-                "Event accepted in strict mode but contains SHOULD-level semantic violations."
-            )
-
-        return PolicyResult(
-            decision=Decision.ACCEPT,
-            normalized_event=None,
-            violations=violations,
-            warnings=warnings,
+    if schema_version not in ("2.0", "2.1"):
+        return ResponsePolicyDecision(
+            decision=PolicyDecisionType.BLOCK,
+            reason=f"Unsupported schema_version={schema_version!r}."
         )
 
-    def _apply_warn(
-        self,
-        event: Mapping[str, Any],
-        violations: Sequence[Violation],
-    ) -> PolicyResult:
+    if event_type in ("drift_detected", "drift_escalated"):
+        return _policy_for_drift(event_type, phase, code, mode)
 
-        must_violations = _filter_violations(violations, ViolationKind.SEMANTIC_MUST)
-        if must_violations:
-            return self._reject_with(
-                "MUST-level semantic violation in warn mode.",
-                violations,
-            )
+    if event_type in ("repair_triggered", "repair_escalated"):
+        return _policy_for_repair(event_type, phase, code, mode)
 
-        should_violations = _filter_violations(violations, ViolationKind.SEMANTIC_SHOULD)
-        warnings: List[str] = []
-        if should_violations:
-            warnings.append(
-                "Event accepted with SHOULD-level semantic violations (warn mode)."
-            )
+    if event_type == "reentry_observed":
+        return _policy_for_reentry(event_type, phase, code, mode)
 
-        return PolicyResult(
-            decision=Decision.ACCEPT_WITH_WARNINGS if warnings else Decision.ACCEPT,
-            normalized_event=None,
-            violations=violations,
-            warnings=warnings,
+    if event_type in ("continue_allowed", "continue_blocked"):
+        return _policy_for_continue(event_type, phase, code, mode)
+
+    if event_type == "failover_triggered":
+        return _policy_for_failover(event_type, phase, code, mode)
+
+    if event_type in ("evaluation_pass", "evaluation_fail"):
+        return _policy_for_evaluation(event_type, phase, code, mode)
+
+    if event_type == "session_closed":
+        return _policy_for_session_closed(event_type, phase, code, mode)
+
+    if event_type in ("latency_spike", "pause_detected", "handoff", "fallback_executed"):
+        return _policy_for_observability(event_type, phase, code, mode)
+
+    if event_type == "info":
+        return _policy_for_info(event_type, phase, code, mode)
+
+    if mode is ValidationMode.STRICT:
+        return ResponsePolicyDecision(
+            decision=PolicyDecisionType.BLOCK,
+            reason=f"Unknown event_type={event_type!r} in strict mode."
         )
 
-    def _apply_normalize(
-        self,
-        event: Mapping[str, Any],
-        violations: Sequence[Violation],
-    ) -> PolicyResult:
-
-        must_violations = _filter_violations(violations, ViolationKind.SEMANTIC_MUST)
-
-        if not must_violations:
-            should = _filter_violations(violations, ViolationKind.SEMANTIC_SHOULD)
-            warnings = ["Event accepted with SHOULD-level violations."] if should else []
-            return PolicyResult(
-                decision=Decision.ACCEPT_WITH_WARNINGS if warnings else Decision.ACCEPT,
-                normalized_event=None,
-                violations=violations,
-                warnings=warnings,
-            )
-
-        if not self._normalizer:
-            v = Violation(
-                kind=ViolationKind.NORMALIZATION_ERROR,
-                message="normalize mode configured but no normalizer provided; cannot normalize MUST violations.",
-            )
-            return self._reject_with("Normalization required but unavailable.", violations + [v])
-
-        try:
-            normalized_event, updated_violations = self._normalizer(event, violations)
-        except Exception as exc:
-            logger.exception("Error during normalization: %s", exc)
-            v = Violation(
-                kind=ViolationKind.RUNTIME_ERROR,
-                message="Exception raised during normalization.",
-                details={"exception": repr(exc)},
-            )
-            return self._reject_with("Normalization failed with runtime error.", violations + [v])
-
-        if normalized_event is None:
-            v = Violation(
-                kind=ViolationKind.NORMALIZATION_ERROR,
-                message="Normalizer unable to safely correct event.",
-            )
-            return self._reject_with("Normalization failed.", updated_violations + [v])
-
-        # -------------------------------
-        # CORE FIX #1 — verify MUST violations removed
-        # -------------------------------
-        remaining_must = _filter_violations(updated_violations, ViolationKind.SEMANTIC_MUST)
-        if remaining_must:
-            return self._reject_with(
-                "Normalization incomplete — MUST violations remain.",
-                updated_violations,
-            )
-
-        # -------------------------------
-        # CORE FIX #2 — minimal schema revalidation safeguard
-        # -------------------------------
-        if not _schema_sanity_check(normalized_event):
-            v = Violation(
-                kind=ViolationKind.SCHEMA,
-                message="Normalized event failed post-normalization schema safety check.",
-            )
-            return self._reject_with(
-                "Schema violation after normalization.",
-                updated_violations + [v],
-            )
-
-        warnings: List[str] = ["Event successfully normalized and accepted."]
-        if _filter_violations(updated_violations, ViolationKind.SEMANTIC_SHOULD):
-            warnings.append("Residual SHOULD-level semantic violations remain.")
-
-        return PolicyResult(
-            decision=Decision.NORMALIZE_AND_ACCEPT,
-            normalized_event=normalized_event,
-            violations=updated_violations,
-            warnings=warnings,
-        )
-
-    def _reject_with(
-        self,
-        reason: str,
-        violations: Sequence[Violation],
-    ) -> PolicyResult:
-
-        warnings = [reason]
-        logger.debug("PLD event rejected: %s; violations=%r", reason, violations)
-        return PolicyResult(
-            decision=Decision.REJECT,
-            normalized_event=None,
-            violations=violations,
-            warnings=warnings,
-        )
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.OBSERVE_ONLY,
+        reason=f"Unknown event_type={event_type!r} in non-strict mode."
+    )
 
 
-def _filter_violations(
-    violations: Sequence[Violation],
-    kind: ViolationKind,
-) -> List[Violation]:
-    return [v for v in violations if v.kind is kind]
-
-
-def _schema_sanity_check(event: Mapping[str, Any]) -> bool:
+def _policy_for_drift(event_type, phase, code, mode):
     """
-    Minimal safety check — NOT a replacement for schema validation.
-
-    Checks presence of required structural keys from Level 1 schema.
-
-    This prevents downstream runtime crashes when normalization introduces
-    malformed objects.
-
-    This is intentionally lightweight and MUST NOT infer structure or modify content.
+    Updated naming alignment applied here.
     """
-    required_fields = {
-        "schema_version",
-        "event_id",
-        "timestamp",
-        "session_id",
-        "turn_sequence",
-        "source",
-        "event_type",
-        "pld",
-        "payload",
-        "ux",
+
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.POLICY_REPAIR_MANDATED,
+        reason=f"{event_type} indicates anomaly requiring repair.",
+        suggested_next_event_type="repair_triggered"
+    )
+
+
+def _policy_for_repair(event_type, phase, code, mode):
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.BLOCK,
+        reason=f"{event_type}: runtime SHOULD block until repair resolves."
+    )
+
+
+def _policy_for_reentry(event_type, phase, code, mode):
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.CONTINUE,
+        reason="System reentered stable state.",
+        suggested_next_event_type="continue_allowed"
+    )
+
+
+def _policy_for_continue(event_type, phase, code, mode):
+    if event_type == "continue_allowed":
+        return ResponsePolicyDecision(
+            decision=PolicyDecisionType.CONTINUE,
+            reason="Continuation permitted."
+        )
+
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.BLOCK,
+        reason="Runtime continuation blocked."
+    )
+
+
+def _policy_for_failover(event_type, phase, code, mode):
+    """
+    Core Issue #2 Fix:
+    - Previously: suggested_next_event_type=None despite strict next-step constraints.
+    - Now: choose the most plausible default next transition (not enforced).
+
+    Runtime MAY still override based on context.
+    """
+
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.POLICY_FAILOVER_MANDATED,
+        reason="Failover triggered; recovery path required.",
+        suggested_next_event_type="reentry_observed",  # Default, not mandatory.
+        notes="Allowed next events: reentry_observed OR continue_allowed OR session_closed."
+    )
+
+
+def _policy_for_evaluation(event_type, phase, code, mode):
+    if event_type == "evaluation_pass":
+        return ResponsePolicyDecision(
+            decision=PolicyDecisionType.CONTINUE,
+            reason="Evaluation passed."
+        )
+
+    if mode is ValidationMode.STRICT:
+        return ResponsePolicyDecision(
+            decision=PolicyDecisionType.BLOCK,
+            reason="Evaluation failed in strict mode."
+        )
+
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.POLICY_REPAIR_MANDATED,
+        reason="Evaluation failed; repair advised."
+    )
+
+
+def _policy_for_session_closed(event_type, phase, code, mode):
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.BLOCK,
+        reason="Session closed."
+    )
+
+
+def _policy_for_observability(event_type, phase, code, mode):
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.OBSERVE_ONLY,
+        reason=f"{event_type} classified as observability."
+    )
+
+
+def _policy_for_info(event_type, phase, code, mode):
+    return ResponsePolicyDecision(
+        decision=PolicyDecisionType.OBSERVE_ONLY,
+        reason="Informational event only."
+    )
+
+
+def summarize_decision(decision: ResponsePolicyDecision) -> Dict[str, Any]:
+    return {
+        "decision": decision.decision.value,
+        "reason": decision.reason,
+        "suggested_next_event_type": decision.suggested_next_event_type,
+        "notes": decision.notes,
     }
-    return required_fields.issubset(event.keys())
-
-
-def example_normalizer(
-    event: Mapping[str, Any],
-    violations: Sequence[Violation],
-) -> Tuple[Optional[Mapping[str, Any]], Sequence[Violation]]:
-    """
-    Non-normative example normalizer — placeholder only.
-
-    TODO: Must explicitly define whether returned violation list is:
-          (a) full updated violation state or
-          (b) unresolved delta only.
-    """
-    return dict(event), list(violations)
-
-
-# ---------------------------------------------------------------------------
-# Deferred for later phase
-# ---------------------------------------------------------------------------
-"""
-- Possible split of ViolationKind.RUNTIME_ERROR into sub-categories.
-- Evaluate whether config defaults must derive from metrics_schema.yaml
-  instead of environment-based configuration.
-- Define canonical Normalizer violation return format contract.
-"""
