@@ -1,4 +1,0 @@
-{"event_type": "drift_detected", "timestamp": "2025-10-13T10:00:00Z", "session_id": "session_example_001", "metadata": {"attempt": 1, "last_intent": {"name": "out_of_scope", "confidence": 0.42}}}
-{"event_type": "latency_hold", "timestamp": "2025-10-13T10:00:01Z", "session_id": "session_example_001", "metadata": {"duration_ms": 900, "reason": "soft_repair_probe"}}
-{"event_type": "repair_triggered", "timestamp": "2025-10-13T10:00:02Z", "session_id": "session_example_001", "metadata": {"attempt": 1}}
-{"event_type": "reentry_success", "timestamp": "2025-10-13T10:00:07Z", "session_id": "session_example_001", "metadata": {"prior_context_id": "123e4567-e89b-12d3-a456-426614174000"}}

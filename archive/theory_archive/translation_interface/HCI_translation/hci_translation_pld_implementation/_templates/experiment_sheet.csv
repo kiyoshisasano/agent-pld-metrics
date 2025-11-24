@@ -1,4 +1,0 @@
-experiment_id,participant_id,condition,tau_ms,drift_count,repair_triggered,reentry_success,time_to_repair_s,latency_interrupts,resonance_rho,goal_completed,ui_state,device_type,accessibility_flags,timestamp_start,timestamp_end,notes
-EXP-PLD-001,P-0001,A,900,3,2,1,4.8,1,0.78,True,/checkout/payment,desktop,reduced_motion:off,2025-10-13T10:00:00Z,2025-10-13T10:15:00Z,Soft repair once; one hold cancelled.
-EXP-PLD-001,P-0002,B,1200,2,2,1,6.1,0,0.83,True,/onboarding/step2,mobile,reduced_motion:on,2025-10-13T11:00:00Z,2025-10-13T11:20:00Z,Longer τ reduced interruptions; smoother resonance.
-EXP-PLD-001,P-0003,A,900,4,2,0,7.3,2,0.41,False,/support/triage,desktop,reduced_motion:off,2025-10-13T12:00:00Z,2025-10-13T12:22:00Z,Multiple drifts; repair cap reached—handoff recommended.
