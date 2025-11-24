@@ -1,346 +1,308 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-pld_runtime.controllers.action_router (v1.1 Canonical Edition)
-
-Translate policy decisions into abstract route instructions that a host
-application can implement.
-
-This module performs the mapping:
-
-    PolicyEvaluation
-        → List[RouteInstruction]
-
-It does NOT:
-
-- call tools or LLMs
-- terminate sessions
-- send notifications
-- write logs or metrics
-
-All concrete side effects MUST be implemented by the caller, based on the
-RouteInstruction objects returned here.
-"""
+# version: 2.0.0
+# status: runtime
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: Route PLD runtime events between controllers based on lifecycle phase and event_type.
+# scope: Applies Level 1–3 PLD rules to derive next action, without modifying canonical specs.
+# change_classification: runtime-only + selective integration of technical review
+# dependencies: Level1_pld_event.schema.json, Level2_event_matrix_schema.yaml, Level3_PLD_Runtime_Standard_v2.0.md, Level5_runtime_event_envelope.schema.json
+# runtime_label: runtime_extension (experimental)
 
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List
-
-from ..enforcement.response_policy import (
-    PolicyEvaluation,
-    PolicyDecision,
-    PolicyAction,
-    Severity,
-)
+from typing import Any, Dict, Optional, Callable
 
 
-# ---------------------------------------------------------------------------
-# Route targets
-# ---------------------------------------------------------------------------
+class ValidationMode(str, Enum):
+    """Runtime mirror of Level 2 / Level 3 validation modes.
 
-class RouteTarget(str, Enum):
-    """
-    Abstract destinations for policy-driven actions.
-
-    Semantics
-    ---------
-    LOG:
-        Send to logging / telemetry sink only. No behavior change.
-
-    AGENT_HINT:
-        Provide a soft hint to the agent (e.g., adjust prompt, add guidance).
-        This is typically aligned with soft repair strategies (R1/R2).
-
-    AGENT_CONTROL:
-        Trigger a stronger agent-side intervention
-        (e.g., structured repair step, hard-reset flow).
-
-    HUMAN_ESCALATION:
-        Notify or hand off to a human operator / support channel.
-
-    SESSION_CONTROL:
-        Request session termination, reset, or hard recovery.
-
-    METRICS_ONLY:
-        Record for evaluation / dashboards only; no live feedback.
-        Commonly used for PRDR / REI / VRL instrumentation.
+    - strict: MUST-level violations → reject, SHOULD-level → ignore
+    - warn:   MUST-level violations → reject, SHOULD-level → warn
+    - normalize: MUST-level violations → normalize when deterministically resolvable
     """
 
-    LOG = "log"
-    AGENT_HINT = "agent_hint"
-    AGENT_CONTROL = "agent_control"
-    HUMAN_ESCALATION = "human_escalation"
-    SESSION_CONTROL = "session_control"
-    METRICS_ONLY = "metrics_only"
+    STRICT = "strict"
+    WARN = "warn"
+    NORMALIZE = "normalize"
 
 
-# ---------------------------------------------------------------------------
-# Route instruction
-# ---------------------------------------------------------------------------
-
-@dataclass
-class RouteInstruction:
-    """
-    One abstract instruction derived from a single PolicyDecision.
-
-    The host runtime is responsible for mapping each instruction
-    to concrete behavior (e.g., logging, repair calls, escalations).
-    """
-
-    session_id: str
-    action: PolicyAction
-    severity: Severity
-    target: RouteTarget
-    code: str
-    message: str
-    metadata: Dict[str, Any]
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        Serialize this instruction as a plain dict, converting enums into
-        their underlying string representations.
-        """
-        d = asdict(self)
-        d["action"] = self.action.value
-        d["severity"] = self.severity.value
-        d["target"] = self.target.value
-        return d
-
-
-# ---------------------------------------------------------------------------
-# Router configuration
-# ---------------------------------------------------------------------------
-
-@dataclass
+# NOTE: Modified per Core Technical Issue #2
+# These maps were previously global constants. They are now class attributes
+# to allow override/testing and future dynamic spec loading.
 class ActionRouterConfig:
-    """
-    Configuration for ActionRouter behavior.
+    # TODO (Open Question #2): Determine whether spec-driven dynamic rule loading replaces constant definitions.
+    MUST_PHASE_MAP: Dict[str, str] = {
+        "drift_detected": "drift",
+        "drift_escalated": "drift",
+        "repair_triggered": "repair",
+        "repair_escalated": "repair",
+        "reentry_observed": "reentry",
+        "continue_allowed": "continue",
+        "continue_blocked": "continue",
+        "failover_triggered": "failover",
+    }
 
-    Attributes
-    ----------
-    emit_noop_metrics:
-        If True, even NOOP decisions produce a METRICS_ONLY instruction
-        so that silent policies are still observable.
+    SHOULD_PHASE_MAP: Dict[str, str] = {
+        "evaluation_pass": "outcome",
+        "evaluation_fail": "outcome",
+        "session_closed": "outcome",
+        "info": "none",
+    }
 
-    escalate_on_critical:
-        If True, any CRITICAL severity also generates HUMAN_ESCALATION
-        for decisions that already affect the session.
-
-    agent_control_for_structural:
-        If True, STRUCTURAL_REPAIR decisions are routed to AGENT_CONTROL.
-        If False, they are treated as SESSION_CONTROL for higher severity.
-    """
-
-    emit_noop_metrics: bool = True
-    escalate_on_critical: bool = True
-    agent_control_for_structural: bool = True
+    VALID_PHASES = {
+        "drift",
+        "repair",
+        "reentry",
+        "continue",
+        "outcome",
+        "failover",
+        "none",
+    }
 
 
-# ---------------------------------------------------------------------------
-# Router
-# ---------------------------------------------------------------------------
+@dataclass(frozen=True)
+class RouteDecision:
+    next_action: str
+    reason: str
+    is_pld_valid: bool
+    validation_details: Dict[str, Any]
+
 
 class ActionRouter:
-    """
-    Map PolicyEvaluation → list of RouteInstruction.
+    """Level 5 runtime controller for event → action routing.
 
-    Typical usage
-    -------------
-        router = ActionRouter()
-        routes = router.route(session_id="sess-123", policy_evaluation=pe)
-
-        for r in routes:
-            if r.target is RouteTarget.LOG:
-                # send to logging system
-            elif r.target is RouteTarget.AGENT_HINT:
-                # adjust prompt or inject hint
-            elif r.target is RouteTarget.AGENT_CONTROL:
-                # trigger structured repair or control flow
-            ...
-
-    The router is intentionally deterministic and side-effect free.
+    Responsibilities:
+    - Apply Level 1/2/3 constraints when interpreting incoming events.
+    - Provide a next_action hint to the orchestrator.
+    - NEVER mutate persisted logs (VAL-005).
     """
 
-    def __init__(self, config: ActionRouterConfig | None = None) -> None:
-        self.config = config or ActionRouterConfig()
+    # ---------------------------
+    # Modified per Core Issue #1:
+    # Introduced a routing table to avoid hardcoded if/elif dispatch.
+    # ---------------------------
+    _ROUTE_TABLE: Dict[str, Callable] = {}
 
-    # ---- public API ----
-
-    def route(
+    def __init__(
         self,
         *,
-        session_id: str,
-        policy_evaluation: PolicyEvaluation,
-    ) -> List[RouteInstruction]:
-        """
-        Convert a PolicyEvaluation into a list of RouteInstruction objects.
+        validation_mode: ValidationMode = ValidationMode.STRICT,
+        config: ActionRouterConfig = ActionRouterConfig(),
+    ) -> None:
+        self._validation_mode = validation_mode
+        self._config = config
 
-        Parameters
-        ----------
-        session_id:
-            Identifier for the current conversational session.
+        # Initialize routing table only once per instance.
+        # The handlers map event_types → method references.
+        # NOTE: This preserves architecture intent while improving evolvability.
+        self._ROUTE_TABLE = {
+            # Lifecycle MUST events
+            "drift_detected": self._route_drift,
+            "drift_escalated": self._route_drift,
+            "repair_triggered": self._route_repair,
+            "repair_escalated": self._route_repair,
+            "reentry_observed": self._route_reentry,
+            "continue_allowed": self._route_continue,
+            "continue_blocked": self._route_continue,
+            "failover_triggered": self._route_failover,
 
-        policy_evaluation:
-            Result from response_policy evaluation, containing
-            policy decisions and metadata.
+            # SHOULD events
+            "evaluation_pass": self._route_outcome_eval,
+            "evaluation_fail": self._route_outcome_eval,
+            "session_closed": self._route_session_closed,
+            "info": self._route_info,
 
-        Returns
-        -------
-        List[RouteInstruction]
-            Route instructions that a host application can interpret and
-            execute according to its environment.
-        """
-        instructions: List[RouteInstruction] = []
+            # MAY-level events
+            "latency_spike": self._route_observability,
+            "pause_detected": self._route_observability,
+            "handoff": self._route_observability,
+            "fallback_executed": self._route_observability,
+        }
 
-        for decision in policy_evaluation.decisions:
-            # NOOP: optionally emit metrics-only route
-            if decision.action == PolicyAction.NOOP:
-                if self.config.emit_noop_metrics:
-                    instructions.append(
-                        self._build_instruction(
-                            session_id=session_id,
-                            decision=decision,
-                            target=RouteTarget.METRICS_ONLY,
-                        )
-                    )
-                continue
+    # -------------------------------------------------------------------------
+    # Public API
+    # -------------------------------------------------------------------------
 
-            # LOG_ONLY
-            if decision.action == PolicyAction.LOG_ONLY:
-                instructions.append(
-                    self._build_instruction(
-                        session_id=session_id,
-                        decision=decision,
-                        target=RouteTarget.LOG,
-                    )
-                )
-                continue
+    def route(self, event: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> RouteDecision:
+        context = context or {}
 
-            # SOFT_REPAIR → agent hint + log
-            if decision.action == PolicyAction.SOFT_REPAIR:
-                instructions.append(
-                    self._build_instruction(
-                        session_id=session_id,
-                        decision=decision,
-                        target=RouteTarget.AGENT_HINT,
-                    )
-                )
-                instructions.append(
-                    self._build_instruction(
-                        session_id=session_id,
-                        decision=decision,
-                        target=RouteTarget.LOG,
-                    )
-                )
-                continue
+        validation = self._validate_event_semantics(event)
+        is_pld_valid = validation["is_pld_valid"]
 
-            # STRUCTURAL_REPAIR → agent_control or session_control + log
-            if decision.action == PolicyAction.STRUCTURAL_REPAIR:
-                main_target = (
-                    RouteTarget.AGENT_CONTROL
-                    if self.config.agent_control_for_structural
-                    else RouteTarget.SESSION_CONTROL
-                )
-                instructions.append(
-                    self._build_instruction(
-                        session_id=session_id,
-                        decision=decision,
-                        target=main_target,
-                    )
-                )
-                instructions.append(
-                    self._build_instruction(
-                        session_id=session_id,
-                        decision=decision,
-                        target=RouteTarget.LOG,
-                    )
-                )
-                continue
+        if not is_pld_valid and validation["must_violation"]:
+            return RouteDecision(
+                next_action="reject_event",
+                reason=f"Rejected due to MUST-level semantic violation: {validation['must_violation']}",
+                is_pld_valid=False,
+                validation_details=validation,
+            )
 
-            # ESCALATE → human escalation + log
-            if decision.action == PolicyAction.ESCALATE:
-                instructions.append(
-                    self._build_instruction(
-                        session_id=session_id,
-                        decision=decision,
-                        target=RouteTarget.HUMAN_ESCALATION,
-                    )
-                )
-                instructions.append(
-                    self._build_instruction(
-                        session_id=session_id,
-                        decision=decision,
-                        target=RouteTarget.LOG,
-                    )
-                )
-                continue
+        event_type = event.get("event_type")
 
-            # ABORT_SESSION → session control + log (+ escalation if CRITICAL)
-            if decision.action == PolicyAction.ABORT_SESSION:
-                instructions.append(
-                    self._build_instruction(
-                        session_id=session_id,
-                        decision=decision,
-                        target=RouteTarget.SESSION_CONTROL,
-                    )
-                )
-                instructions.append(
-                    self._build_instruction(
-                        session_id=session_id,
-                        decision=decision,
-                        target=RouteTarget.LOG,
-                    )
-                )
-                if (
-                    self.config.escalate_on_critical
-                    and decision.severity == Severity.CRITICAL
-                ):
-                    instructions.append(
-                        self._build_instruction(
-                            session_id=session_id,
-                            decision=decision,
-                            target=RouteTarget.HUMAN_ESCALATION,
-                        )
-                    )
-                continue
+        handler = self._ROUTE_TABLE.get(event_type)
+        if handler:
+            return handler(event, context, validation)
 
-        return instructions
-
-    # ---- internals ----
-
-    def _build_instruction(
-        self,
-        *,
-        session_id: str,
-        decision: PolicyDecision,
-        target: RouteTarget,
-    ) -> RouteInstruction:
-        """
-        Build a RouteInstruction from a PolicyDecision and a target.
-
-        The original decision details are carried forward into metadata,
-        preserving policy context for logging and downstream systems.
-        """
-        metadata = dict(decision.details)
-        metadata.setdefault("policy_code", decision.code)
-        metadata.setdefault("policy_message", decision.message)
-
-        return RouteInstruction(
-            session_id=session_id,
-            action=decision.action,
-            severity=decision.severity,
-            target=target,
-            code=decision.code,
-            message=decision.message,
-            metadata=metadata,
+        return RouteDecision(
+            next_action="noop",
+            reason=f"Unsupported event_type '{event_type}', no routing applied.",
+            is_pld_valid=is_pld_valid,
+            validation_details=validation,
         )
 
+    # -------------------------------------------------------------------------
+    # Validation
+    # -------------------------------------------------------------------------
 
-__all__ = [
-    "RouteTarget",
-    "RouteInstruction",
-    "ActionRouterConfig",
-    "ActionRouter",
-]
+    def _validate_event_semantics(self, event: Dict[str, Any]) -> Dict[str, Any]:
+        schema_version = event.get("schema_version")
+        event_type = event.get("event_type")
+        phase = self._extract_phase(event)
+
+        must_violation: Optional[str] = None
+        should_violation: Optional[str] = None
+
+        if schema_version != "2.0":
+            must_violation = f"schema_version != '2.0' (got {schema_version!r})"
+
+        if phase not in self._config.VALID_PHASES and must_violation is None:
+            must_violation = f"invalid phase {phase!r}"
+
+        if event_type in self._config.MUST_PHASE_MAP and must_violation is None:
+            expected = self._config.MUST_PHASE_MAP[event_type]
+            if phase != expected:
+                must_violation = (
+                    f"event_type={event_type!r} MUST have phase={expected!r}, got phase={phase!r}"
+                )
+
+        if event_type in self._config.SHOULD_PHASE_MAP:
+            expected = self._config.SHOULD_PHASE_MAP[event_type]
+            if phase != expected:
+                should_violation = (
+                    f"event_type={event_type!r} SHOULD have phase={expected!r}, got phase={phase!r}"
+                )
+
+        is_pld_valid = must_violation is None
+
+        suggested_normalized_phase: Optional[str] = None
+        if (
+            self._validation_mode is ValidationMode.NORMALIZE
+            and not is_pld_valid
+            and event_type in self._config.MUST_PHASE_MAP
+        ):
+            suggested_normalized_phase = self._config.MUST_PHASE_MAP[event_type]
+
+        return {
+            "is_pld_valid": is_pld_valid,
+            "must_violation": must_violation,
+            "should_violation": should_violation,
+            "suggested_normalized_phase": suggested_normalized_phase,
+            "validation_mode": self._validation_mode.value,
+        }
+
+    # -------------------------------------------------------------------------
+    # Extraction
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def _extract_phase(event: Dict[str, Any]) -> Optional[str]:
+        # TODO (Open Question #1): Confirm Level 1 guarantees the `pld` key structure.
+        pld = event.get("pld") or {}
+        return pld.get("phase") if isinstance(pld.get("phase"), str) else None
+
+    @staticmethod
+    def _extract_code(event: Dict[str, Any]) -> Optional[str]:
+        pld = event.get("pld") or {}
+        return pld.get("code") if isinstance(pld.get("code"), str) else None
+
+    # -------------------------------------------------------------------------
+    # Routing Handlers
+    # -------------------------------------------------------------------------
+
+    def _route_drift(self, event, context, validation):
+        return RouteDecision(
+            next_action="route_to_drift_handler",
+            reason=f"Drift event {event['event_type']} → drift controller.",
+            is_pld_valid=validation["is_pld_valid"],
+            validation_details=validation,
+        )
+
+    def _route_repair(self, event, context, validation):
+        return RouteDecision(
+            next_action="route_to_repair_handler",
+            reason="Repair event → repair controller.",
+            is_pld_valid=validation["is_pld_valid"],
+            validation_details=validation,
+        )
+
+    def _route_reentry(self, event, context, validation):
+        return RouteDecision(
+            next_action="route_to_reentry_handler",
+            reason="Reentry observed.",
+            is_pld_valid=validation["is_pld_valid"],
+            validation_details=validation,
+        )
+
+    def _route_continue(self, event, context, validation):
+        return RouteDecision(
+            next_action="route_to_continue_handler",
+            reason="Continuation event processed.",
+            is_pld_valid=validation["is_pld_valid"],
+            validation_details=validation,
+        )
+
+    def _route_failover(self, event, context, validation):
+        return RouteDecision(
+            next_action="route_to_failover_handler",
+            reason="Failover triggered.",
+            is_pld_valid=validation["is_pld_valid"],
+            validation_details=validation,
+        )
+
+    def _route_outcome_eval(self, event, context, validation):
+        return RouteDecision(
+            next_action="route_to_evaluation_handler",
+            reason="Outcome evaluation received.",
+            is_pld_valid=validation["is_pld_valid"],
+            validation_details=validation,
+        )
+
+    def _route_session_closed(self, event, context, validation):
+        phase = self._extract_phase(event)
+        if phase == "outcome":
+            action = "close_session"
+        elif phase == "none":
+            action = "close_session_non_semantic"
+        else:
+            action = "close_session_with_warning"
+
+        return RouteDecision(
+            next_action=action,
+            reason=f"Session closure event ({phase}).",
+            is_pld_valid=validation["is_pld_valid"],
+            validation_details=validation,
+        )
+
+    def _route_info(self, event, context, validation):
+        return RouteDecision(
+            next_action="route_to_observability_sink",
+            reason="Info event routed to observability.",
+            is_pld_valid=validation["is_pld_valid"],
+            validation_details=validation,
+        )
+
+    def _route_observability(self, event, context, validation):
+        return RouteDecision(
+            next_action="route_to_observability_sink",
+            reason=f"Observability event {event['event_type']}.",
+            is_pld_valid=validation["is_pld_valid"],
+            validation_details={**validation, "context_snapshot": context},
+        )
+
+    # -------------------------------------------------------------------------
+    # TODO Items from Open Questions
+    # -------------------------------------------------------------------------
+    # TODO (#1): Confirm whether Level 1 guarantees the event['pld'] structure.
+    # TODO (#2): Confirm orchestrator responsibility for normalization behavior.
+    # TODO (#3): Clarify whether future routing requires richer session context integration.
