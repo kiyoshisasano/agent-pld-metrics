@@ -1,4 +1,4 @@
-# version: "0.1.3"
+# version: "2.0.0"
 # status: "draft / runtime_template / runtime_extension"
 # authority_level_scope: "Level 5 — runtime implementation"
 # purpose: "Evaluate PLD event sequences for lifecycle ordering constraints without modifying events."
@@ -308,3 +308,4 @@ def _is_observability_or_info(
         return True
 
     return False
+
