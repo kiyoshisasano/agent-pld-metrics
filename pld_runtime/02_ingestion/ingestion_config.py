@@ -1,6 +1,6 @@
 # =============================================================================
 # PLD Runtime Ingestion Configuration
-# version: 0.1.2
+# version: 2.0.0
 # status: runtime
 # authority_level_scope: Level 5 — runtime implementation
 # purpose: Configure PLD v2 ingestion to enforce Level 1 schema, Level 2 matrix,
@@ -295,3 +295,4 @@ def default_ingestion_config(
 # Singleton-style default used by simple integrations. More complex runtimes
 # SHOULD inject their own IngestionConfig instance explicitly.
 INGESTION_CONFIG: IngestionConfig = default_ingestion_config()
+
