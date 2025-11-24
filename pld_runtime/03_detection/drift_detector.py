@@ -1,358 +1,218 @@
-#!/usr/bin/env python3
 # version: 2.0.0
-# status: draft
-# authority_scope: Level 5 — runtime implementation
-# purpose: Turn-level drift detection for PLD-aligned runtimes, producing PLD-compatible drift codes.
-# change_classification: runtime-only, behavioral merge from v1.1 to v2 scaffold + issue resolution
-# dependencies: Level 1 PLD event schema, Level 2 event matrix, Level 3 metrics specification
+# status: draft runtime_template (experimental)
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: Drift detection runtime template for emitting PLD v2-compliant drift events.
+# change_classification: runtime-only, non-breaking + technical review alignment
+# dependencies: PLD event schema v2.0, PLD Event Matrix v2.0, PLD Runtime Standard v2.0, PLD Taxonomy v2.0
+# notes: Proposal-level runtime extension; detection logic intentionally left implementation-specific.
+
+"""
+Runtime template for drift detection.
+
+This module is scoped to Level 5 (runtime implementation) and must remain
+compatible with:
+
+- Level 1 structural schema (pld_event.schema.json)
+- Level 2 event matrix + semantic spec (event_matrix.yaml, PLD_Event_Semantic_Spec_v2.0.md)
+- Level 3 runtime standard & taxonomy (PLD_Runtime_Standard_v2.0.md, PLD_taxonomy_v2.0.md)
+- Level 5 runtime event envelope overlay (runtime_event_envelope.schema.json)
+
+This file provides a skeleton implementation only:
+- You MUST supply concrete drift detection logic.
+- You MUST NOT change Level 1–3 behavior; this layer may only *use* them.
+"""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Mapping, Optional, List
-import re
+import dataclasses
+import datetime as _dt
+import typing as _t
+import uuid
 
 
-# -----------------------------------------------------------------------------
-# Rule configuration (addresses "magic numbers" core issue)
-# -----------------------------------------------------------------------------
-DRIFT_RULE_CONFIG = {
-    "D4_tool_error": {
-        "confidence": 0.95,
-        "priority": 3,
-    },
-    "D5_latency_spike": {
-        "confidence": 0.7,
-        "priority": 1,
-    },
-    "D2_context": {
-        "confidence": 0.75,
-        "priority": 1,
-    },
-    "D1_instruction": {
-        "confidence": 0.7,
-        "priority": 2,
-    },
-    "D5_information": {
-        "confidence": 0.6,
-        "priority": 0,
-    },
-    "D3_repeated_plan": {
-        "confidence": 0.8,
-        "priority": 2,
-    },
-}
+# ──────────────────────────────────────────────────────────────────────────────
+# Public Types
+# ──────────────────────────────────────────────────────────────────────────────
 
 
-# -----------------------------------------------------------------------------
-# Core Signal Object
-# -----------------------------------------------------------------------------
-@dataclass(frozen=True)
+@dataclasses.dataclass
 class DriftSignal:
+    """
+    Implementation-specific drift signal.
+
+    This represents the *result* of whatever detection logic you run
+    (model comparison, policy checks, tool failures, etc.).
+
+    Fields here are runtime-only and are NOT part of the PLD schema; they
+    are used to construct PLD events that DO conform to Level 1 & 2.
+    """
+
     code: str
-    confidence: float
-    reason: Optional[str] = None
-    details: Mapping[str, Any] | None = None
-    # Higher priority wins when confidences are equal.
-    priority: int = 0
+    confidence: float = 1.0
+    metadata: dict[str, _t.Any] = dataclasses.field(default_factory=dict)
 
 
-# -----------------------------------------------------------------------------
-# Input Contract Definition (formalizes turn_state interface)
-# -----------------------------------------------------------------------------
-class TurnStateProtocol(Mapping[str, Any]):
+@dataclasses.dataclass
+class DriftDetectorContext:
     """
-    This protocol defines required and optional fields used by the detector.
+    Minimal context required to emit PLD-compliant drift events.
 
-    Required semantics:
-    - latency_ms: numeric runtime performance metric
-    - content: candidate model output text
-
-    Optional semantics:
-    - expected_format
-    - user_goal
-    - history (list of past turn dicts; structure MAY vary)
-    - tool_used
-    - tool_error (boolean)
+    You may extend this dataclass locally, but MUST NOT remove or change
+    the semantics of the existing fields.
     """
 
+    session_id: str
 
-# -----------------------------------------------------------------------------
-# Detector Implementation
-# -----------------------------------------------------------------------------
+    source: str = "detector"
+
+    validation_mode: str = "strict"
+
+    # Optional runtime hints (non-canonical; safe to extend)
+    model: str | None = None
+    tool_name: str | None = None
+    agent_state: str | None = None
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Core Template Class
+# ──────────────────────────────────────────────────────────────────────────────
+
+
 class DriftDetector:
     """
-    PLD-aligned drift detector.
+    Template drift detector.
 
-    The detector evaluates multiple drift heuristics per turn, aggregates
-    candidate signals, then returns a single selected DriftSignal.
+    Responsibilities (non-exhaustive):
+
+    - Run implementation-specific logic to determine whether drift exists
+      for the current turn.
+    - Map detection results to taxonomy-aligned codes in the D* family.
+    - Emit events that satisfy:
+
+        schema_valid(event) ∧ matrix_valid(event)
+
+    This class operates purely at Level 5 and MUST NOT alter or weaken
+    Level 1–3 rules.
     """
 
-    def __init__(
+    def __init__(self, ctx: DriftDetectorContext) -> None:
+        self._ctx = ctx
+
+    def detect_and_build_event(
         self,
         *,
-        latency_threshold_ms: int = 3500,
-        max_repeated_plan_turns: int = 3,
-        min_confidence_threshold: float = 0.6,
-    ) -> None:
-        """
-        Parameters
-        ----------
-        latency_threshold_ms:
-            Threshold for classifying latency spikes as drift.
-        max_repeated_plan_turns:
-            Window size for repeated-plan detection.
-        min_confidence_threshold:
-            Minimum confidence required for a signal to override the implicit
-            "no drift" state. Addresses unbounded sensitivity / noise.
-        """
-        self.latency_threshold_ms = latency_threshold_ms
-        self.max_repeated_plan_turns = max_repeated_plan_turns
-        self.min_confidence_threshold = min_confidence_threshold
+        turn_sequence: int,
+        user_visible_state_change: bool = False,
+        payload: dict[str, _t.Any] | None = None,
+    ) -> dict[str, _t.Any] | None:
 
-    # -------------------------------------------------------------------------
-    # Public API
-    # -------------------------------------------------------------------------
-    def detect(self, turn_state: TurnStateProtocol) -> DriftSignal:
-        """
-        Detect drift for a single agent turn.
+        drift_signal = self._run_detection(turn_sequence=turn_sequence)
 
-        All detection rules execute and signals are collected. Highest confidence
-        (then priority) determines primary signal. If the best signal falls
-        below min_confidence_threshold, the detector returns D0_none.
-        """
+        if drift_signal is None:
+            return None
 
-        signals: List[DriftSignal] = []
-
-        raw_content = turn_state.get("content") or ""
-        content = str(raw_content)
-        normalized_content = content.lower().strip()
-
-        # Tool Error Check
-        if self._has_tool_error(turn_state, normalized_content):
-            cfg = DRIFT_RULE_CONFIG["D4_tool_error"]
-            signals.append(
-                DriftSignal(
-                    code="D4_tool_error",
-                    confidence=cfg["confidence"],
-                    reason="tool_error_flag",
-                    details={
-                        "tool_error": True,
-                        "tool_used": turn_state.get("tool_used"),
-                    },
-                    priority=cfg["priority"],
-                )
-            )
-
-        # Latency-Based Drift
-        if self._has_latency_spike(turn_state):
-            cfg = DRIFT_RULE_CONFIG["D5_latency_spike"]
-            latency_ms = float(turn_state.get("latency_ms", 0.0))
-            signals.append(
-                DriftSignal(
-                    code="D5_latency_spike",
-                    confidence=cfg["confidence"],
-                    reason="latency_above_threshold",
-                    details={
-                        "latency_ms": latency_ms,
-                        "threshold_ms": self.latency_threshold_ms,
-                    },
-                    priority=cfg["priority"],
-                )
-            )
-
-        # Context Drift
-        if self._has_context_drift(turn_state, normalized_content):
-            cfg = DRIFT_RULE_CONFIG["D2_context"]
-            signals.append(
-                DriftSignal(
-                    code="D2_context",
-                    confidence=cfg["confidence"],
-                    reason="expected_format_missing",
-                    details={
-                        "expected_format": turn_state.get("expected_format"),
-                    },
-                    priority=cfg["priority"],
-                )
-            )
-
-        # Instruction Drift
-        if self._has_instruction_drift(turn_state, normalized_content):
-            cfg = DRIFT_RULE_CONFIG["D1_instruction"]
-            user_goal = turn_state.get("user_goal")
-            tokens = self._goal_tokens(user_goal)
-            missing = [t for t in tokens if t not in normalized_content]
-            signals.append(
-                DriftSignal(
-                    code="D1_instruction",
-                    confidence=cfg["confidence"],
-                    reason="user_goal_tokens_partial_or_missing",
-                    details={
-                        "user_goal": user_goal,
-                        "missing_tokens": missing,
-                    },
-                    priority=cfg["priority"],
-                )
-            )
-
-        # Information Drift
-        if self._has_information_drift(normalized_content):
-            cfg = DRIFT_RULE_CONFIG["D5_information"]
-            signals.append(
-                DriftSignal(
-                    code="D5_information",
-                    confidence=cfg["confidence"],
-                    reason="information_or_retrieval_failure",
-                    details={},
-                    priority=cfg["priority"],
-                )
-            )
-
-        # Repeated Plan Drift
-        if self._has_repeated_plan(turn_state):
-            cfg = DRIFT_RULE_CONFIG["D3_repeated_plan"]
-            signals.append(
-                DriftSignal(
-                    code="D3_repeated_plan",
-                    confidence=cfg["confidence"],
-                    reason="repeated_plan_detected",
-                    details={
-                        "max_repeated_plan_turns": self.max_repeated_plan_turns,
-                    },
-                    priority=cfg["priority"],
-                )
-            )
-
-        # No drift detected
-        if not signals:
-            return DriftSignal(code="D0_none", confidence=1.0, priority=0)
-
-        # Selection Strategy:
-        # - Highest confidence wins
-        # - On confidence tie, higher priority wins.
-        best = max(signals, key=lambda s: (s.confidence, s.priority))
-
-        # Enforce minimum confidence threshold; otherwise treat as no drift.
-        if best.confidence < self.min_confidence_threshold:
-            return DriftSignal(code="D0_none", confidence=1.0, priority=0)
-
-        return best
-
-    # -------------------------------------------------------------------------
-    # Internal Heuristics
-    # -------------------------------------------------------------------------
-    def _has_tool_error(self, turn_state: Mapping[str, Any], normalized_content: str) -> bool:
-        if turn_state.get("tool_error"):
-            return True
-        tool_used = turn_state.get("tool_used")
-        if tool_used and "error" in normalized_content:
-            return True
-        return False
-
-    def _has_latency_spike(self, turn_state: Mapping[str, Any]) -> bool:
-        raw_latency = turn_state.get("latency_ms")
-        if raw_latency is None:
-            return False
-        try:
-            latency_ms = float(raw_latency)
-        except (TypeError, ValueError):
-            return False
-        return latency_ms > float(self.latency_threshold_ms)
-
-    def _has_context_drift(self, turn_state: Mapping[str, Any], normalized_content: str) -> bool:
-        expected_format = turn_state.get("expected_format")
-        if not expected_format or not isinstance(expected_format, str):
-            return False
-        return expected_format.lower() not in normalized_content
-
-    def _has_instruction_drift(self, turn_state: Mapping[str, Any], normalized_content: str) -> bool:
-        """
-        Instruction / intent drift heuristic.
-
-        Uses majority-missing rule:
-        - Drift when more than 50% of goal tokens are absent from the response.
-        """
-        user_goal = turn_state.get("user_goal")
-        if not isinstance(user_goal, str):
-            return False
-
-        goal_tokens = self._goal_tokens(user_goal)
-        if not goal_tokens:
-            return False
-
-        missing = [t for t in goal_tokens if t not in normalized_content]
-        missing_ratio = len(missing) / float(len(goal_tokens))
-
-        return missing_ratio > 0.5
-
-    @staticmethod
-    def _goal_tokens(user_goal: str) -> set[str]:
-        """
-        Extract alphanumeric goal tokens, including numeric values.
-        """
-        return set(re.findall(r"\w+", user_goal.lower()))
-
-    @staticmethod
-    def _has_information_drift(normalized_content: str) -> bool:
-        return (
-            "no results" in normalized_content
-            or "i don't know" in normalized_content
-            or "unknown" in normalized_content
+        return self._build_drift_event(
+            turn_sequence=turn_sequence,
+            drift_signal=drift_signal,
+            user_visible_state_change=user_visible_state_change,
+            payload=payload or {},
         )
 
-    def _has_repeated_plan(self, turn_state: Mapping[str, Any]) -> bool:
-        history = turn_state.get("history")
-        if not isinstance(history, list) or len(history) < self.max_repeated_plan_turns:
-            return False
+    def _run_detection(self, *, turn_sequence: int) -> DriftSignal | None:
+        raise NotImplementedError("Override _run_detection with concrete logic.")
 
-        extracted = [self._extract_plan_text(entry) for entry in history[-self.max_repeated_plan_turns :]]
-        extracted = [p for p in extracted if p]
+    def _build_drift_event(
+        self,
+        *,
+        turn_sequence: int,
+        drift_signal: DriftSignal,
+        user_visible_state_change: bool,
+        payload: dict[str, _t.Any],
+    ) -> dict[str, _t.Any]:
 
-        if len(extracted) < self.max_repeated_plan_turns:
-            return False
+        code = drift_signal.code
+        self._assert_drift_code_prefix(code)
 
-        first = extracted[0]
-        return all(p == first for p in extracted[1:])
+        # Removed redundant int(...) cast based on review requirement.
+        event: dict[str, _t.Any] = {
+            "schema_version": "2.0",
+            "event_id": str(uuid.uuid4()),
+            "timestamp": _utc_now_iso(),
+            "session_id": self._ctx.session_id,
+            "turn_sequence": turn_sequence,
+            "source": self._ctx.source,
+            "event_type": "drift_detected",
+            "pld": {
+                "phase": "drift",
+                "code": code,
+            },
+            "payload": payload,
+            "ux": {
+                "user_visible_state_change": bool(user_visible_state_change),
+            },
+            "runtime": {},
+            "metrics": {},
+            "extensions": {},
+        }
+
+        if drift_signal.confidence is not None:
+            event["pld"]["confidence"] = float(drift_signal.confidence)
+
+        if drift_signal.metadata:
+            event["pld"]["metadata"] = dict(drift_signal.metadata)
+
+        self._populate_runtime_overlay(event)
+
+        return event
 
     @staticmethod
-    def _extract_plan_text(entry: Any) -> Optional[str]:
-        """
-        Normalize text before comparison to avoid brittle punctuation/whitespace
-        differences when detecting repeated plans.
-        """
-        if not isinstance(entry, Mapping):
-            return None
+    def _assert_drift_code_prefix(code: str) -> None:
+        prefix = _extract_prefix(code)
+        if prefix != "D":
+            raise ValueError(
+                f"DriftDetector can only emit D* codes; got code={code!r} with prefix={prefix!r}"
+            )
 
-        plan = entry.get("plan") or entry.get("content")
-        if not isinstance(plan, str):
-            return None
+        # TODO: Confirm whether prefix extraction logic must be delegated
+        # to a Level-2 compliant shared validator rather than implemented here.
 
-        text = plan.strip()
-        if not text:
-            return None
+    def _populate_runtime_overlay(self, event: dict[str, _t.Any]) -> None:
+        runtime_meta: dict[str, _t.Any] = event.get("runtime") or {}
 
-        normalized = re.sub(r"\W+", " ", text).strip().lower()
-        return normalized or None
+        # Added to resolve Core Issue: validation_mode must propagate.
+        runtime_meta.setdefault("validation_mode", self._ctx.validation_mode)
 
+        if self._ctx.model is not None:
+            runtime_meta.setdefault("model", self._ctx.model)
+        if self._ctx.tool_name is not None:
+            runtime_meta.setdefault("tool", self._ctx.tool_name)
+        if self._ctx.agent_state is not None:
+            runtime_meta.setdefault("agent_state", self._ctx.agent_state)
 
-# -----------------------------------------------------------------------------
-# TODO ITEMS (from Open Questions)
-# -----------------------------------------------------------------------------
-# TODO: Clarify whether Level 2 Event Matrix supports multiple simultaneous drift signals.
-# TODO: Define handling rule for missing metadata (treat as warning vs. clean pass).
-# TODO: Confirm canonical latency unit: milliseconds vs. seconds.
-# TODO: Define confidence thresholding strategy for overriding D0_none with low-confidence drift signals (runtime policy vs. detector default).
-# TODO: Determine how strictly TurnStateProtocol will be enforced at runtime (e.g., adapters vs. direct dict access).
-# TODO: Define operational "threshold of concern" for agent intervention based on confidence and priority.
-# TODO: Clarify semantics of D0_none (fallback vs. positive assertion of health) and whether explicit "healthy" heuristics are required.
-# TODO: Clarify semantic meaning of confidence values for deterministic checks (e.g., latency-based drift vs. probabilistic heuristics).
+        event["runtime"] = runtime_meta
+
+        # TODO: Confirm whether turn-level runtime metadata belongs here
+        # or should be provided dynamically per detect_and_build_event call.
 
 
-# -----------------------------------------------------------------------------
-# Deferred for later phase
-# -----------------------------------------------------------------------------
-# - Rule-weighted classification strategies
-# - Model-driven drift inference
-# - Overlapping drift category handling policies
-# - Confidence calibration based on historical tuning
+# ──────────────────────────────────────────────────────────────────────────────
+# Utility Functions
+# ──────────────────────────────────────────────────────────────────────────────
 
+
+def _utc_now_iso() -> str:
+    return _dt.datetime.utcnow().replace(microsecond=0, tzinfo=_dt.timezone.utc).isoformat().replace(
+        "+00:00", "Z"
+    )
+
+
+def _extract_prefix(code: str) -> str:
+    head = code.split("_", 1)[0]
+    i = len(head)
+    while i > 0 and head[i - 1].isdigit():
+        i -= 1
+    return head[:i] or head
+
+
+# TODO: Clarify whether drift events must be co-emitted alongside primary
+# conversational events or replace them in cases of detected divergence.
