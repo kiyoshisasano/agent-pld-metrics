@@ -1,77 +1,89 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-pld_runtime.logging.event_writer (v1.1 Canonical Edition)
+# version: 2.0.0
+# status: draft
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: Transport-only event writers and a runtime stub entry point for PLD-compatible systems.
+# scope: runtime.logging.module
+# change_classification: runtime-only
 
-Thin abstraction layer for writing structured PLD records to sinks.
-
-This module focuses on *how to emit a dict record*:
-
-    record: Dict[str, Any]  →  sink (file / stdout / custom handler)
-
-It is intentionally minimal:
-
-- no knowledge of PLD internals or phases
-- no schema validation (see enforcement.schema_validator)
-- no retry / backoff
-- no queueing
-
-Higher layers (StructuredLogger, controllers, exporters/*) handle:
-
-- adherence to pld_event.schema.json / runtime_event_envelope.json
-- PLD phase/code semantics (Drift → Repair → Reentry → Outcome)
-- batching, buffering, and transport
-
-This layer only implements concrete "writers".
-"""
-
-from __future__ import annotations
-
+from typing import Any, Dict, Optional, Protocol
+import logging
 import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Protocol
 
+LOGGER_NAME = "pld_runtime.event_writer"
+logger = logging.getLogger(LOGGER_NAME)
 
-# ---------------------------------------------------------------------------
-# Protocol
-# ---------------------------------------------------------------------------
 
 class EventWriter(Protocol):
-    """
-    Generic protocol for event writers.
+    """Callable writer protocol (transport-only).
 
-    Any callable matching this Protocol can be used as a writer:
-
-        def writer(record: Dict[str, Any]) -> None:
-            ...
-
-    Typical records are either:
-
-        - PLD events (pld_event.schema.json)
-        - Runtime envelopes (runtime_event_envelope.json)
-
-    StructuredLogger and controllers accept this interface.
+    Implementations accept a single record dict and return None.
+    This layer is transport-only and MUST NOT enforce PLD schema or
+    semantic rules. Higher layers handle validation and lifecycle logic.
     """
 
     def __call__(self, record: Dict[str, Any]) -> None:  # pragma: no cover - protocol
         ...
 
 
+class RuntimeEventWriterStub:
+    """
+    Standard runtime event writer stub.
+
+    Responsibilities (high-level):
+    - Accept runtime event objects
+    - Provide a stable entry point for writing/dispatching events
+    - Avoid enforcing PLD validation rules at this layer
+
+    Actual behavior MUST be implemented by downstream runtime developers.
+    """
+
+    def __init__(self) -> None:
+        self.enabled = True
+        logger.debug("RuntimeEventWriterStub initialized (stub mode)")
+
+    def write(self, event: Dict[str, Any]) -> None:
+        """Placeholder method for writing runtime events.
+
+        This stub implementation does NOT:
+        - Guarantee event schema conformance
+        - Apply Level 2 semantic validation
+        - Persist to a target system (file, log sink, queue, DB, etc.)
+
+        Implementers SHOULD replace this method with production logic.
+        """
+        if not self.enabled:
+            logger.debug("write() skipped: writer disabled")
+            return
+
+        logger.info(f"[STUB] event received: {event}")
+
+    def __call__(self, event: Dict[str, Any]) -> None:
+        """Allow this stub to be used wherever an EventWriter is expected."""
+        self.write(event)
+
+    def enable(self) -> None:
+        self.enabled = True
+        logger.debug("RuntimeEventWriterStub enabled")
+
+    def disable(self) -> None:
+        self.enabled = False
+        logger.debug("RuntimeEventWriterStub disabled")
+
+
 # ---------------------------------------------------------------------------
-# In-memory writer (useful for tests)
+# In-memory writer (tests / small demos)
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class MemoryWriter:
-    """
-    Store records in memory. Intended for tests and small demos.
+    """In-memory writer for tests and small demos.
 
-    Attributes
-    ----------
-    records:
-        List of emitted records (dicts). Can be inspected by callers.
+    Stores emitted records in ``records`` for later inspection.
+    This class does not enforce any schema or PLD semantics.
     """
 
     records: list[Dict[str, Any]]
@@ -90,25 +102,13 @@ class MemoryWriter:
 # JSONL file writer
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class JsonlFileWriter:
-    """
-    JSON Lines writer: one JSON object per line.
+    """Write one JSON object per line to a file.
 
-    Parameters
-    ----------
-    path:
-        Target file path.
-
-    append:
-        If True (default), append to the file.
-        If False, truncate file on first use.
-
-    ensure_ascii:
-        Passed through to json.dumps.
-
-    auto_flush:
-        If True, flush stream after each write.
+    This writer is transport-only and intentionally avoids validation
+    or PLD-specific semantics.
     """
 
     path: Path
@@ -146,9 +146,8 @@ def make_jsonl_file_writer(
     ensure_ascii: bool = False,
     auto_flush: bool = True,
 ) -> JsonlFileWriter:
-    """
-    Convenience constructor for a JsonlFileWriter.
-    """
+    """Convenience constructor for :class:`JsonlFileWriter`."""
+
     return JsonlFileWriter(
         path=Path(path),
         append=append,
@@ -158,27 +157,16 @@ def make_jsonl_file_writer(
 
 
 # ---------------------------------------------------------------------------
-# Stream / stdout writer
+# Stream / stdout / stderr writer
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class StreamWriter:
-    """
-    Write JSON lines to a text stream (e.g., stdout, stderr).
+    """Write JSON lines to a text stream (e.g., stdout, stderr).
 
-    Parameters
-    ----------
-    stream:
-        File-like object with a .write(str) method.
-        Default: sys.stdout
-
-    Notes
-    -----
-    This is commonly used in:
-
-        - local debugging (PLD events to console)
-        - container logs (stdout/stderr collectors)
-        - simple evaluation scripts
+    Common usage patterns include local debugging and container logs.
+    This writer does not perform validation or retries.
     """
 
     stream: Any = sys.stdout
@@ -197,9 +185,8 @@ def make_stdout_writer(
     ensure_ascii: bool = False,
     auto_flush: bool = True,
 ) -> StreamWriter:
-    """
-    Convenience constructor for a StreamWriter bound to stdout.
-    """
+    """Create a :class:`StreamWriter` bound to ``sys.stdout``."""
+
     return StreamWriter(stream=sys.stdout, ensure_ascii=ensure_ascii, auto_flush=auto_flush)
 
 
@@ -208,42 +195,18 @@ def make_stderr_writer(
     ensure_ascii: bool = False,
     auto_flush: bool = True,
 ) -> StreamWriter:
-    """
-    Convenience constructor for a StreamWriter bound to stderr.
-    """
+    """Create a :class:`StreamWriter` bound to ``sys.stderr``."""
+
     return StreamWriter(stream=sys.stderr, ensure_ascii=ensure_ascii, auto_flush=auto_flush)
-
-
-# ---------------------------------------------------------------------------
-# Adapter for custom callables
-# ---------------------------------------------------------------------------
-
-def wrap_callable(func: Callable[[Dict[str, Any]], None]) -> EventWriter:
-    """
-    Wrap an arbitrary callable as an EventWriter.
-
-    This exists mainly to make typings explicit; at runtime it is a no-op.
-
-    Example
-    -------
-    >>> def send_to_bus(record: Dict[str, Any]) -> None:
-    ...     publish("pld-events", record)
-    ...
-    >>> writer = wrap_callable(send_to_bus)
-    >>> writer({"event_id": "...", "pld": {...}})
-    """
-    def _wrapped(record: Dict[str, Any]) -> None:
-        func(record)
-    return _wrapped  # type: ignore[return-value]
 
 
 __all__ = [
     "EventWriter",
+    "RuntimeEventWriterStub",
     "MemoryWriter",
     "JsonlFileWriter",
     "make_jsonl_file_writer",
     "StreamWriter",
     "make_stdout_writer",
     "make_stderr_writer",
-    "wrap_callable",
 ]
