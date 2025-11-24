@@ -1,76 +1,28 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-pld_runtime.logging.structured_logger
-
-Structured logging façade for PLD runtime.
-
-This module provides a high-level interface to log:
-
-    - Normalized turns
-    - PLD events and envelopes
-    - Controller outcomes
-    - Route instructions (from ActionRouter)
-
-It does NOT own any I/O backend.
-Instead, it delegates to a simple "writer" callable, which can be:
-
-    - file-based
-    - console-based
-    - database / queue producer
-    - OpenTelemetry exporter (see exporters/)
-
-The goal is to keep logging:
-
-    - consistent (fixed record schema)
-    - low-friction (simple function calls)
-    - replayable (session+turn indexed)
-"""
+# version: 2.0.0
+# status: draft
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: Structured logger facade over transport-only event writers for PLD-compatible runtimes.
+# scope: runtime.logging.module
+# change_classification: runtime-only
 
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
+from typing import Any, Dict, Optional
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+import logging
 
-from ..detection.runtime_signal_bridge import NormalizedTurn
-from ..controllers.pld_controller import ControllerOutcome
-from ..controllers.action_router import RouteInstruction
+from .event_writer import EventWriter
 
+LOGGER_NAME = "pld_runtime.structured_logger"
+logger = logging.getLogger(LOGGER_NAME)
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _now_iso() -> str:
-    """
-    Return current UTC time as ISO 8601 string with explicit Z suffix.
-
-    This keeps timestamps consistent with other PLD runtime modules.
-    """
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-# ---------------------------------------------------------------------------
-# Logging Modes
-# ---------------------------------------------------------------------------
 
 class LoggingMode(str, Enum):
-    """
-    Logging verbosity / purpose.
+    """Logging verbosity / intent indicator.
 
-    - DEBUG:
-        Maximum detail. Includes raw detector outputs, policies, routes.
-
-    - COMPACT:
-        Minimal fields needed for operational observability.
-
-    - EVALUATION:
-        Focused on signals needed for offline evaluation / datasets.
-
-    - SILENT:
-        No-op; all log_* calls are dropped.
+    This enum is transport-agnostic; higher layers MAY interpret modes
+    to decide which records to emit. The core StructuredLogger in this
+    module does not enforce any behavior based on the mode value.
     """
 
     DEBUG = "debug"
@@ -79,300 +31,95 @@ class LoggingMode(str, Enum):
     SILENT = "silent"
 
 
-# ---------------------------------------------------------------------------
-# Record Types
-# ---------------------------------------------------------------------------
-
-@dataclass
-class BaseRecord:
-    """
-    Common fields for all PLD structured log records.
-
-    Fields
-    ------
-    kind:
-        Record type tag, e.g., "turn", "pld_event", "controller_outcome".
-
-    ts:
-        ISO 8601 timestamp, UTC (Z).
-
-    session_id:
-        Session identifier (if applicable).
-    """
-
-    kind: str
-    ts: str
-    session_id: Optional[str]
-
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-
-
-@dataclass
-class TurnRecord(BaseRecord):
-    """
-    Log entry for a NormalizedTurn.
-    """
-
-    turn_id: str
-    role: str
-    text: str
-    runtime: Dict[str, Any]
-
-    @classmethod
-    def from_turn(cls, turn: NormalizedTurn) -> "TurnRecord":
-        return cls(
-            kind="turn",
-            ts=_now_iso(),
-            session_id=turn.session_id,
-            turn_id=turn.turn_id,
-            role=turn.role,
-            text=turn.text,
-            runtime=turn.runtime,
-        )
-
-
-@dataclass
-class PldEventRecord(BaseRecord):
-    """
-    Log entry for a single PLD event (optionally with envelope).
-    """
-
-    event: Dict[str, Any]
-    envelope: Optional[Dict[str, Any]] = None
-
-    @classmethod
-    def from_event(
-        cls,
-        *,
-        session_id: str,
-        event: Dict[str, Any],
-        envelope: Optional[Dict[str, Any]] = None,
-    ) -> "PldEventRecord":
-        return cls(
-            kind="pld_event",
-            ts=event.get("timestamp") or _now_iso(),
-            session_id=session_id,
-            event=event,
-            envelope=envelope,
-        )
-
-
-@dataclass
-class ControllerOutcomeRecord(BaseRecord):
-    """
-    Log entry for a full ControllerOutcome (per turn).
-
-    In DEBUG mode, this can be used directly.
-    In COMPACT / EVALUATION mode, a reduced view may be emitted instead.
-    """
-
-    outcome: Dict[str, Any]
-
-    @classmethod
-    def from_outcome(cls, outcome: ControllerOutcome) -> "ControllerOutcomeRecord":
-        return cls(
-            kind="controller_outcome",
-            ts=_now_iso(),
-            session_id=outcome.session_id,
-            outcome=outcome.to_dict(),
-        )
-
-
-@dataclass
-class RouteInstructionRecord(BaseRecord):
-    """
-    Log entry for a RouteInstruction (policy-action mapping).
-    """
-
-    instruction: Dict[str, Any]
-
-    @classmethod
-    def from_instruction(
-        cls,
-        session_id: str,
-        instr: RouteInstruction,
-    ) -> "RouteInstructionRecord":
-        return cls(
-            kind="route_instruction",
-            ts=_now_iso(),
-            session_id=session_id,
-            instruction=instr.to_dict(),
-        )
-
-
-# ---------------------------------------------------------------------------
-# Writer Type
-# ---------------------------------------------------------------------------
-
-WriterFunc = Callable[[Dict[str, Any]], None]
-
-
-# ---------------------------------------------------------------------------
-# Structured Logger
-# ---------------------------------------------------------------------------
-
 class StructuredLogger:
-    """
-    Thin façade over a generic writer to produce structured PLD records.
+    """Thin structured logging facade over an :class:`EventWriter`.
 
-    Parameters
-    ----------
-    writer:
-        A callable that receives a dict record. It may write to file,
-        stdout, an HTTP endpoint, a message queue, etc.
+    This class is responsible for:
+    - Accepting structured ``Dict[str, Any]`` records
+    - Optionally enriching them with a static "base context"
+    - Forwarding the final record to a transport-only :class:`EventWriter`
 
-    mode:
-        Controls verbosity / content.
+    This layer MUST NOT:
+    - Enforce PLD schema validity
+    - Interpret PLD phases or codes
+    - Perform retries, buffering, or transport-level concerns
 
-    session_scoping:
-        If True, logger enforces presence of session_id on relevant records.
-
-    Example
-    -------
-        import sys, json
-
-        def stdout_writer(rec: dict) -> None:
-            print(json.dumps(rec, ensure_ascii=False), file=sys.stdout)
-
-        logger = StructuredLogger(writer=stdout_writer, mode=LoggingMode.DEBUG)
-
-        # in runtime
-        logger.log_turn(turn)
-        logger.log_controller_outcome(outcome)
+    Higher-level controllers and enforcement layers own PLD semantics.
     """
 
     def __init__(
         self,
-        writer: WriterFunc,
-        mode: LoggingMode | str = LoggingMode.COMPACT,
-        session_scoping: bool = True,
-    ) -> None:
-        if isinstance(mode, str):
-            try:
-                mode = LoggingMode(mode.lower())  # type: ignore[arg-type]
-            except Exception:
-                mode = LoggingMode.COMPACT
-        self.writer = writer
-        self.mode = mode
-        self.session_scoping = session_scoping
-
-    # ---- Public logging API ----
-
-    def log_turn(self, turn: NormalizedTurn) -> None:
-        """
-        Log a normalized turn.
-
-        - In SILENT mode: no-op.
-        - Otherwise: emit a TurnRecord.
-        """
-        if self.mode is LoggingMode.SILENT:
-            return
-        rec = TurnRecord.from_turn(turn)
-        self._emit(rec.to_dict())
-
-    def log_pld_event(
-        self,
+        writer: EventWriter,
         *,
-        session_id: str,
-        event: Dict[str, Any],
-        envelope: Optional[Dict[str, Any]] = None,
+        base_context: Optional[Dict[str, Any]] = None,
+        log_errors: bool = True,
+        mode: "LoggingMode | str | None" = None,
     ) -> None:
+        """Create a new :class:`StructuredLogger`.
+
+        Parameters
+        ----------
+        writer:
+            A callable conforming to the :class:`EventWriter` protocol.
+        base_context:
+            Optional mapping to be shallow-merged into every record before
+            emission. Callers SHOULD ensure that base_context is JSON-serializable
+            if the underlying writer expects JSON-compatible structures.
+        log_errors:
+            When True, exceptions raised by ``writer`` are caught and logged
+            using the module logger. When False, exceptions are propagated.
         """
-        Log a single PLD event (and optional envelope).
+        self._writer = writer
+        self._base_context: Dict[str, Any] = dict(base_context or {})
+        self._log_errors = log_errors
+        self._mode = mode
 
-        - In SILENT mode: no-op.
-        - In COMPACT mode: event only.
-        - In DEBUG/EVALUATION: event + envelope if present.
+    @property
+    def base_context(self) -> Dict[str, Any]:
+        """Return a shallow copy of the current base context."""
+
+        return dict(self._base_context)
+
+    def with_context(self, extra: Dict[str, Any]) -> "StructuredLogger":
+        """Return a new :class:`StructuredLogger` with merged base context.
+
+        The original instance remains unchanged; contexts are shallow-merged
+        (``extra`` values override existing keys).
         """
-        if self.mode is LoggingMode.SILENT:
-            return
 
-        rec = PldEventRecord.from_event(
-            session_id=session_id,
-            event=event,
-            envelope=envelope if self._include_envelope() else None,
-        )
-        self._emit(rec.to_dict())
+        merged = {**self._base_context, **extra}
+        return StructuredLogger(self._writer, base_context=merged, log_errors=self._log_errors)
 
-    def log_controller_outcome(self, outcome: ControllerOutcome) -> None:
+    def log(self, record: Dict[str, Any]) -> None:
+        """Emit a structured record via the underlying writer.
+
+        The provided ``record`` is shallow-merged on top of the stored
+        ``base_context`` (record keys override base_context keys).
         """
-        Log a full ControllerOutcome.
 
-        - DEBUG: all fields.
-        - EVALUATION: everything (offline analysis uses these).
-        - COMPACT: skip this; rely on event-level logging.
-        - SILENT: no-op.
-        """
-        if self.mode in (LoggingMode.SILENT, LoggingMode.COMPACT):
-            return
+        payload: Dict[str, Any] = {**self._base_context, **record}
 
-        rec = ControllerOutcomeRecord.from_outcome(outcome)
-        self._emit(rec.to_dict())
+        if self._log_errors:
+            try:
+                self._writer(payload)
+            except Exception:  # pragma: no cover - defensive path
+                logger.exception("StructuredLogger failed to emit record")
+        else:
+            self._writer(payload)
 
-    def log_route_instructions(
-        self,
-        session_id: str,
-        instructions: List[RouteInstruction],
-    ) -> None:
-        """
-        Log RouteInstruction list produced by ActionRouter.
-
-        - DEBUG: always log.
-        - COMPACT/EVALUATION: log only non-trivial actions (non-metrics-only).
-        - SILENT: no-op.
-        """
-        if self.mode is LoggingMode.SILENT:
-            return
-
-        for instr in instructions:
-            # In COMPACT/EVALUATION, drop metrics-only logs to reduce noise.
-            if self.mode in (LoggingMode.COMPACT, LoggingMode.EVALUATION):
-                if instr.target.value == "metrics_only":
-                    continue
-
-            rec = RouteInstructionRecord.from_instruction(session_id, instr)
-            self._emit(rec.to_dict())
-
-    # ---- Internal helpers ----
-
-    def _emit(self, record: Dict[str, Any]) -> None:
-        """
-        Emit a record to writer, optionally enforcing session scoping.
-        """
-        if self.session_scoping:
-            kind = record.get("kind")
-            # For turn/event/controller/route, session_id SHOULD be present.
-            if kind in {"turn", "pld_event", "controller_outcome", "route_instruction"}:
-                if not record.get("session_id"):
-                    # Attach explicit marker rather than failing hard.
-                    record.setdefault("_warning", "missing_session_id")
-
-        self.writer(record)
-
-    def _include_envelope(self) -> bool:
-        """
-        Decide whether to include envelope with PLD event logs
-        based on logging mode.
-        """
-        return self.mode in (LoggingMode.DEBUG, LoggingMode.EVALUATION)
-
-
-# ---------------------------------------------------------------------------
-# Convenience: simple console logger
-# ---------------------------------------------------------------------------
 
 def make_console_logger(
     *,
-    mode: LoggingMode | str = LoggingMode.COMPACT,
+    mode: "LoggingMode | str | None" = None,
     stream: Any = None,
 ) -> StructuredLogger:
-    """
-    Create a StructuredLogger that writes JSON lines to a text stream
-    (default: sys.stdout).
+    """Create a StructuredLogger that writes JSON lines to a text stream.
 
-    This is primarily for quick experiments and local debugging.
+    This helper mirrors the v1.1 console logger shape while delegating
+    transport concerns to a simple in-process writer. ``mode`` is
+    accepted for compatibility but not interpreted at this layer.
     """
+
     import json
     import sys
 
@@ -380,19 +127,12 @@ def make_console_logger(
         stream = sys.stdout
 
     def _writer(rec: Dict[str, Any]) -> None:
-        print(json.dumps(rec, ensure_ascii=False), file=stream)
+        stream.write(json.dumps(rec, ensure_ascii=False) + "
+")
+        if hasattr(stream, "flush"):
+            stream.flush()
 
-    return StructuredLogger(writer=_writer, mode=mode)
+    return StructuredLogger(writer=_writer, base_context=None, log_errors=True, mode=mode)
 
 
-__all__ = [
-    "LoggingMode",
-    "BaseRecord",
-    "TurnRecord",
-    "PldEventRecord",
-    "ControllerOutcomeRecord",
-    "RouteInstructionRecord",
-    "WriterFunc",
-    "StructuredLogger",
-    "make_console_logger",
-]
+__all__ = ["LoggingMode", "StructuredLogger", "make_console_logger"]
