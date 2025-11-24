@@ -1,4 +1,4 @@
-# version: 1.0.0
+# version: 2.0.0
 # status: draft
 # authority_level_scope: Level 5 — runtime implementation
 # purpose: PLD runtime controller template for validation, normalization routing, and metrics staging.
