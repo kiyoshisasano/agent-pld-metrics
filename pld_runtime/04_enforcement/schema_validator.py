@@ -1,4 +1,4 @@
-# version: "0.1.1"
+# version: "2.0.0"
 # status: "draft / runtime_template / runtime_extension"
 # authority_level_scope: "Level 5 — runtime implementation"
 # purpose: "Validate PLD runtime events against Level 1 schema and Level 2 event matrix, with optional normalization."
@@ -259,3 +259,4 @@ def summarize_validation(result: PLDValidationResult) -> Dict[str, Any]:
         "matrix_warnings": getattr(result.matrix, "warnings", None),
         "has_normalized_event": result.normalized_event is not None,
     }
+
