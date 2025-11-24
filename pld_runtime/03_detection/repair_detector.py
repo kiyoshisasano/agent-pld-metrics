@@ -1,4 +1,4 @@
-# version: 0.1.1
+# version: 2.0.0
 # status: draft runtime_template (experimental)
 # authority_level_scope: Level 5 — runtime implementation
 # purpose: Repair detection runtime template for emitting PLD v2-compliant repair events.
@@ -200,3 +200,4 @@ def _extract_prefix(code: str) -> str:
     while i > 0 and head[i - 1].isdigit():
         i -= 1
     return head[:i] or head
+
