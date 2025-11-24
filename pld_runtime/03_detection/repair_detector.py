@@ -1,222 +1,202 @@
-# version: 2.0.0
-# status: draft
-# authority: Level 5 — runtime implementation
-# scope: Repair selection and classification from PLD-aligned drift signals
-# change_type: runtime-only, incremental patch (core issue integration)
-# dependencies: PLD Event Schema v2.0; PLD Event Matrix v2.0
+# version: 0.1.1
+# status: draft runtime_template (experimental)
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: Repair detection runtime template for emitting PLD v2-compliant repair events.
+# change_classification: runtime-only, non-breaking + technical review alignment
+# dependencies: PLD event schema v2.0, PLD Event Matrix v2.0, PLD Runtime Standard v2.0, PLD Taxonomy v2.0
+# notes: Proposal-level runtime extension; detection logic intentionally left implementation-specific.
 
 """
-PLD Runtime — Repair Detector (Scaffold + Minimal Reference Behavior)
+Runtime template for repair detection.
 
-Status: draft
-Authority: Level 5 — runtime implementation
-Scope: Repair selection and classification from PLD-aligned drift signals
+This module is scoped to Level 5 (runtime implementation) and must remain
+compatible with:
 
-Changes in this patch:
-    - Implements minimal working strategy logic (resolves: Non-Executable Prototype).
-    - Introduces RepairMode Enum to prevent magic string schema fragility.
-    - Normalizes DriftSignal to avoid data duplication conflicts (computed code property).
+- Level 1 structural schema (pld_event.schema.json)
+- Level 2 event matrix + semantic spec (event_matrix.yaml, PLD_Event_Semantic_Spec_v2.0.md)
+- Level 3 runtime standard & taxonomy (PLD_Runtime_Standard_v2.0.md, PLD_taxonomy_v2.0.md)
+- Level 5 runtime event envelope overlay (runtime_event_envelope.schema.json)
+
+Only Core Technical Issues from the review have been integrated.
+All “Open Questions” are now TODOs and MUST NOT be resolved here.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Dict, Optional
+import dataclasses
+import datetime as _dt
+import typing as _t
+import uuid
 
 
-# ---------------------------------------------------------------------------
-# Validation Mode
-# ---------------------------------------------------------------------------
-
-class ValidationMode(str, Enum):
-    STRICT = "strict"
-    WARN = "warn"
-    NORMALIZE = "normalize"
+# ──────────────────────────────────────────────────────────────────────────────
+# Public Types
+# ──────────────────────────────────────────────────────────────────────────────
 
 
-# ---------------------------------------------------------------------------
-# Schema-safe Repair Codes
-# ---------------------------------------------------------------------------
+@dataclasses.dataclass
+class RepairSignal:
+    """Implementation-specific repair signal used to construct PLD events."""
 
-class RepairMode(str, Enum):
-    """Stable repair taxonomy aligned with expected R-prefix lifecycle semantics."""
-
-    R1_CLARIFY = "R1_clarify"
-    R2_SOFT_REPAIR = "R2_soft_repair"
-    R3_REWRITE = "R3_rewrite"
-    R4_REQUEST_CLARIFICATION = "R4_request_clarification"
-    R5_HARD_RESET = "R5_hard_reset"
-    FALLBACK = "R2_soft_repair"  # generic fallback
+    code: str
+    confidence: float = 1.0
+    metadata: dict[str, _t.Any] = dataclasses.field(default_factory=dict)
 
 
-# ---------------------------------------------------------------------------
-# Drift Signal — normalized to avoid conflicting data
-# ---------------------------------------------------------------------------
+@dataclasses.dataclass
+class RepairDetectorContext:
+    """
+    Minimal context required to emit PLD-compliant repair events.
 
-@dataclass
-class DriftSignal:
-    """Represents drift, using source_event as the single source of truth."""
-
-    source_event: Dict[str, Any]
-    metadata: Optional[Dict[str, Any]] = None
-
-    @property
-    def code(self) -> str:
-        """Always derive from canonical PLD event payload to avoid desync."""
-        return self.source_event.get("pld", {}).get("code", "D0_unspecified")
-
-
-# ---------------------------------------------------------------------------
-# Repair Decision Model
-# ---------------------------------------------------------------------------
-
-@dataclass
-class RepairDecision:
-    """Canonical output from repair selection."""
-
-    mode: RepairMode
-    escalation_level: Optional[int] = None
-    normalized: bool = False
-    notes: Optional[str] = None
-
-
-# ---------------------------------------------------------------------------
-# Repair Detector (with minimal functioning reference logic)
-# ---------------------------------------------------------------------------
-
-class RepairDetector:
-    """PLD-aligned repair selector.
-
-    Now contains:
-        ✔ minimal executable strategy table
-        ✔ schema-safe decision taxonomy
-        ✔ drift normalization safeguards
+    NOTE: Updated default source per Core Technical Issue #1.
     """
 
-    _REFERENCE_STRATEGY_TABLE = {
-        "D1": RepairMode.R1_CLARIFY,
-        "D2": RepairMode.R2_SOFT_REPAIR,
-        "D3": RepairMode.R2_SOFT_REPAIR,
-        "D4": RepairMode.R3_REWRITE,
-        "D5": RepairMode.R5_HARD_RESET,
-    }
+    session_id: str
 
-    def __init__(
+    # Core Issue Fix: Default changed from "runtime" → "detector"
+    # Justification: Aligns with DriftDetector behavior and prevents implicit
+    # Level 1/2 semantic conflict regarding source meaning.
+    source: str = "detector"
+
+    validation_mode: str = "strict"
+
+    # Optional runtime hints (non-canonical; safe to extend)
+    model: str | None = None
+    tool_name: str | None = None
+    agent_state: str | None = None
+
+    # TODO: Confirm whether these fields should be dynamic per turn rather than session-scoped.
+    # Current assumption: session-scoped until Level 3 runtime standard clarifies intent.
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Core Template Class
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+class RepairDetector:
+    """
+    Template repair detector.
+
+    This class operates purely at Level 5 and MUST NOT alter or weaken Level 1–3 rules.
+    """
+
+    def __init__(self, ctx: RepairDetectorContext) -> None:
+        self._ctx = ctx
+
+    def detect_and_build_event(
         self,
-        validation_mode: ValidationMode = ValidationMode.STRICT,
-        max_soft_repairs: int = 1,
-        max_total_repairs: int = 3,
-    ) -> None:
-        self.validation_mode = validation_mode
-        self.max_soft_repairs = max_soft_repairs
-        self.max_total_repairs = max_total_repairs
+        *,
+        turn_sequence: int,
+        user_visible_state_change: bool = False,
+        payload: dict[str, _t.Any] | None = None,
+    ) -> dict[str, _t.Any] | None:
 
-    # ---------------------------------------------------------------------
-    # Core logic
-    # ---------------------------------------------------------------------
+        repair_signal = self._run_detection(turn_sequence=turn_sequence)
 
-    def select_repair(
-        self,
-        drift: DriftSignal,
-        repair_count_for_session: int,
-        repair_count_for_drift_code: int,
-    ) -> RepairDecision:
-        """Select a repair strategy for a given drift signal.
+        if repair_signal is None:
+            return None
 
-        Args:
-            drift:
-                DriftSignal instance describing the detected drift.
-            repair_count_for_session:
-                Number of prior repair attempts in the current session.
-            repair_count_for_drift_code:
-                Number of prior repair attempts specifically associated with
-                this drift.code.
-
-        Returns:
-            RepairDecision describing the chosen repair strategy.
-        """
-        # TODO: Review required — clarify state ownership between Detector and Controller
-        drift_prefix = drift.code.split("_")[0]  # ex: "D3"
-        mode = self._REFERENCE_STRATEGY_TABLE.get(drift_prefix, RepairMode.FALLBACK)
-
-        # Escalation rule:
-        # - First cross of max_soft_repairs threshold → intermediate rewrite (R3)
-        # - Hard reset (R5) reserved for crossing max_total_repairs
-        if repair_count_for_drift_code >= self.max_soft_repairs:
-            if repair_count_for_session >= self.max_total_repairs:
-                mode = RepairMode.R5_HARD_RESET
-            else:
-                mode = RepairMode.R3_REWRITE
-
-        return RepairDecision(
-            mode=mode,
-            escalation_level=repair_count_for_drift_code,
-            notes=f"Selected via reference strategy for {drift.code}",
+        return self._build_repair_event(
+            turn_sequence=turn_sequence,
+            repair_signal=repair_signal,
+            user_visible_state_change=user_visible_state_change,
+            payload=payload or {},
         )
 
-    def to_repair_event(
+    def _run_detection(self, *, turn_sequence: int) -> RepairSignal | None:
+        raise NotImplementedError("Override _run_detection with concrete logic.")
+
+    def _build_repair_event(
         self,
-        decision: RepairDecision,
-        session_id: str,
+        *,
         turn_sequence: int,
-        base_timestamp: str,
-        source: str = "runtime",
-        previous_event_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        """Construct a PLD repair event skeleton from a RepairDecision."""
-        return {
+        repair_signal: RepairSignal,
+        user_visible_state_change: bool,
+        payload: dict[str, _t.Any],
+    ) -> dict[str, _t.Any]:
+
+        code = repair_signal.code
+        self._assert_repair_code_prefix(code)
+
+        event: dict[str, _t.Any] = {
             "schema_version": "2.0",
-            "event_id": f"repair-{turn_sequence}-{decision.mode.value}-{base_timestamp}",
-            "timestamp": base_timestamp,
-            "session_id": session_id,
+            "event_id": str(uuid.uuid4()),
+            "timestamp": _utc_now_iso(),
+            "session_id": self._ctx.session_id,
             "turn_sequence": turn_sequence,
-            "source": source,
+            "source": self._ctx.source,
             "event_type": "repair_triggered",
-            "pld": {
-                "phase": "repair",
-                "code": decision.mode.value,
-                "confidence": 1.0,
-            },
-            "ux": {
-                "user_visible_state_change": False,
-            },
-            "payload": {
-                "notes": decision.notes,
-                "escalation_level": decision.escalation_level,
-                "previous_event_id": previous_event_id,
-            },
+            "pld": {"phase": "repair", "code": code},
+            "payload": payload,
+            "ux": {"user_visible_state_change": bool(user_visible_state_change)},
+            "runtime": {},
+            "metrics": {},
+            "extensions": {},
         }
 
-    def validate_drift_signal(self, drift: DriftSignal) -> None:
-        """Optional hook for drift-signal validation against PLD semantics."""
-        # TODO: Review required (alignment question #1: state ownership / RepairHistory)
-        # TODO: Review required (alignment question #2: validation strictness vs fail-open prototype)
-        return None
+        if repair_signal.confidence is not None:
+            event["pld"]["confidence"] = float(repair_signal.confidence)
+
+        if repair_signal.metadata:
+            event["pld"]["metadata"] = dict(repair_signal.metadata)
+
+        self._populate_runtime_overlay(event)
+        return event
+
+    @staticmethod
+    def _assert_repair_code_prefix(code: str) -> None:
+        prefix = _extract_prefix(code)
+        if prefix != "R":
+            raise ValueError(
+                f"RepairDetector can only emit R* codes; got code={code!r} with prefix={prefix!r}"
+            )
+
+        # TODO: Confirm whether prefix extraction must be delegated
+        # to a Level 2/3-governed canonical taxonomy utility.
+
+    def _populate_runtime_overlay(self, event: dict[str, _t.Any]) -> None:
+        runtime_meta: dict[str, _t.Any] = event.get("runtime") or {}
+
+        runtime_meta.setdefault("validation_mode", self._ctx.validation_mode)
+
+        if self._ctx.model is not None:
+            runtime_meta.setdefault("model", self._ctx.model)
+        if self._ctx.tool_name is not None:
+            runtime_meta.setdefault("tool", self._ctx.tool_name)
+        if self._ctx.agent_state is not None:
+            runtime_meta.setdefault("agent_state", self._ctx.agent_state)
+
+        event["runtime"] = runtime_meta
+
+        # TODO: Clarify if repair-triggered events are:
+        # - co-emitted alongside conversational events
+        # - sequential signaling events representing intent
+        # - replacements for invalid conversational content
+
+        # TODO: Confirm whether runtime overlay should require dynamic turn metadata
+        # rather than storing session metadata from context.
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
-__all__ = [
-    "RepairDetector",
-    "ValidationMode",
-    "RepairDecision",
-    "RepairMode",
-    "DriftSignal",
-]
+# ──────────────────────────────────────────────────────────────────────────────
+# Utility Functions
+# ──────────────────────────────────────────────────────────────────────────────
 
 
-# ---------------------------------------------------------------------------
-# Deferred for later phase
-# ---------------------------------------------------------------------------
+def _utc_now_iso() -> str:
+    return _dt.datetime.utcnow().replace(microsecond=0, tzinfo=_dt.timezone.utc).isoformat().replace(
+        "+00:00", "Z"
+    )
 
-"""
-Future-Stage Considerations (Not implemented in this patch):
 
-- Automatic escalation memory / session state retention
-- Full event bus integration for ID, timestamp, and ordering authority
-- Cross-session analytics and adaptive escalation weighting
-- Configurable plug-in detection heuristics similar to the v1.1 behavioral model
-"""
+def _extract_prefix(code: str) -> str:
+    """
+    Local helper implementing a non-normative taxonomy prefix rule.
+
+    TODO: Replace with authoritative shared validator once defined.
+    """
+    head = code.split("_", 1)[0]
+    i = len(head)
+    while i > 0 and head[i - 1].isdigit():
+        i -= 1
+    return head[:i] or head
