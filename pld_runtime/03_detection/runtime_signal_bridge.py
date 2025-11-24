@@ -1,7 +1,7 @@
 # =============================================================================
 # PLD Runtime Signal Bridge
 #
-# version: 0.1.1
+# version: 2.0.0
 # status: draft
 # authority_level_scope: Level 5 — runtime implementation
 # purpose: Bridge internal runtime signals into PLD v2-compliant events for
