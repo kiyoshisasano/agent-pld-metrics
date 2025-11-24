@@ -1,5 +1,5 @@
 # =============================================================================
-# PLD Runtime Signal Bridge
+# runtime_signal_bridge
 #
 # version: 2.0.0
 # status: draft
@@ -71,6 +71,16 @@ VALID_PHASES: Sequence[str] = (
     "outcome",
     "failover",
     "none",
+)
+
+# Valid source values for STRICT mode validation
+VALID_SOURCES: Sequence[str] = (
+    "user",
+    "assistant",
+    "runtime",
+    "controller",
+    "detector",
+    "system",
 )
 
 
@@ -288,15 +298,22 @@ RUNTIME_SIGNAL_MAP: Dict[SignalKind, PldSemanticMapping] = {
         code="O0_session_closed",
         default_confidence=None,
     ),
-    # Observability / MAY-level (prefix & phase derived from context or set to none)
+    # Observability / MAY-level (Observability-only representation)
     SignalKind.LATENCY_SPIKE: PldSemanticMapping(
         event_type="latency_spike",
-        phase="none",  # MAY be normalized from context.current_phase if desired.
+        # phase="none" — Observability-only representation.
+        # NOTE: For INFO_* prefix with phase='none', providing a lifecycle
+        # current_phase will cause validation to fail. Callers SHOULD pass
+        # current_phase=None for these signals.
+        phase="none",
         code="INFO_latency_spike",
         default_confidence=None,
     ),
     SignalKind.PAUSE_DETECTED: PldSemanticMapping(
         event_type="pause_detected",
+        # phase="none" — Observability-only representation.
+        # NOTE: For INFO_* prefix, providing a lifecycle current_phase
+        # will cause validation to fail.
         phase="none",
         code="INFO_pause_detected",
         default_confidence=None,
@@ -305,13 +322,13 @@ RUNTIME_SIGNAL_MAP: Dict[SignalKind, PldSemanticMapping] = {
     SignalKind.METRIC_PRDR: PldSemanticMapping(
         event_type="info",
         phase="none",
-        code="M1_PRDR",
+        code="M1_prdr",
         default_confidence=None,
     ),
     SignalKind.METRIC_VRL: PldSemanticMapping(
         event_type="info",
         phase="none",
-        code="M2_VRL",
+        code="M2_vrl",
         default_confidence=None,
     ),
     # Generic info
@@ -370,21 +387,6 @@ def _ensure_phase_prefix_consistency(code: str, phase: str) -> None:
             raise ValueError(
                 f"non-lifecycle prefix {prefix!r} requires phase='none', got phase={phase!r}"
             )
-
-
-def _event_type_phase_policy(event_type: str) -> Optional[str]:
-    """
-    Return the required (MUST) or recommended (SHOULD) phase for event_type,
-    or None when any phase is allowed (MAY-level).
-
-    NOTE: This helper is advisory only. MUST vs SHOULD enforcement is handled
-    explicitly in _resolve_phase.
-    """
-    if event_type in EVENT_TYPES_MUST_PHASE:
-        return EVENT_TYPES_MUST_PHASE[event_type]
-    if event_type in EVENT_TYPES_SHOULD_PHASE:
-        return EVENT_TYPES_SHOULD_PHASE[event_type]
-    return None
 
 
 # ---------------------------------------------------------------------------
@@ -462,6 +464,10 @@ class RuntimeSignalBridge:
             STRICT mode. In WARN or NORMALIZE modes, behavior MAY be more lenient
             but MUST NOT produce events that conflict with hard invariants.
         """
+        # Enhanced STRICT mode validation at entry point
+        if self._validation_mode is ValidationMode.STRICT:
+            self._validate_context_strict(context)
+
         mapping = self._resolve_mapping(signal)
 
         # event_type/phase constraints from Level 2 & runtime standard
@@ -495,6 +501,27 @@ class RuntimeSignalBridge:
     # ------------------------------------------------------------------ #
     # Internal helpers                                                   #
     # ------------------------------------------------------------------ #
+
+    def _validate_context_strict(self, context: EventContext) -> None:
+        """
+        Perform enhanced STRICT mode validation on EventContext.
+
+        Validates:
+        - turn_sequence must be >= 1 (1-based indexing)
+        - source must be one of the allowed values
+
+        Raises:
+            ValueError: If validation fails in STRICT mode.
+        """
+        if context.turn_sequence < 1:
+            raise ValueError(
+                f"turn_sequence must be >= 1 (1-based), got {context.turn_sequence}"
+            )
+
+        if context.source not in VALID_SOURCES:
+            raise ValueError(
+                f"source must be one of {VALID_SOURCES}, got {context.source!r}"
+            )
 
     def _resolve_mapping(self, signal: RuntimeSignal) -> PldSemanticMapping:
         try:
