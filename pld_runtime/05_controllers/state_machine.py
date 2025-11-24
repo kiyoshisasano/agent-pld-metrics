@@ -1,364 +1,281 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-pld_runtime.controllers.state_machine (v1.1 Canonical Edition)
-
-Online PLD state machine for a single conversational session or trace.
-
-This module:
-
-- Maintains the current PLD phase:
-    none → drift → repair → reentry → outcome
-- Tracks active drift and repair segments
-- Applies local transition rules when new PLD events arrive
-- Returns structured results that controllers can use to decide actions
-
-It does NOT:
-
-- Inspect raw text or runtime metadata
-- Perform temporal checks (see enforcement.sequence_rules)
-- Call tools or models (see controllers/pld_controller and action_router)
-
-Events are expected to conform to the v1.1 PLD event schema:
-
-- quickstart/metrics/schemas/pld_event.schema.json
-- pld_runtime/01_schemas/pld_event.schema.json
-"""
+# version: 2.0.0
+# status: runtime
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: Maintain a PLD-aware session state machine enforcing Level 2/3 lifecycle rules.
+# scope: Tracks lifecycle state evolution without modifying canonical spec text.
+# change_classification: runtime-only + session-init compliance adjustment
+# dependencies: Level1_pld_event.schema.json, Level2_event_matrix_schema.yaml, Level3_PLD_Runtime_Standard_v2.0.md
 
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
-from typing import Any, Dict, Literal, Optional, Tuple
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
-Phase = Literal["none", "drift", "repair", "reentry", "outcome"]
+class Phase(str, Enum):
+    DRIFT = "drift"
+    REPAIR = "repair"
+    REENTRY = "reentry"
+    CONTINUE = "continue"
+    OUTCOME = "outcome"
+    FAILOVER = "failover"
+    NONE = "none"
 
 
-# ---------------------------------------------------------------------------
-# Datatypes
-# ---------------------------------------------------------------------------
+# NOTE: Hardcoded maps remain by governance rules.
+# TODO (Open Question — canonical lifecycle map): Determine authority responsible
+#       for publishing the final Phase→Phase ruleset and align when available.
+_MUST_PHASE_MAP: Dict[str, Phase] = {
+    "drift_detected": Phase.DRIFT,
+    "drift_escalated": Phase.DRIFT,
+    "repair_triggered": Phase.REPAIR,
+    "repair_escalated": Phase.REPAIR,
+    "reentry_observed": Phase.REENTRY,
+    "continue_allowed": Phase.CONTINUE,
+    "continue_blocked": Phase.CONTINUE,
+    "failover_triggered": Phase.FAILOVER,
+}
 
-@dataclass
-class PLDState:
-    """
-    Online PLD state for a single session / trace.
+_SHOULD_PHASE_MAP: Dict[str, Phase] = {
+    "evaluation_pass": Phase.OUTCOME,
+    "evaluation_fail": Phase.OUTCOME,
+    "session_closed": Phase.OUTCOME,
+    "info": Phase.NONE,
+}
 
-    Fields
-    ------
-    phase:
-        Current coarse-grained PLD phase. One of:
-        "none", "drift", "repair", "reentry", "outcome".
+_VALID_PHASES = {p.value for p in Phase}
 
-    active_drift_code:
-        Canonical PLD drift code currently active (e.g., "D5_information"
-        or "D2_context"), or None if no drift is currently open.
+_ALLOWED_TRANSITIONS: Dict[Phase, List[Phase]] = {
+    Phase.NONE: [Phase.CONTINUE, Phase.DRIFT, Phase.REPAIR, Phase.FAILOVER, Phase.REENTRY, Phase.OUTCOME],
+    Phase.CONTINUE: [Phase.CONTINUE, Phase.DRIFT, Phase.REPAIR, Phase.FAILOVER, Phase.OUTCOME],
+    Phase.DRIFT: [Phase.REPAIR, Phase.FAILOVER, Phase.CONTINUE],
+    Phase.REPAIR: [Phase.REENTRY, Phase.CONTINUE, Phase.FAILOVER],
+    Phase.REENTRY: [Phase.CONTINUE, Phase.OUTCOME],
+    Phase.FAILOVER: [Phase.REENTRY, Phase.CONTINUE, Phase.OUTCOME],
+    Phase.OUTCOME: [],
+}
 
-    active_repair_code:
-        Canonical PLD repair code currently active (e.g., "R2_soft_repair"
-        or "R1_clarify"), or None if no repair is currently underway.
 
-    cycles_completed:
-        Number of full Drift → Repair → Reentry cycles completed so far.
-
-    last_event_id:
-        Most recent PLD event_id seen (if any).
-
-    last_timestamp:
-        ISO 8601 UTC timestamp string of the most recent event, if known.
-    """
-
-    phase: Phase = "none"
-    active_drift_code: Optional[str] = None
-    active_repair_code: Optional[str] = None
-    cycles_completed: int = 0
-    last_event_id: Optional[str] = None
-    last_timestamp: Optional[str] = None
+@dataclass(frozen=True)
+class StateSnapshot:
+    current_phase: Phase
+    session_open: bool
+    last_event_type: Optional[str]
+    last_pld_code: Optional[str]
+    last_turn_sequence: Optional[int]
+    failover_active: bool
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return {**asdict(self), "current_phase": self.current_phase.value}
 
 
-@dataclass
-class TransitionResult:
-    """
-    Result of applying a new PLD event to a PLDState.
-
-    Fields
-    ------
-    from_phase:
-        Phase before the event.
-
-    to_phase:
-        Phase after the event.
-
-    valid:
-        True if the transition is allowed by the local state machine rules,
-        False if it violates local phase ordering or expectations.
-
-    reason:
-        Short, human-readable description of how/why the transition happened.
-
-    state:
-        Updated PLDState after applying the event.
-    """
-
-    from_phase: Phase
-    to_phase: Phase
-    valid: bool
+@dataclass(frozen=True)
+class StateTransition:
+    previous_state: StateSnapshot
+    next_state: StateSnapshot
     reason: str
-    state: PLDState
+    violations: List[str]
 
     def to_dict(self) -> Dict[str, Any]:
-        d = asdict(self)
-        d["state"] = self.state.to_dict()
-        return d
+        return {
+            "previous_state": self.previous_state.to_dict(),
+            "next_state": self.next_state.to_dict(),
+            "reason": self.reason,
+            "violations": self.violations,
+        }
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _now_iso() -> str:
-    """Return the current time as an ISO 8601 UTC string with 'Z' suffix."""
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-def _extract_phase_and_code(event: Dict[str, Any]) -> Tuple[Phase, Optional[str]]:
-    """
-    Extract (phase, code) from a PLD event object that conforms
-    to the v1.1 pld_event.schema.json.
-
-    Falls back to "none" if the phase field is missing or invalid.
-    The code field is returned as a string or None.
-    """
-    pld = event.get("pld") or {}
-    phase_raw = str(pld.get("phase", "none")).lower()
-
-    if phase_raw not in {"drift", "repair", "reentry", "outcome", "none"}:
-        phase: Phase = "none"
-    else:
-        phase = phase_raw  # type: ignore[assignment]
-
-    code = pld.get("code")
-    if code is not None:
-        code = str(code)
-
-    return phase, code
-
-
-def _extract_timestamp(event: Dict[str, Any]) -> str:
-    """
-    Extract timestamp from event, or generate a fresh UTC timestamp
-    if it is missing or invalid.
-    """
-    ts = event.get("timestamp")
-    if isinstance(ts, str) and ts:
-        return ts
-    return _now_iso()
-
-
-def _is_drift(code: Optional[str], phase: Phase) -> bool:
-    """
-    Determine whether the event should be treated as a drift event,
-    based on phase and canonical code prefix.
-    """
-    if phase == "drift":
-        return True
-    if code is None:
-        return False
-    return code.startswith("D")
-
-
-def _is_repair(code: Optional[str], phase: Phase) -> bool:
-    """
-    Determine whether the event should be treated as a repair event,
-    based on phase and canonical code prefix.
-    """
-    if phase == "repair":
-        return True
-    if code is None:
-        return False
-    return code.startswith("R")
-
-
-def _is_reentry(code: Optional[str], phase: Phase) -> bool:
-    """
-    Determine whether the event should be treated as a reentry event,
-    based on phase and canonical code prefix.
-    """
-    if phase == "reentry":
-        return True
-    if code is None:
-        return False
-    return code.startswith("RE")
-
-
-# ---------------------------------------------------------------------------
-# Core state machine
-# ---------------------------------------------------------------------------
-
-def step(state: PLDState, event: Dict[str, Any]) -> TransitionResult:
-    """
-    Apply a single PLD event to the current PLDState.
-
-    Parameters
-    ----------
-    state:
-        Existing PLDState for this session / trace.
-
-    event:
-        A dict representing a PLD event that conforms to the v1.1
-        PLD event schema (pld_event.schema.json).
-
-    Returns
-    -------
-    TransitionResult
-        Contains the updated state, a validity flag, and transition metadata.
-
-    Notes
-    -----
-    This state machine is intentionally simple and local:
-
-        none → drift → repair → reentry → outcome
-
-    with permissive handling of:
-        - repeated drift (overwrites active drift)
-        - repairs without prior drift (allowed but marked invalid)
-        - reentry without repair (allowed but marked invalid)
-
-    It does not perform cross-turn temporal enforcement or advanced
-    sequence validation; those responsibilities belong to higher-level
-    enforcement modules.
-    """
-    from_phase: Phase = state.phase
-    phase, code = _extract_phase_and_code(event)
-    timestamp = _extract_timestamp(event)
-    event_id = str(event.get("event_id", "")) or None
-
-    new_state = PLDState(
-        phase=state.phase,
-        active_drift_code=state.active_drift_code,
-        active_repair_code=state.active_repair_code,
-        cycles_completed=state.cycles_completed,
-        last_event_id=event_id or state.last_event_id,
-        last_timestamp=timestamp or state.last_timestamp,
-    )
-
-    reason = ""
-    valid = True
-
-    # No phase information → no state change.
-    if phase == "none":
-        reason = "No PLD phase present on event; state unchanged."
-        return TransitionResult(
-            from_phase=from_phase,
-            to_phase=new_state.phase,
-            valid=True,
-            reason=reason,
-            state=new_state,
+class PLDStateMachine:
+    def __init__(self) -> None:
+        self._state = StateSnapshot(
+            current_phase=Phase.NONE,
+            session_open=False,
+            last_event_type=None,
+            last_pld_code=None,
+            last_turn_sequence=None,
+            failover_active=False,
         )
 
-    # Drift-like event
-    if _is_drift(code, phase):
-        new_state.phase = "drift"
-        new_state.active_drift_code = code
-        new_state.active_repair_code = None
-        reason = "Drift detected; entering drift phase."
+        # TODO (Open Question — dynamic config): confirm whether this class will support runtime spec ingestion.
+        # TODO (Open Question — first-turn policy / RUN-006): clarify allowed set of first-turn events
+        #       and whether non-whitelisted first events MUST be rejected vs. flagged-only.
+        # TODO (Open Question — turn_sequence boundary): confirm that turn_sequence is
+        #       top-level in Level5_runtime_event_envelope.schema.json and not duplicated
+        #       under the Level 1 PLD object.
 
-        # If we already had an active drift, this overwrites it.
-        if state.active_drift_code is not None:
-            reason = "New drift event overwrote an existing active drift."
-        return TransitionResult(
-            from_phase=from_phase,
-            to_phase=new_state.phase,
-            valid=True,
-            reason=reason,
-            state=new_state,
-        )
+    # -------------------------------------------------------------------------
+    # Public API
+    # -------------------------------------------------------------------------
 
-    # Repair-like event
-    if _is_repair(code, phase):
-        new_state.phase = "repair"
-        new_state.active_repair_code = code
+    @property
+    def state(self) -> StateSnapshot:
+        return self._state
 
-        if state.active_drift_code is None:
-            reason = "Repair observed without an active drift segment."
-            # Conceptually a weaker sequence, but we still move the phase.
-            valid = False
+    def apply_event(self, event: Dict[str, Any]) -> StateTransition:
+        prev = self._state
+        violations: List[str] = []
+
+        # Extract event fields once to avoid repeated lookups (Core Issue #2)
+        pld_block = event.get("pld") or {}
+
+        event_type = event.get("event_type")
+        phase_str = pld_block.get("phase")
+        code = pld_block.get("code")
+        turn_sequence = event.get("turn_sequence")  # TODO (Open Question) confirm schema boundary & uniqueness
+
+        # Phase validation
+        if phase_str not in _VALID_PHASES:
+            violations.append(f"invalid_phase_value: {phase_str!r}")
+            phase: Optional[Phase] = None
         else:
-            reason = "Repair observed for an active drift segment."
+            phase = Phase(phase_str)  # type: ignore[arg-type]
 
-        return TransitionResult(
-            from_phase=from_phase,
-            to_phase=new_state.phase,
-            valid=valid,
-            reason=reason,
-            state=new_state,
+        # MUST-level event_type → phase rules
+        expected_must = _MUST_PHASE_MAP.get(event_type)
+        if expected_must is not None and phase != expected_must:
+            violations.append(
+                f"must_phase_mismatch: event_type={event_type!r} "
+                f"expected={expected_must.value!r} got={phase_str!r}"
+            )
+
+        # SHOULD-level event_type → phase rules
+        expected_should = _SHOULD_PHASE_MAP.get(event_type)
+        if expected_should is not None and phase != expected_should:
+            violations.append(
+                f"should_phase_mismatch: event_type={event_type!r} "
+                f"expected={expected_should.value!r} got={phase_str!r}"
+            )
+
+        next_state, reason = self._next_state_from_event(
+            prev_state=prev,
+            phase=phase,
+            event_type=event_type,
+            code=code,
+            turn_sequence=turn_sequence,
+            violations=violations,
         )
 
-    # Reentry-like event
-    if _is_reentry(code, phase):
-        new_state.phase = "reentry"
+        self._state = next_state
+        return StateTransition(previous_state=prev, next_state=next_state, reason=reason, violations=violations)
 
-        if state.active_repair_code is None:
-            reason = "Reentry observed without an active repair segment."
-            valid = False
-        else:
-            reason = "Reentry observed after repair; completing a PLD cycle."
-            # Completed cycle: drift → repair → reentry
-            new_state.cycles_completed += 1
-            # Reset active drift/repair after a successful cycle
-            new_state.active_drift_code = None
-            new_state.active_repair_code = None
+    # -------------------------------------------------------------------------
+    # Core transition logic
+    # -------------------------------------------------------------------------
 
-        return TransitionResult(
-            from_phase=from_phase,
-            to_phase=new_state.phase,
-            valid=valid,
-            reason=reason,
-            state=new_state,
-        )
+    def _next_state_from_event(
+        self,
+        *,
+        prev_state: StateSnapshot,
+        phase: Optional[Phase],
+        event_type: Optional[str],
+        code: Optional[str],
+        turn_sequence: Optional[int],
+        violations: List[str],
+    ) -> StateSnapshot:
 
-    # Outcome phase
-    if phase == "outcome":
-        new_state.phase = "outcome"
-        reason = "Outcome event observed; marking latest known phase as outcome."
-        # Outcome does not reset cycles or active drift/repair on its own.
-        return TransitionResult(
-            from_phase=from_phase,
-            to_phase=new_state.phase,
-            valid=True,
-            reason=reason,
-            state=new_state,
-        )
+        current_phase = prev_state.current_phase
+        session_open = prev_state.session_open
+        failover_active = prev_state.failover_active
+        reason = "transition"
 
-    # Fallback: unknown phase value.
-    reason = "Unknown or unsupported PLD phase; state unchanged."
-    return TransitionResult(
-        from_phase=from_phase,
-        to_phase=new_state.phase,
-        valid=False,
-        reason=reason,
-        state=new_state,
-    )
+        invalid_transition = False
+        if phase is not None:
+            allowed_next = _ALLOWED_TRANSITIONS.get(current_phase, [])
+            if phase not in allowed_next:
+                invalid_transition = True
+                violations.append(
+                    f"invalid_transition: {current_phase.value} → {phase.value} not allowed"
+                )
 
+        # --- Terminal state check (session_closed has highest precedence) ---
+        if event_type == "session_closed":
+            session_open = False
+            failover_active = False
 
-# ---------------------------------------------------------------------------
-# Convenience API
-# ---------------------------------------------------------------------------
+            if phase is not None and not invalid_transition:
+                current_phase = phase
 
-def initial_state() -> PLDState:
-    """
-    Return a fresh PLDState with no active drift or repair and phase 'none'.
-    """
-    return PLDState()
+            return StateSnapshot(
+                current_phase=current_phase,
+                session_open=session_open,
+                last_event_type=event_type,
+                last_pld_code=code,
+                last_turn_sequence=turn_sequence,
+                failover_active=failover_active,
+            ), "session_terminated"
 
+        # --- Session Initialization (RUN-006) ---
+        if not session_open and turn_sequence == 1:
+            if event_type == "continue_allowed":
+                session_open = True
+                current_phase = Phase.CONTINUE
+                reason = "session_initialized"
+            elif event_type == "info" and code == "SYS_session_init":
+                session_open = True
+                reason = "session_initialized_via_system"
+            else:
+                # Core Technical Issue: non-whitelisted first events must not be silently accepted.
+                # Record a violation and DO NOT implicitly open the session.
+                violations.append(
+                    f"invalid_session_init_event: event_type={event_type!r}, code={code!r}"
+                )
+                reason = "invalid_session_start"
 
-__all__ = [
-    "Phase",
-    "PLDState",
-    "TransitionResult",
-    "step",
-    "initial_state",
-]
+        # --- Failover Handling (RUN-008) ---
+        if event_type == "failover_triggered" and phase == Phase.FAILOVER:
+            failover_active = True
+            current_phase = Phase.FAILOVER
+            return StateSnapshot(
+                current_phase=current_phase,
+                session_open=session_open,
+                last_event_type=event_type,
+                last_pld_code=code,
+                last_turn_sequence=turn_sequence,
+                failover_active=failover_active,
+            ), "failover_active"
+
+        if failover_active:
+            # Resolution events
+            if event_type == "reentry_observed" and phase == Phase.REENTRY:
+                failover_active = False
+                current_phase = Phase.REENTRY
+                reason = "failover_recovered_via_reentry"
+            elif event_type == "continue_allowed" and phase == Phase.CONTINUE:
+                failover_active = False
+                current_phase = Phase.CONTINUE
+                reason = "failover_recovered_via_continue"
+            # Disallowed transition
+            elif event_type in ("drift_detected", "drift_escalated") and phase == Phase.DRIFT:
+                violations.append("failover_rule_violation: drift_after_failover")
+                reason = "invalid_failover_state"
+            else:
+                # Non-resolving, non-violating events during failover:
+                # allow transition only if the phase transition is valid.
+                if phase is not None and not invalid_transition:
+                    current_phase = phase
+                    reason = "failover_nonterminal_transition"
+                else:
+                    reason = "failover_context"
+
+            return StateSnapshot(
+                current_phase=current_phase,
+                session_open=session_open,
+                last_event_type=event_type,
+                last_pld_code=code,
+                last_turn_sequence=turn_sequence,
+                failover_active=failover_active,
+            ), reason
+
+        # ---- Normal Transition ----
+        if phase is not None and not invalid_transition:
+            current_phase = phase
+
+        return StateSnapshot(
+            current_phase=current_phase,
+            session_open=session_open,
+            last_event_type=event_type,
+            last_pld_code=code,
+            last_turn_sequence=turn_sequence,
+            failover_active=failover_active,
+        ), reason
