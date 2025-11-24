@@ -1,4 +1,4 @@
-# version: 1.0.0
+# version: 2.0.0
 # status: runtime
 # authority_level_scope: Level 5 — runtime implementation
 # purpose: Controller configuration template binding validation mode, taxonomy handling, and metrics usage for PLD-compatible runtimes.
