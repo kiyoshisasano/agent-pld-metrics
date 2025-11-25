@@ -154,7 +154,7 @@ Developers SHOULD treat this runtime as a test harness for exploring PLD-aligned
 
 ## Compliance Notes
 
-* Validation order MUST follow: **Level 1 → Level 2 → Level 5**
+* Validation order MUST follow: **Level 1 → Level 2 → (Level 3 expectations) → Level 5**
 * Trace immutability is required for reproducibility
 * Normalization MUST NOT conceal or infer meaning
 
@@ -189,4 +189,5 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
