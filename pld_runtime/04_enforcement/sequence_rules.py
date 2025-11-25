@@ -1,10 +1,11 @@
-# version: "2.0.0"
-# status: "draft / runtime_template / runtime_extension"
-# authority_level_scope: "Level 5 — runtime implementation"
-# purpose: "Evaluate PLD event sequences for lifecycle ordering constraints without modifying events."
-# scope: "Runtime-local sequence checks (post–Level 1 + Level 2 validation)."
-# change_classification: "runtime-only update (addresses Core Issues on recovery events + heuristic guardrail)"
-# dependencies: "pld_event.schema.json v2.x, event_matrix.yaml v2.x, PLD_Runtime_Standard_v2.0.md"
+# component_id: sequence_rules
+# kind: runtime_module
+# area: enforcement
+# status: draft
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Evaluate ordering constraints in runtime event sequences.
 
 from __future__ import annotations
 
@@ -308,4 +309,5 @@ def _is_observability_or_info(
         return True
 
     return False
+
 
