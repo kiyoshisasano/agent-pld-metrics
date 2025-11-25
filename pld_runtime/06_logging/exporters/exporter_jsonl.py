@@ -1,287 +1,240 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-pld_runtime.logging.exporters.exporter_jsonl
-
-JSON Lines (JSONL) exporters for PLD runtime traces.
-
-This module provides utilities to export:
-
-- Full session traces from SessionTraceBuffer
-- Only PLD events from traces (for evaluation datasets)
-- Controller outcomes or route instructions if needed (via full-trace export)
-
-Each exported line is a single JSON object suitable for:
-
-- Offline analysis
-- Metric pipelines
-- Training / evaluation datasets
-
-Event shape is intentionally generic:
-
-- Full-trace exports write flattened TraceItem records
-- PLD-event exports write raw PLD events compatible with:
-    pld_runtime/schemas/pld_event.schema.json
-"""
+# =============================================================================
+# exporter_jsonl
+#
+# version: 2.0.0
+# status: runtime
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: JSONL exporter for PLD runtime events, transporting Level 5 events
+#          as-is without modifying PLD event semantics or structure.
+# change_classification: runtime-only
+# dependencies: RuntimeSignalBridge.build_event output contract (PLD v2 runtime)
+# =============================================================================
 
 from __future__ import annotations
 
+import json
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable
+from threading import Lock
+from typing import Any, Callable, Mapping, Optional, Sequence, TextIO, Union
 
-from ..session_trace_buffer import (
-    SessionTraceBuffer,
-    SessionTrace,
-    TraceItem,
-)
-from ..event_writer import (
-    JsonlFileWriter,
-    make_jsonl_file_writer,
-)
+PldEvent = Mapping[str, Any]
+EnvelopeBuilder = Callable[[PldEvent], Mapping[str, Any]]
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _trace_item_to_flat_record(
-    session_id: str,
-    item: TraceItem,
-) -> Dict[str, Any]:
+@dataclass(frozen=True)
+class JsonlExporterConfig:
     """
-    Convert a TraceItem into a flattened record for JSONL export.
+    Configuration for JsonlExporter.
 
-    Structure:
-
-        {
-          "session_id": "...",
-          "kind": "turn" | "pld_event" | "controller_outcome" | "route_instruction",
-          "ts": "...",
-          "seq": 0,
-          "payload": {...}
-        }
-
-    The payload is preserved as-is to avoid losing information so that
-    downstream tools can reconstruct higher-level objects if needed.
+    Notes:
+      - `path` is the JSONL file path.
+      - `ensure_dir` controls whether parent directories are created.
+      - `mode` MUST be a text mode ("a" or "w"). Binary modes are not supported.
+      - `encoding` defaults to UTF-8.
     """
-    return {
-        "session_id": session_id,
-        "kind": item.kind,
-        "ts": item.ts,
-        "seq": item.seq,
-        "payload": item.payload,
-    }
+
+    path: Union[str, Path]
+    ensure_dir: bool = True
+    mode: str = "a"
+    encoding: str = "utf-8"
 
 
-def _ensure_writer(path: str | Path) -> JsonlFileWriter:
+class JsonlExporter:
     """
-    Create a JsonlFileWriter for export.
+    JsonlExporter
+    --------------
 
-    Exporters always overwrite the target path (append=False) to make
-    runs reproducible and avoid accidental mixing of different jobs.
+    Level 5 exporter that writes PLD events to a JSONL file.
+
+    Responsibilities:
+      - Transport PLD events (already constructed via RuntimeSignalBridge.build_event)
+        into a JSONL sink.
+      - Preserve PLD event structure and semantics:
+          * MUST NOT modify or infer Level 1–3 semantics.
+          * MUST NOT change any PLD fields (schema_version, event_id, timestamp,
+            session_id, turn_sequence, source, event_type, or any fields inside "pld").
+      - Optionally wrap events in a transport-specific envelope WITHOUT mutating
+        the original PLD event.
+
+    Non-responsibilities:
+      - Does NOT construct PLD events.
+      - Does NOT validate or normalize PLD events.
+      - Does NOT filter events based on semantics (e.g., drift vs repair).
+
+    Usage pattern (bare PLD event per line):
+
+        exporter = JsonlExporter.from_config(JsonlExporterConfig("pld_events.jsonl"))
+        exporter.export_events(session_id, events)
+        exporter.close()
+
+    Usage pattern (custom envelope):
+
+        def build_envelope(event: PldEvent) -> Mapping[str, Any]:
+            return {
+                "log_level": "INFO",
+                "pld_event": event,  # event MUST be passed through unchanged
+            }
+
+        exporter = JsonlExporter.from_config(
+            JsonlExporterConfig("pld_events.jsonl")
+        )
+        exporter.export_events(session_id, events, envelope_builder=build_envelope)
+        exporter.close()
     """
-    return make_jsonl_file_writer(
-        path,
-        append=False,
-        ensure_ascii=False,
-        auto_flush=True,
-    )
 
+    __slots__ = ("_file", "_lock", "_own_file", "_closed")
 
-# ---------------------------------------------------------------------------
-# Export: Session-level (all trace items)
-# ---------------------------------------------------------------------------
+    def __init__(self, file: TextIO, *, own_file: bool = True) -> None:
+        """
+        Initialize a JsonlExporter with an open text file object.
 
-def export_session_trace(
-    buffer: SessionTraceBuffer,
-    session_id: str,
-    path: str | Path,
-) -> int:
-    """
-    Export a single session trace to a JSONL file.
+        Arguments:
+            file:
+                A text-mode file object opened for writing/appending.
+            own_file:
+                If True, `close()` will also close the underlying file object.
+                If False, the caller retains ownership and is responsible for
+                closing it.
+        """
+        self._file: TextIO = file
+        self._lock: Lock = Lock()
+        self._own_file: bool = own_file
+        self._closed: bool = False
 
-    Each line is a flattened TraceItem record (see _trace_item_to_flat_record).
+    # --------------------------------------------------------------------- #
+    # Constructors                                                          #
+    # --------------------------------------------------------------------- #
 
-    Parameters
-    ----------
-    buffer:
-        SessionTraceBuffer that holds in-memory traces.
+    @classmethod
+    def from_config(cls, config: JsonlExporterConfig) -> "JsonlExporter":
+        """
+        Create a JsonlExporter from JsonlExporterConfig.
 
-    session_id:
-        Identifier for the session to export.
+        This helper:
+          - Optionally creates parent directories.
+          - Opens the target file in the configured mode/encoding.
+        """
+        path = Path(config.path)
 
-    path:
-        Target JSONL file path. Existing content is overwritten.
+        if config.ensure_dir:
+            path.parent.mkdir(parents=True, exist_ok=True)
 
-    Returns
-    -------
-    int
-        Number of lines written.
-    """
-    trace = buffer.get_trace(session_id)
-    if trace is None:
-        return 0
+        # Text mode only; we do not support binary modes here.
+        file = path.open(mode=config.mode, encoding=config.encoding)
+        return cls(file, own_file=True)
 
-    writer = _ensure_writer(path)
-    written = 0
+    # --------------------------------------------------------------------- #
+    # Core export API                                                       #
+    # --------------------------------------------------------------------- #
 
-    try:
-        for item in trace.items:
-            record = _trace_item_to_flat_record(session_id, item)
-            writer(record)
-            written += 1
-    finally:
-        writer.close()
+    def export_events(
+        self,
+        session_id: str,
+        events: Sequence[PldEvent],
+        *,
+        envelope_builder: Optional[EnvelopeBuilder] = None,
+        auto_flush: bool = True,
+    ) -> None:
+        """
+        Export a sequence of PLD events for a single session to JSONL.
 
-    return written
+        Behavior:
+          - Writes one line per event.
+          - By default, writes the PLD event dict directly as JSON:
+                json.dumps(event, separators=(",", ":"))
+          - If `envelope_builder` is provided, writes the envelope returned by
+            that callable instead of the raw event, but the original event MUST
+            be embedded unchanged (e.g., under "pld_event").
 
+        Constraints:
+          - MUST NOT mutate or reconstruct the PLD event.
+          - MUST NOT modify:
+                event["schema_version"]
+                event["event_id"]
+                event["timestamp"]
+                event["session_id"]
+                event["turn_sequence"]
+                event["source"]
+                event["event_type"]
+                event["pld"][...]
+          - Any additional transport metadata (log_level, environment, etc.)
+            MUST live outside the PLD event structure.
 
-def export_all_traces(
-    buffer: SessionTraceBuffer,
-    path: str | Path,
-) -> int:
-    """
-    Export all session traces from the buffer to a single JSONL file.
+        Parameters:
+            session_id:
+                Session identifier. Included for API symmetry; not used to
+                alter events. Envelope builders MAY echo it if desired.
+            events:
+                Sequence of PLD events for this session.
+            envelope_builder:
+                Optional function that receives each PLD event and returns
+                a mapping to serialize instead of the raw event.
+            auto_flush:
+                If True (default), flushes the underlying file after writing
+                all events for this call.
+        """
+        if self._closed:
+            raise RuntimeError("JsonlExporter is closed and cannot export events.")
 
-    Records are written in no particular session order; they follow
-    the internal SessionTrace ordering (per session) and the order of
-    sessions in the buffer's internal mapping.
+        # NOTE:
+        #  - We do not reorder or filter events here.
+        #  - Ordering responsibility lies with the caller (e.g., SessionTraceBuffer).
+        with self._lock:
+            for event in events:
+                payload: Mapping[str, Any]
+                if envelope_builder is None:
+                    payload = event
+                else:
+                    # The envelope builder is responsible for embedding the
+                    # original event without modifying it.
+                    payload = envelope_builder(event)
 
-    Parameters
-    ----------
-    buffer:
-        SessionTraceBuffer that holds in-memory traces.
+                line = json.dumps(
+                    payload,
+                    separators=(",", ":"),  # compact; do not sort keys
+                    ensure_ascii=False,
+                )
+                self._file.write(line + "\n")
 
-    path:
-        Target JSONL file path. Existing content is overwritten.
+            if auto_flush:
+                self._file.flush()
 
-    Returns
-    -------
-    int
-        Number of lines written.
-    """
-    writer = _ensure_writer(path)
-    written = 0
+    # --------------------------------------------------------------------- #
+    # Lifecycle                                                             #
+    # --------------------------------------------------------------------- #
 
-    try:
-        # Access to _traces is intentional and documented for exporters.
-        for session_id, trace in buffer._traces.items():  # noqa: SLF001
-            for item in trace.items:
-                record = _trace_item_to_flat_record(session_id, item)
-                writer(record)
-                written += 1
-    finally:
-        writer.close()
+    def flush(self) -> None:
+        """Flush the underlying file buffer, if not closed."""
+        if self._closed:
+            return
+        with self._lock:
+            self._file.flush()
 
-    return written
+    def close(self) -> None:
+        """
+        Close the exporter.
 
+        If the exporter owns the underlying file (own_file=True), this also
+        closes the file object. Otherwise, only marks the exporter as closed.
+        """
+        if self._closed:
+            return
 
-# ---------------------------------------------------------------------------
-# Export: PLD event–only (evaluation friendly)
-# ---------------------------------------------------------------------------
+        with self._lock:
+            if not self._closed:
+                if self._own_file:
+                    self._file.close()
+                self._closed = True
 
-def _iter_pld_events_from_trace(trace: SessionTrace) -> Iterable[Dict[str, Any]]:
-    """
-    Yield bare PLD events from a SessionTrace.
+    # --------------------------------------------------------------------- #
+    # Context manager support                                               #
+    # --------------------------------------------------------------------- #
 
-    For items with kind == "pld_event", payload is expected to be:
+    def __enter__(self) -> "JsonlExporter":
+        if self._closed:
+            raise RuntimeError("Cannot re-enter a closed JsonlExporter.")
+        return self
 
-        {
-          "event":   <pld_event.schema.json object>,
-          "envelope": {...} | None
-        }
-
-    Only the "event" field is exported here; envelopes are excluded to keep
-    evaluation datasets focused on PLD-level semantics.
-    """
-    for item in trace.items:
-        if item.kind != "pld_event":
-            continue
-        payload = item.payload or {}
-        event = payload.get("event")
-        if isinstance(event, dict):
-            yield event
-
-
-def export_pld_events_for_session(
-    buffer: SessionTraceBuffer,
-    session_id: str,
-    path: str | Path,
-) -> int:
-    """
-    Export only PLD events for a given session to JSONL.
-
-    Each line is the raw PLD event (pld_event.schema.json object).
-
-    Parameters
-    ----------
-    buffer:
-        SessionTraceBuffer with traces.
-
-    session_id:
-        Identifier of the session to export.
-
-    path:
-        Target JSONL file path. Existing content is overwritten.
-
-    Returns
-    -------
-    int
-        Number of events written.
-    """
-    trace = buffer.get_trace(session_id)
-    if trace is None:
-        return 0
-
-    writer = _ensure_writer(path)
-    written = 0
-    try:
-        for event in _iter_pld_events_from_trace(trace):
-            writer(event)
-            written += 1
-    finally:
-        writer.close()
-    return written
-
-
-def export_pld_events_all_sessions(
-    buffer: SessionTraceBuffer,
-    path: str | Path,
-) -> int:
-    """
-    Export all PLD events across all sessions to a single JSONL file.
-
-    Each line is a raw PLD event, compatible with pld_event.schema.json.
-
-    Parameters
-    ----------
-    buffer:
-        SessionTraceBuffer with traces.
-
-    path:
-        Target JSONL file path. Existing content is overwritten.
-
-    Returns
-    -------
-    int
-        Number of events written.
-    """
-    writer = _ensure_writer(path)
-    written = 0
-    try:
-        # Access to _traces is intentional and documented for exporters.
-        for session_id, trace in buffer._traces.items():  # noqa: SLF001
-            for event in _iter_pld_events_from_trace(trace):
-                writer(event)
-                written += 1
-    finally:
-        writer.close()
-    return written
-
-
-__all__ = [
-    "export_session_trace",
-    "export_all_traces",
-    "export_pld_events_for_session",
-    "export_pld_events_all_sessions",
-]
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
