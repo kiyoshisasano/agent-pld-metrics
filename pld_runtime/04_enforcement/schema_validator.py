@@ -3,7 +3,7 @@
 # authority_level_scope: "Level 5 — runtime implementation"
 # purpose: "Validate PLD runtime events against Level 1 schema and Level 2 event matrix, with optional normalization."
 # scope: "Runtime-local validator; MUST NOT modify canonical schemas and MUST treat Level 1/2 as read-only."
-# change_classification: "runtime-only update (addresses dependency & contract alignment)"
+# change_classification: "runtime-only update (addresses dependency & contract alignment; NORMALIZE semantics refined)"
 # dependencies: "docs/schemas/pld_event.schema.json, docs/event_matrix.yaml, PLD_Event_Semantic_Spec_v2.0.md"
 
 from __future__ import annotations
@@ -25,6 +25,15 @@ except ImportError:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# NOTE:
+#   - This module is intentionally STATELESS: all functions operate on the
+#     given event + schema/matrix inputs and do not retain cross-call state.
+#   - Level 1 / Level 2 specifications are treated as read-only; this module
+#     MUST NOT modify schema or matrix content at runtime.
+#   - NORMALIZE mode MAY propose a corrected event as "normalized_event", but
+#     MUST NOT modify the input event or any stored logs. Adoption of the
+#     normalized form is strictly an upper-layer policy decision.
+#
 # TODO (Open Question #1): Confirm long-term boundary: validator remains stateless,
 #                         sequencing/state-based validation handled externally.
 # TODO (Open Question #2): Clarify whether NORMALIZE mode events MAY become canonical log entries (VAL-005 ambiguity).
@@ -56,9 +65,18 @@ class MatrixValidationResult:
 @dataclass(frozen=True)
 class PLDValidationResult:
     """
-    Core Issue #1 fix:
-    Added `fatal_error` to ensure dependency or I/O failures return a structured result
-    rather than raising uncontrolled runtime exceptions.
+    Structured result for PLD event validation.
+
+    Notes:
+      - `schema_valid` / `matrix_valid` reflect the raw outcomes of Level 1 / 2 checks.
+      - `fatal_error` is non-None when dependencies (schema/matrix) could not be
+        loaded or when validation infrastructure failed. In that case, the event
+        itself is left untouched and callers SHOULD treat the result as
+        "validation infrastructure unavailable".
+      - `normalized_event` is ONLY populated in NORMALIZE mode when a strictly
+        correctable deviation is detected (e.g., phase mismatch resolvable via
+        must_phase_map). It is a candidate representation and MUST NOT be
+        applied to stored logs at this layer.
     """
 
     schema_valid: bool
@@ -70,49 +88,80 @@ class PLDValidationResult:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Dependency Handling & Loading (updated per Core Issue #2)
+# Dependency Handling & Loading
 # ──────────────────────────────────────────────────────────────────────────────
 
 """
-Core Issue #2 Resolution:
+Default hardcoded paths are intentionally avoided.
 
-Default hardcoded paths are removed because they imply assumptions about working
-directory structure. The runtime MUST explicitly provide paths OR use an external
-resource loader.
-
-This prevents undeclared environmental dependencies.
+The runtime (or configuration layer) MUST provide schema/matrix locations or
+pre-loaded objects. This prevents undeclared environmental dependencies and
+keeps this module stateless.
 """
 
 
 def load_level1_schema(path) -> Dict[str, Any]:
+    """
+    Load Level 1 PLD schema from the given path.
+
+    Raises:
+        RuntimeError: if jsonschema is unavailable or the file cannot be read.
+    """
     if jsonschema is None:
-        raise RuntimeError("jsonschema is required for Level 1 validation but is missing.")
+        raise RuntimeError(
+            "jsonschema is required for Level 1 validation but is missing."
+        )
 
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
-    except Exception as exc:
+    except Exception as exc:  # pragma: no cover - defensive
         raise RuntimeError(f"Failed to load Level 1 schema from {path}: {exc}") from exc
 
 
 def load_event_matrix(path) -> Dict[str, Any]:
+    """
+    Load Level 2 event matrix from the given path.
+
+    Raises:
+        RuntimeError: if PyYAML is unavailable or the file cannot be read.
+    """
     if yaml is None:
-        raise RuntimeError("PyYAML is required for Level 2 validation but is missing.")
+        raise RuntimeError(
+            "PyYAML is required for Level 2 validation but is missing."
+        )
 
     try:
         with open(path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
-    except Exception as exc:
+    except Exception as exc:  # pragma: no cover - defensive
         raise RuntimeError(f"Failed to load event matrix from {path}: {exc}") from exc
+
+
+def _format_fatal_error(prefix: str, exc: Exception) -> str:
+    """
+    Format fatal errors in a stable, machine- and human-readable way.
+
+    This keeps error reporting consistent across dependency failures while
+    avoiding exceptions escaping into calling code.
+    """
+    return f"{prefix}: {exc}"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Level 1 Validation
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 def validate_level1_schema(event: PLDEvent, schema: Dict[str, Any]) -> SchemaValidationResult:
-    validator = jsonschema.Draft7Validator(schema)
-    errors = []
+    """
+    Validate a PLD event against the Level 1 JSON schema.
+
+    This function treats `event` and `schema` as read-only; it MUST NOT mutate
+    either argument.
+    """
+    validator = jsonschema.Draft7Validator(schema)  # type: ignore[attr-defined]
+    errors: List[str] = []
 
     for error in validator.iter_errors(event):
         path = ".".join(str(p) for p in error.path)
@@ -125,7 +174,23 @@ def validate_level1_schema(event: PLDEvent, schema: Dict[str, Any]) -> SchemaVal
 # Level 2 Validation
 # ──────────────────────────────────────────────────────────────────────────────
 
-def validate_level2_matrix(event: PLDEvent, matrix: Dict[str, Any], mode: ValidationMode) -> MatrixValidationResult:
+
+def validate_level2_matrix(
+    event: PLDEvent,
+    matrix: Dict[str, Any],
+    mode: ValidationMode,
+) -> MatrixValidationResult:
+    """
+    Validate a PLD event against the Level 2 event matrix.
+
+    This enforces:
+      - prefix_to_phase: lifecycle code prefix MUST align with pld.phase.
+      - must_phase_map: event_type MUST map to a single required phase.
+      - should_phase_map: event_type SHOULD map to a recommended phase
+        (warnings emitted when WARN/NORMALIZE mode is used).
+
+    The input `event` and `matrix` are treated as read-only.
+    """
     errors: List[str] = []
     warnings: List[str] = []
 
@@ -134,11 +199,8 @@ def validate_level2_matrix(event: PLDEvent, matrix: Dict[str, Any], mode: Valida
     phase = pld.get("phase")
     code = pld.get("code")
 
-    # Core Issue #3 Resolution: KEEP guardrails but document justification.
-    #
-    # Reason: Although Level 1 SHOULD guarantee these fields exist, validation mode
-    # may allow Level 1 to be bypassed in future adaptive runtimes. Therefore the
-    # checks remain defensive, but are now explicitly documented.
+    # Defensive guards; Level 1 SHOULD guarantee these, but modes or future
+    # adaptive runtimes might bypass L1. We keep checks explicit here.
     if event_type is None:
         errors.append("event_type missing for Level 2 validation (defensive check).")
         return MatrixValidationResult(False, errors, warnings)
@@ -175,6 +237,12 @@ def validate_level2_matrix(event: PLDEvent, matrix: Dict[str, Any], mode: Valida
 
 
 def _extract_lifecycle_prefix(code: Optional[str]) -> Optional[str]:
+    """
+    Extract lifecycle prefix (e.g., D, C, R) from a PLD code such as 'D3_repeated_plan'.
+
+    Numeric suffixes are stripped so that taxonomy expansions (D1..D99) remain
+    compatible with a single prefix mapping.
+    """
     if not code:
         return None
 
@@ -185,8 +253,9 @@ def _extract_lifecycle_prefix(code: Optional[str]) -> Optional[str]:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Combined Validation with Fatal Error Wrapping
+# Combined Validation (public API)
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def validate_pld_event(
     event: PLDEvent,
@@ -195,11 +264,17 @@ def validate_pld_event(
     matrix_path: Optional[str],
 ) -> PLDValidationResult:
     """
-    Core Issue #1 implementation:
-    This function now guarantees that dependency or I/O failures return a structured
-    PLDValidationResult rather than interrupting control flow.
-    """
+    Validate a PLD event against Level 1 schema and Level 2 event matrix.
 
+    This is the primary entry point and remains API-stable.
+
+    Behavior:
+      - Attempts to load schema/matrix from the given paths.
+      - On dependency or I/O failure, returns a PLDValidationResult with
+        `fatal_error` populated and no normalized_event, without raising.
+      - Otherwise delegates to a stateless helper that operates on the
+        already-loaded schema/matrix objects.
+    """
     try:
         schema = load_level1_schema(schema_path)
         matrix = load_event_matrix(matrix_path)
@@ -207,17 +282,39 @@ def validate_pld_event(
         return PLDValidationResult(
             schema_valid=False,
             matrix_valid=False,
-            fatal_error=str(fatal)
+            schema=None,
+            matrix=None,
+            normalized_event=None,
+            fatal_error=_format_fatal_error("VALIDATOR_DEPENDENCY_ERROR", fatal),
         )
 
+    return validate_pld_event_with_resources(event, mode, schema, matrix)
+
+
+def validate_pld_event_with_resources(
+    event: PLDEvent,
+    mode: ValidationMode,
+    schema: Dict[str, Any],
+    matrix: Dict[str, Any],
+) -> PLDValidationResult:
+    """
+    Variant of validate_pld_event that operates on pre-loaded schema/matrix.
+
+    This helper keeps the core validation logic stateless while allowing callers
+    to manage schema/matrix loading and caching outside this module.
+    """
     schema_result = validate_level1_schema(event, schema)
     matrix_result = validate_level2_matrix(event, matrix, mode)
 
-    normalized_event = (
-        _normalize_event_if_possible(event, matrix, matrix_result)
-        if mode is ValidationMode.NORMALIZE
-        else None
-    )
+    if mode is ValidationMode.NORMALIZE:
+        normalized_event = _normalize_event_if_possible(
+            event=event,
+            schema_result=schema_result,
+            matrix_result=matrix_result,
+            matrix=matrix,
+        )
+    else:
+        normalized_event = None
 
     return PLDValidationResult(
         schema_valid=schema_result.is_valid,
@@ -225,31 +322,90 @@ def validate_pld_event(
         schema=schema_result,
         matrix=matrix_result,
         normalized_event=normalized_event,
-        fatal_error=None
+        fatal_error=None,
     )
 
 
-def _normalize_event_if_possible(event: PLDEvent, matrix: Dict[str, Any], matrix_result: MatrixValidationResult):
+def _normalize_event_if_possible(
+    event: PLDEvent,
+    schema_result: SchemaValidationResult,
+    matrix_result: MatrixValidationResult,
+    matrix: Dict[str, Any],
+) -> Optional[Dict[str, Any]]:
+    """
+    Attempt to construct a normalized copy of the event in NORMALIZE mode.
+
+    Design constraints:
+      - NEVER mutate the original event.
+      - ONLY handle the specific case where:
+          * Level 1 schema validation has succeeded; AND
+          * Level 2 validation reports errors; AND
+          * there exists a MUST phase mapping for this event_type; AND
+          * updating pld.phase to that MUST phase yields a matrix-valid event.
+      - If any of the above is not satisfied, returns None.
+
+    IMPORTANT:
+      - The returned dict is a candidate event only. Adoption into canonical
+        logs is the responsibility of higher layers and MUST follow VAL-004–005
+        policies. This module does not write logs or persist events.
+    """
+    # If the schema is invalid, we cannot safely propose a normalized variant.
+    if not schema_result.is_valid:
+        return None
+
+    # If matrix is already valid, nothing to normalize.
     if matrix_result.is_valid:
         return None
 
-    must_phase = matrix.get("must_phase_map", {})
+    must_phase_map = matrix.get("must_phase_map", {})
     event_type = event.get("event_type")
-    pld = dict(event.get("pld") or {})
+    raw_pld = event.get("pld") or {}
+    current_phase = raw_pld.get("phase")
 
-    if event_type in must_phase and pld.get("phase") != must_phase[event_type]:
-        normalized = dict(event)
-        pld = dict(pld)
-        pld["phase"] = must_phase[event_type]
-        normalized["pld"] = pld
-        return normalized
+    if not isinstance(must_phase_map, dict):
+        return None
 
-    return None
+    if event_type not in must_phase_map:
+        return None
+
+    required_phase = must_phase_map[event_type]
+
+    # If phase already matches required phase, we cannot "normalize" anything.
+    if current_phase == required_phase:
+        return None
+
+    # Build a tentative normalized copy with phase corrected.
+    normalized: Dict[str, Any] = dict(event)
+    new_pld: Dict[str, Any] = dict(raw_pld)
+    new_pld["phase"] = required_phase
+    normalized["pld"] = new_pld
+
+    # Re-run Level 2 validation in STRICT mode against the normalized copy.
+    candidate_matrix_result = validate_level2_matrix(
+        normalized,
+        matrix,
+        ValidationMode.STRICT,
+    )
+
+    # Only accept the normalized candidate if the matrix is fully valid now.
+    if not candidate_matrix_result.is_valid:
+        return None
+
+    return normalized
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Summary helper
+# ──────────────────────────────────────────────────────────────────────────────
+
 
 def summarize_validation(result: PLDValidationResult) -> Dict[str, Any]:
+    """
+    Produce a compact, transport-friendly summary of a PLDValidationResult.
+
+    This helper does not mutate `result` and is suitable for logging or metrics
+    layers that only need high-level outcomes.
+    """
     return {
         "schema_valid": result.schema_valid,
         "matrix_valid": result.matrix_valid,
@@ -259,4 +415,3 @@ def summarize_validation(result: PLDValidationResult) -> Dict[str, Any]:
         "matrix_warnings": getattr(result.matrix, "warnings", None),
         "has_normalized_event": result.normalized_event is not None,
     }
-
