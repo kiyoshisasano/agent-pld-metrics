@@ -1,22 +1,21 @@
+# =============================================================================
+# repair detector
 # version: 2.0.0
-# status: draft runtime_template (experimental)
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Repair detection runtime template for emitting PLD v2-compliant repair events.
-# change_classification: runtime-only, non-breaking + technical review alignment
-# dependencies: PLD event schema v2.0, PLD Event Matrix v2.0, PLD Runtime Standard v2.0, PLD Taxonomy v2.0
-# notes: Proposal-level runtime extension; detection logic intentionally left implementation-specific.
+# status: experimental  # runtime template; subject to refinement
+# authority_level: 5
+# authority_scope: runtime implementation
+# purpose: Provide a template for runtime repair detection and emitting PLD
+#          v2-compliant repair events.
+# change_classification: runtime-only, non-breaking (technical review alignment)
+# dependencies: PLD event schema v2.0,
+#               PLD Event Matrix v2.0,
+#               PLD Runtime Standard v2.0,
+#               PLD Taxonomy v2.0
+# notes: Proposal-level runtime extension; detection logic intentionally left
+#        implementation-specific.
+# =============================================================================
 
 """
-Runtime template for repair detection.
-
-This module is scoped to Level 5 (runtime implementation) and must remain
-compatible with:
-
-- Level 1 structural schema (pld_event.schema.json)
-- Level 2 event matrix + semantic spec (event_matrix.yaml, PLD_Event_Semantic_Spec_v2.0.md)
-- Level 3 runtime standard & taxonomy (PLD_Runtime_Standard_v2.0.md, PLD_taxonomy_v2.0.md)
-- Level 5 runtime event envelope overlay (runtime_event_envelope.schema.json)
-
 Only Core Technical Issues from the review have been integrated.
 All “Open Questions” are now TODOs and MUST NOT be resolved here.
 """
@@ -200,4 +199,5 @@ def _extract_prefix(code: str) -> str:
     while i > 0 and head[i - 1].isdigit():
         i -= 1
     return head[:i] or head
+
 
