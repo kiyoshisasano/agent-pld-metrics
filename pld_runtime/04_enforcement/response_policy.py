@@ -1,10 +1,11 @@
-# version: "2.0.0"
-# status: "draft / runtime_template / runtime_extension"
-# authority_level_scope: "Level 5 — runtime implementation"
-# purpose: "Map PLD v2 runtime events to high-level response policies without altering event semantics."
-# scope: "Advisory response policy; assumes Level 1 schema and Level 2 matrix validation are handled upstream."
-# change_classification: "runtime-only update (addresses review alignment)"
-# dependencies: "pld_event.schema.json v2.x, event_matrix.yaml v2.x, PLD_Runtime_Standard_v2.0.md, PLD_taxonomy_v2.0.md"
+# component_id: response_policy
+# kind: runtime_module
+# area: enforcement
+# status: draft
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Map PLD runtime events to advisory response policy without altering semantics.
 
 from __future__ import annotations
 
