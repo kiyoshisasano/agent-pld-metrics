@@ -8,17 +8,14 @@ default_license: Apache-2.0
 
 components:
 
-  # ---------------------------------------------------------
-  # 1. Meta & Governance (Repository Level)
-  # ---------------------------------------------------------
+  # --- Meta & Governance ---
   - path: README.md
     component_id: repo_readme
     kind: doc
     area: meta
     status: stable
     authority_level: 1
-    purpose: >
-      Repository entry point and general documentation.
+    purpose: Repository entry point.
 
   - path: meta/METADATA_MANIFEST_SPEC.md
     component_id: manifest_spec
@@ -26,8 +23,7 @@ components:
     area: meta
     status: candidate
     authority_level: 4
-    purpose: >
-      Governing specification for PLD metadata manifests (v0.9.1).
+    purpose: Governing specification for PLD metadata (v0.9.1).
 
   - path: meta/VERSIONING_POLICY.md
     component_id: versioning_policy
@@ -35,20 +31,16 @@ components:
     area: meta
     status: stable
     authority_level: 5
-    purpose: >
-      Defines semantic versioning rules for schemas and runtime modules.
+    purpose: Versioning rules for schemas and runtime modules.
 
-  # ---------------------------------------------------------
-  # 2. Documentation & Architecture
-  # ---------------------------------------------------------
+  # --- Documentation ---
   - path: docs/architecture/PLD_Runtime_Architecture_Principles.md
     component_id: arch_principles
     kind: doc
     area: architecture
     status: draft
     authority_level: 4
-    purpose: >
-      Captures shared architectural values and constraints.
+    purpose: Core architectural values and constraints.
 
   - path: docs/metrics/PLD_metrics_spec.md
     component_id: metrics_spec
@@ -56,8 +48,7 @@ components:
     area: analytics
     status: candidate
     authority_level: 3
-    purpose: >
-      Definitions of PRDR, REI, and VRL metrics.
+    purpose: Definitions of PRDR, REI, and VRL metrics.
 
   - path: docs/taxonomy/PLD_taxonomy_v2.0.md
     component_id: taxonomy_v2
@@ -65,20 +56,16 @@ components:
     area: taxonomy
     status: stable
     authority_level: 5
-    purpose: >
-      The core taxonomy defining Drift, Repair, and Reentry types.
+    purpose: Core taxonomy defining Drift, Repair, and Reentry types.
 
-  # ---------------------------------------------------------
-  # 3. PLD Runtime Core (Python Modules)
-  # ---------------------------------------------------------
+  # --- PLD Runtime Core ---
   - path: pld_runtime/03_detection/drift_detector.py
     component_id: drift_detector
     kind: runtime_module
     area: detection
     status: experimental
     authority_level: 5
-    purpose: >
-      Core logic for detecting conversation drift based on vector similarity or rules.
+    purpose: Core logic for detecting conversation drift.
 
   - path: pld_runtime/03_detection/repair_detector.py
     component_id: repair_detector
@@ -86,8 +73,7 @@ components:
     area: detection
     status: experimental
     authority_level: 5
-    purpose: >
-      Identifies repair sequences initiated by the user or system.
+    purpose: Identifies repair sequences.
 
   - path: pld_runtime/05_controllers/pld_controller.py
     component_id: pld_controller
@@ -95,8 +81,7 @@ components:
     area: controller
     status: experimental
     authority_level: 4
-    purpose: >
-      Main runtime loop controller managing the Drift-Repair-Reentry lifecycle.
+    purpose: Main runtime loop controller.
 
   - path: pld_runtime/06_logging/runtime_logging_pipeline.py
     component_id: logging_pipeline
@@ -104,59 +89,31 @@ components:
     area: logging
     status: stable
     authority_level: 3
-    purpose: >
-      Structured logging pipeline ensuring Level 1 schema compliance.
+    purpose: Structured logging pipeline.
 
-  # ---------------------------------------------------------
-  # 4. Quickstart & Examples
-  # ---------------------------------------------------------
+  # --- Quickstart ---
   - path: quickstart/hello_pld_runtime.py
     component_id: hello_pld_runtime
     kind: example
     area: onboarding
     status: stable
     authority_level: 2
-    purpose: >
-      Minimal executable example demonstrating the core loop.
+    purpose: Minimal executable example.
 
-  - path: quickstart/examples/minimal_pld_demo.py
-    component_id: minimal_demo
-    kind: example
-    area: onboarding
-    status: stable
-    authority_level: 2
-    purpose: >
-      Self-contained demo script for verification.
-
-  # ---------------------------------------------------------
-  # 5. Field Collaboration (External PoC)
-  # ---------------------------------------------------------
+  # --- Field Collaboration ---
   - path: field/README.md
     component_id: field_readme
     kind: doc
     area: field_ops
     status: stable
     authority_level: 1
-    purpose: >
-      Guide for using the field/ folder for external collaboration.
+    purpose: Guide for external collaboration.
 
-  - path: field/protocol.md
-    component_id: field_protocol
-    kind: doc
-    area: field_ops
-    status: stable
-    authority_level: 2
-    purpose: >
-      Protocol definitions for shared Proof of Concept runs.
-
-  # ---------------------------------------------------------
-  # 6. Analytics & Data
-  # ---------------------------------------------------------
+  # --- Analytics ---
   - path: analytics/taxonomy/taxonomy_observation_sheet_v2.0.csv
     component_id: taxonomy_sheet
     kind: metric
     area: analytics
     status: draft
     authority_level: 2
-    purpose: >
-      Observation log for aligning taxonomy against real data.
+    purpose: Observation log for aligning taxonomy against real data.
