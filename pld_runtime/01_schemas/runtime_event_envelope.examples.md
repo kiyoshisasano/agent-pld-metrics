@@ -8,9 +8,9 @@ license: "Apache-2.0"
 
 # Metadata
 
-purpose: Provide runtime operational guidance...
-scope: runtime implementation (operational layer)
-notes: actively seeking feedback
+purpose: Provide runtime operational guidance...  
+scope: runtime implementation (operational layer)  
+notes: actively seeking feedback  
 
 
 ---
