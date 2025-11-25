@@ -1,25 +1,53 @@
 # manifest.yaml
 # Metadata manifest for this PLD repository
-# Format spec: METADATA_MANIFEST_SPEC v0.9.0
+# Format spec: METADATA_MANIFEST_SPEC v0.9.1
 # SPDX-License-Identifier: Apache-2.0
 
-version: 0.9.0
+version: 0.9.1
 default_license: Apache-2.0
 
 components:
 
-  # Example entry — update, duplicate, or remove as needed
-  - path: pld_runtime/
-    component_id: placeholder_entry
+  # --- Repository Documentation ---
+  - path: README.md
+    component_id: repo_readme
     kind: doc
-    area: unassigned
-    status: draft
+    area: meta
+    status: stable
     authority_level: 1
     purpose: >
-      Placeholder entry demonstrating the required manifest format.
-      Replace with real components as the repository evolves.
+      Repository entry point and general documentation.
 
-    # Optional (remove if not relevant)
-    authority_scope: unassigned
-    status_detail: "Pending classification"
-    deps: []
+  - path: meta/METADATA_MANIFEST_SPEC.md
+    component_id: manifest_spec
+    kind: doc
+    area: meta
+    status: candidate
+    authority_level: 4
+    purpose: >
+      The governing specification for PLD metadata manifests (v0.9.1).
+      Defines the distributed manifest architecture.
+
+  # --- Core Runtime Placeholder ---
+  # Note: Ideally, create pld_runtime/manifest.yaml for detailed runtime components.
+  - path: pld_runtime/
+    component_id: pld_runtime_root
+    kind: code
+    area: runtime
+    status: experimental
+    authority_level: 3
+    purpose: >
+      The core PLD runtime engine directory.
+      See pld_runtime/manifest.yaml (future) for internal details.
+
+  # --- Field Collaboration ---
+  # Note: The field/ directory has its own manifest.yaml, so we don't list its contents here.
+  - path: field/
+    component_id: field_collaboration_root
+    kind: doc
+    area: field
+    status: stable
+    authority_level: 1
+    purpose: >
+      Folder for external collaboration and PoC protocols.
+      Contains its own manifest for decentralized management.
