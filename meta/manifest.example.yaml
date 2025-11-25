@@ -1,0 +1,58 @@
+# manifest.example.yaml
+# Reference example for METADATA_MANIFEST_SPEC v0.9.0
+# SPDX-License-Identifier: CC-BY-4.0
+
+version: 0.9.0
+default_license: Apache-2.0
+
+components:
+
+  - path: pld_runtime/repair/repair_detector.py
+    component_id: repair_detector
+    kind: runtime_module
+    area: repair
+    status: experimental
+    authority_level: 5
+    purpose: >
+      Detects drift conditions and issues PLD-compliant repair signals.
+      Intended as an early runtime component for testing repair-based control flow.
+
+    # Optional metadata fields (example usage):
+    authority_scope: runtime implementation
+    status_detail: "Implementation-specific detection logic; subject to refinement."
+    deps:
+      - pld_event_schema_v2
+      - pld_runtime_standard_v2
+
+
+  - path: quickstart/hello_pld_runtime.py
+    component_id: hello_pld_runtime
+    kind: example
+    area: onboarding
+    status: stable
+    authority_level: 2
+    purpose: >
+      Demonstrates the core runtime loop: Drift → Repair → Reentry → Continue → Outcome.
+      Used for teaching and validating the mental model before deeper integration.
+
+
+  - path: docs/07_pld_operational_metrics_cookbook.md
+    component_id: metrics_cookbook
+    kind: doc
+    area: analytics
+    status: candidate
+    authority_level: 3
+    purpose: >
+      Defines operational metrics (PRDR, REI, VRL, MRBF, FR) and how they map to runtime behavior.
+      Intended as a working reference for evaluation and field implementation teams.
+
+
+  - path: analytics/sample_traces/
+    component_id: trace_examples
+    kind: metric
+    area: validation
+    status: draft
+    authority_level: 1
+    purpose: >
+      Sample traces used for evaluating PLD behavior in experiments and controlled testing environments.
+      Contents may evolve rapidly and are not guaranteed stable.
