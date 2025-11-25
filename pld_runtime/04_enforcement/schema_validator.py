@@ -1,10 +1,11 @@
-# version: "2.0.0"
-# status: "draft / runtime_template / runtime_extension"
-# authority_level_scope: "Level 5 — runtime implementation"
-# purpose: "Validate PLD runtime events against Level 1 schema and Level 2 event matrix, with optional normalization."
-# scope: "Runtime-local validator; MUST NOT modify canonical schemas and MUST treat Level 1/2 as read-only."
-# change_classification: "runtime-only update (addresses dependency & contract alignment; NORMALIZE semantics refined)"
-# dependencies: "docs/schemas/pld_event.schema.json, docs/event_matrix.yaml, PLD_Event_Semantic_Spec_v2.0.md"
+# component_id: schema_validator
+# kind: runtime_module
+# area: enforcement
+# status: draft
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Validate PLD runtime events against Level 1 schema and Level 2 event matrix.
 
 from __future__ import annotations
 
@@ -415,3 +416,4 @@ def summarize_validation(result: PLDValidationResult) -> Dict[str, Any]:
         "matrix_warnings": getattr(result.matrix, "warnings", None),
         "has_normalized_event": result.normalized_event is not None,
     }
+
