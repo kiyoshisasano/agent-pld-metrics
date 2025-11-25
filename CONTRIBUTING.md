@@ -23,7 +23,7 @@ Please skim the following (not required to memorize):
 | Repo structure overview                | `SUMMARY.md`                     |
 | Component metadata format              | `meta/METADATA_MANIFEST_SPEC.md` |
 | Manifest example                       | `meta/manifest.example.yaml`     |
-| Roadmap (where the project is heading) | `ROADMAP.md`                     |
+| Roadmap (where the project is heading) | `meta/ROADMAP.md`                     |
 
 ---
 
