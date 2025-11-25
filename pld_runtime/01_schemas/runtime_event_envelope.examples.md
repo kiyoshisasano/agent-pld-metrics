@@ -1,22 +1,17 @@
+---
+path: "pld_runtime/01_schemas/runtime_event_envelope.ops.md"
+version: "2.0.0"
+status: "candidate"
+authority: 5
+license: "Apache-2.0"
+---
+
 # Metadata
 
-path: pld_runtime/01_schemas/runtime_event_envelope.ops.md  
-kind: ops_guide  
-area: schema  
-version: 2.0.0  
+purpose: Provide runtime operational guidance...
+scope: runtime implementation (operational layer)
+notes: actively seeking feedback
 
-status_tier: candidate  
-status_detail: "Exploratory — Candidate for Stabilization"  
-
-authority_level: 5  
-authority_scope: "runtime implementation (operational layer)"  
-
-purpose: "Provide runtime operational guidance for systems emitting, validating, transporting, and observing PLD runtime events."  
-change_classification: "extracted + normalized guidance from prior operational notes"  
-
-dependencies: []  
-notes: "feedback_status: Actively seeking implementation feedback before stabilization"  
-license_spdx: Apache-2.0  
 
 ---
 
