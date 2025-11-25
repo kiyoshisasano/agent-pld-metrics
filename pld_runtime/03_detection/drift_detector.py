@@ -1,10 +1,19 @@
+# =============================================================================
+# drift detector
 # version: 2.0.0
-# status: draft runtime_template (experimental)
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Drift detection runtime template for emitting PLD v2-compliant drift events.
-# change_classification: runtime-only, non-breaking + technical review alignment
-# dependencies: PLD event schema v2.0, PLD Event Matrix v2.0, PLD Runtime Standard v2.0, PLD Taxonomy v2.0
-# notes: Proposal-level runtime extension; detection logic intentionally left implementation-specific.
+# status: experimental  # runtime template; subject to change
+# authority_level: 5
+# authority_scope: runtime implementation
+# purpose: Provide a template for drift detection and emitting PLD v2-compliant
+#          drift events.
+# change_classification: runtime-only, non-breaking (technical review alignment)
+# dependencies: PLD event schema v2.0,
+#               PLD Event Matrix v2.0,
+#               PLD Runtime Standard v2.0,
+#               PLD Taxonomy v2.0
+# notes: Proposal-level runtime extension; detection logic intentionally left
+#        implementation-specific.
+# =============================================================================
 
 """
 Runtime template for drift detection.
@@ -216,3 +225,4 @@ def _extract_prefix(code: str) -> str:
 
 # TODO: Clarify whether drift events must be co-emitted alongside primary
 # conversational events or replace them in cases of detected divergence.
+
