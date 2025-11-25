@@ -1,17 +1,23 @@
+# =============================================================================
+# pattern classifier
 # version: 2.0.0
-# status: draft runtime_template (experimental)
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Pattern classification runtime template for producing taxonomy-aligned signals to feed PLD v2 event generation.
-# change_classification: runtime-only, non-breaking + technical review alignment
-# dependencies: PLD event schema v2.0, PLD Event Matrix v2.0, PLD Runtime Standard v2.0, PLD Taxonomy v2.0
-# notes: Template only. Does not emit PLD events directly; integrates with Level 5 runtime envelope and detectors.
+# status: experimental  # runtime template; expected to evolve
+# authority_level: 5
+# authority_scope: runtime implementation
+# purpose: Provide a runtime template for pattern classification that produces
+#          taxonomy-aligned signals feeding PLD v2 event generation.
+# change_classification: runtime-only, non-breaking (technical review alignment)
+# dependencies: PLD event schema v2.0,
+#               PLD Event Matrix v2.0,
+#               PLD Runtime Standard v2.0,
+#               PLD Taxonomy v2.0
+# notes: Template only; does not emit runtime events directly. Intended for use
+#        with Level 5 runtime envelope and downstream detectors.
+# =============================================================================
+
 
 """
 Pattern classifier template for PLD-compatible runtimes.
-
-This module remains Level 5 (runtime implementation only). It assists in
-classifying runtime state and generating hints for downstream components
-but does NOT emit PLD-valid events.
 
 Changes applied per technical review:
 - Added required Level 1-aligned source hint to PatternClassification.
@@ -165,4 +171,5 @@ class PatternClassifier:
         Caller is responsible for ensuring this aligns with PLD session semantics.
         """
         self._history.clear()
+
 
