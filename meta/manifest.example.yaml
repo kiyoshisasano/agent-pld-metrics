@@ -1,8 +1,8 @@
 # manifest.example.yaml
-# Reference example for METADATA_MANIFEST_SPEC v0.9.0
+# Reference example for METADATA_MANIFEST_SPEC v0.9.1
 # SPDX-License-Identifier: CC-BY-4.0
 
-version: 0.9.0
+version: 0.9.1
 default_license: Apache-2.0
 
 components:
@@ -18,11 +18,11 @@ components:
       Intended as an early runtime component for testing repair-based control flow.
 
     # Optional metadata fields (example usage):
-    authority_scope: runtime implementation
-    status_detail: "Implementation-specific detection logic; subject to refinement."
-    deps:
-      - pld_event_schema_v2
-      - pld_runtime_standard_v2
+    # authority_scope: runtime implementation
+    # status_detail: "Implementation-specific detection logic; subject to refinement."
+    # deps:
+    #   - pld_event_schema_v2
+    #   - pld_runtime_standard_v2
 
 
   - path: quickstart/hello_pld_runtime.py
