@@ -1,4 +1,4 @@
-# version: 0.1.1
+# version: 2.0.0
 # status: draft / template (Variant B)
 # authority_level_scope: Level 5 — runtime implementation
 # purpose: Provide a registry and factory helpers for wiring failover strategies,
