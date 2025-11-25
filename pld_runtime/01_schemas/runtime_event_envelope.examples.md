@@ -16,6 +16,7 @@ change_classification: "extracted + normalized guidance from prior operational n
 dependencies: []
 notes: "feedback_status: Actively seeking implementation feedback before stabilization"
 license_spdx: "Apache-2.0"
+
 ---
 
 # Runtime Event Envelope — Examples Catalog
