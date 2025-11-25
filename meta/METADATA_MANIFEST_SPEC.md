@@ -123,8 +123,6 @@ Useful phrasing examples:
 The `version:` field at the top of the manifest tracks the **format**, not the content.
 File-level versions remain inside the artifacts themselves (schemas, code, standards).
 
-Future automation may link `manifest.yaml` to `CHANGELOG` entries, but this is optional.
-
 ---
 
 ## 🔧 Future Extensions (Non-binding)
