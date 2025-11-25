@@ -1,11 +1,11 @@
-# version: 2.0.0
+# component_id: action_router
+# kind: runtime_module
+# area: controller
 # status: runtime
-# authority_level_scope: Level 5 — runtime implementation
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
 # purpose: Route PLD runtime events between controllers based on lifecycle phase and event_type.
-# scope: Applies Level 1–3 PLD rules to derive next action, without modifying canonical specs.
-# change_classification: runtime-only + selective integration of technical review
-# dependencies: Level1_pld_event.schema.json, Level2_event_matrix_schema.yaml, Level3_PLD_Runtime_Standard_v2.0.md, Level5_runtime_event_envelope.schema.json
-# runtime_label: runtime_extension (experimental)
 
 from __future__ import annotations
 
@@ -306,3 +306,4 @@ class ActionRouter:
     # TODO (#1): Confirm whether Level 1 guarantees the event['pld'] structure.
     # TODO (#2): Confirm orchestrator responsibility for normalization behavior.
     # TODO (#3): Clarify whether future routing requires richer session context integration.
+
