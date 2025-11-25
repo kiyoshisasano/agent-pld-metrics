@@ -1,4 +1,4 @@
-- path: pld_runtime/01_schemas/runtime_event_envelope.ops.md
+  path: pld_runtime/01_schemas/runtime_event_envelope.ops.md
   kind: "ops_guide"
   area: "schema"
   version: "2.0.0"
