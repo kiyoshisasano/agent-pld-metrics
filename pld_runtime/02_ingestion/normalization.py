@@ -1,11 +1,16 @@
+# =============================================================================
+# PLD Runtime Normalization Shim
 # version: 2.0.0
-# status: draft (runtime extension)
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Ingestion-time normalization and validation shim for PLD runtime events,
-#          enforcing Level 1 structure and Level 2 semantics without mutating
-#          persisted logs.
+# status: draft  # runtime extension; details expected to evolve
+# authority_level: 5
+# authority_scope: runtime implementation
+# purpose: Provide an ingestion-time normalization and validation shim for PLD
+#          runtime events, checking Level 1 structure and Level 2 semantics
+#          without mutating persisted logs.
 # change_classification: runtime-only, non-breaking (message text + TODO notes)
-# dependencies: Level 1–3 PLD specifications (schema, event matrix, runtime standard)
+# dependencies: PLD Level 1–3 specifications (schema, event matrix, runtime standard)
+# =============================================================================
+
 
 from __future__ import annotations
 
@@ -362,5 +367,6 @@ def make_jsonschema_validator(schema):
             return False, [str(e)]
 
     return _validate
+
 
 
