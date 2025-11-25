@@ -1,163 +1,78 @@
-# Metadata Manifest Specification — Candidate Version (v0.9.0)
+# **Metadata Manifest Specification — v0.9.1**
 
-> **Status:** Candidate Specification
-> **SPDX-License-Identifier:** CC-BY-4.0
+Status: Candidate Specification  
+SPDX-License-Identifier: CC-BY-4.0
 
-This specification defines the shared metadata manifest format used across the **Phase Loop Dynamics (PLD) Runtime Repository**.
-It establishes a minimal, predictable structure intended for collaboration, scaling, and future automation, while preserving experimentation.
+This specification defines the unified metadata format for the **Phase Loop Dynamics (PLD) Repository**.
 
-This document replaces the prior **Working Draft** and advances the specification toward stabilization.
+## **🎯 Design Philosophy**
 
----
+* **Centralized Discovery:** A root manifest.yaml acts as the primary inventory.  
+* **Distributed Option:** Sub-directories (e.g., field/) may have their own manifests for external collaboration.  
+* **Co-location:** Metadata stays with the code (via headers) or near the code (via manifest).
 
-## 🎯 Scope & Intent
+## **📍 File Locations**
 
-The manifest format supports:
+1. **Root Manifest:** ./manifest.yaml (Required)  
+2. **Sub Manifests:** path/to/folder/manifest.yaml (Optional, for isolated domains)
 
-* **Discoverability** — what exists and why
-* **Traceability** — maturity, intent, and role of runtime artifacts
-* **Consistency** — shared conventions without restricting design
-* **Future automation** — CI validation, documentation generation, dependency mapping
+Path Resolution Rule:  
+All paths in a manifest are relative to the directory containing that manifest.
 
-This specification **does not** define runtime behavior, architectural governance, or certification rules. Those belong to separate standards.
+## **🧩 Manifest Structure**
 
----
+version: 0.9.1  
+default\_license: Apache-2.0  
+components:  
+  \- path: pld\_runtime/03\_detection/drift\_detector.py  
+    component\_id: drift\_detector  
+    kind: runtime\_module  
+    area: detection  
+    status: experimental  
+    authority\_level: 5  
+    purpose: ...
 
-## 📍 File Location & Naming
+## **📖 Controlled Vocabulary**
 
-A manifest **may exist at the folder level**, documenting components contained within.
+### **kind**
 
-```
-pld_runtime/
-  manifest.yaml   ← Manifest describes items in this folder
-  detectors/
-  operators/
-  schemas/
-```
+|
 
-**Rules:**
+| Type | Description |  
+| code | General source code |  
+| runtime\_module | Core PLD logic (detectors, controllers) |  
+| schema | Data definitions (JSON, YAML) |  
+| config | Configuration files |  
+| metric | Datasets, logs, or evaluation metrics |  
+| doc | Documentation |  
+| example | Demos and samples |
 
-* File name must be: `manifest.yaml`
-* One manifest per folder
-* Manifests are optional for early-stage or experimental folders
+### **status**
 
----
+| Status | Meaning |  
+| experimental | Active development, unstable. |  
+| draft | Work in progress (docs/specs). |  
+| candidate | Review pending, feature complete. |  
+| stable | Production-ready, breaking changes restricted. |
 
-## 🧩 Manifest Structure
+### **authority\_level (1–5)**
 
-A manifest consists of a small header and a list of component entries.
+| Level | Scope | Governance |  
+| 1 | Open / Local | Free to change. (e.g., local experiments, field notes) |  
+| 2 | Collaborative | Shared resources. Change with lightweight review. |  
+| 3 | Standard | Established patterns. Change requires rationale. |  
+| 4 | Governed | Architecture/Spec. Change requires maintainer alignment. |  
+| 5 | Critical | Core Runtime/Safety. Strict change control. |
 
-```yaml
-version: 0.9.0                # Format version (this spec)
-default_license: Apache-2.0   # SPDX identifier
+## **🔗 Code Header Standard (L2 Validation)**
 
-components:
-  - path: <relative-path>
-    component_id: <snake_case_identifier>
-    kind: <kind_enum>
-    area: <free-text domain grouping>
-    status: <status_enum>
-    authority_level: <integer>
-    purpose: <1–3 sentence summary>
+For Python (.py) files, metadata MUST appear in the **first 50 lines** using strict \# key: value syntax.
 
-    # Optional
-    authority_scope: <text>
-    status_detail: <text>
-    deps: [ ... ]
-```
+\# component\_id: repair\_detector  
+\# status: experimental  
+\# authority\_level: 5
 
----
-
-## 📖 Field Definitions
-
-| Field             | Required | Type          | Description                                                               |
-| ----------------- | -------- | ------------- | ------------------------------------------------------------------------- |
-| `version`         | Yes      | SemVer        | Tracks the manifest **spec format** — not component versions.             |
-| `default_license` | Yes      | SPDX string   | License applied when component metadata does not specify otherwise.       |
-| `components`      | Yes      | List          | List of described items.                                                  |
-| `path`            | Yes      | Relative path | Location of the referenced resource.                                      |
-| `component_id`    | Yes      | snake_case    | Machine-readable stable identifier. Must align with code header metadata. |
-| `kind`            | Yes      | Enum          | See controlled vocabulary below.                                          |
-| `area`            | Yes      | Free-text     | Logical domain or conceptual grouping.                                    |
-| `status`          | Yes      | Enum          | Declares maturity level.                                                  |
-| `authority_level` | Yes      | Integer (1–5) | Governance maturity and operational tolerance.                            |
-| `purpose`         | Yes      | Text          | One to three sentences describing intent.                                 |
-| Optional Fields   | No       | *Various*     | Add when clarity increases signal, not noise.                             |
-
----
-
-## 🧭 Controlled Vocabulary
-
-### `kind`
-
-```
-code | schema | config | runtime_module | metric | example | doc
-```
-
-### `status`
-
-```
-experimental | draft | candidate | stable
-```
-
-### `authority_level`
-
-```
-1–5 (integer)
-```
-
-Meaning is aligned with runtime maturity tiers but not yet normative.
-
----
-
-## 🔗 Mapping to Code Metadata Headers
-
-A manifest entry must correspond to metadata inside the associated runtime file.
-
-| Concept         | Manifest Field    | Python Header Field     | Rules                                              |
-| --------------- | ----------------- | ----------------------- | -------------------------------------------------- |
-| Identifier      | `component_id`    | `component_id:`         | Must match exactly (snake_case).                   |
-| Status          | `status`          | `status:`               | Must use controlled vocabulary.                    |
-| Version         | —                 | `version:` (file-local) | **Component version lives in code, not manifest.** |
-| Purpose         | `purpose`         | `purpose:`              | Free-text alignment expected.                      |
-| Authority Level | `authority_level` | `authority_level:`      | Must match.                                        |
-
-> A future CI validator may enforce one-to-one alignment.
-
----
-
-## 🧪 Validation Levels
-
-To enable gradual adoption, validation occurs in three strictness tiers:
-
-| Level                | Name                  | Enforced Elements                                  |
-| -------------------- | --------------------- | -------------------------------------------------- |
-| **L0 — Permissive**  | Minimal schema exists | `version`, `components[]` present                  |
-| **L1 — Structured**  | Format consistency    | All required fields valid vocabulary               |
-| **L2 — Enforceable** | Tool-compatible       | Paths resolvable and metadata matches code headers |
-
-At present, tooling validation is **optional**, but future versions may require L1 for contribution acceptance.
-
----
-
-## 🧱 Versioning Rules
-
-* Manifests do **not** track component versioning.
-* Component-level lifecycle remains stored within the artifact (e.g., inside `.py` runtime metadata blocks).
-* The manifest’s `version` changes **only when the format specification changes**.
-
----
-
-## 🚧 Future Extension Directions (Non-Normative)
-
-Potential future additions may include:
-
-* Automated manifest generation from runtime files
-* Machine-readable dependency graphs
-* Governance maturity audits
-* Component status transitions linked to operational telemetry
-
-These possibilities do not affect the v0.9 format.
+**Maintainer:** Kiyoshi Sasano | **Version:** 0.9.1
 
 ---
 
