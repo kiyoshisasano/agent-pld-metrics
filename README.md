@@ -501,9 +501,6 @@ This project uses a dual-license model:
 Full details: `LICENSES/LICENSES.md`  
 Trademark usage: `LICENSES/TRADEMARK_POLICY.md`
 
-For enterprise licensing or collaboration:  
-📩 deepzenspace[at]gmail.com
-
 ---
 
 "Phase Loop Dynamics" and "PLD" are claimed as common law trademarks of Kiyoshi Sasano.  
