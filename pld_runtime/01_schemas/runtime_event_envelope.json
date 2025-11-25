@@ -1,26 +1,21 @@
 {
-  - path: pld_runtime/01_schemas/runtime_event_envelope.json
-  kind: "schema"
-  area: "schema"
-  version: "2.0.0"
-
-  status_tier: "draft"
-  status_detail: "draft"
-
-  authority_level: 5
-  authority_scope: "runtime implementation"
-
-  purpose: "Runtime envelope template overlaying the Level 1 PLD event schema for valid event emission."
-  change_classification: "runtime extension + compliance annotation + TODO resolution + editorial clarification"
-
-  dependencies:
-    - docs/schemas/pld_event.schema.json
-    - docs/event_matrix.yaml
-    - docs/PLD_Runtime_Standard_v2.0.md
-
-  notes: "Resolved TODO: Derived metric staging data (PRDR, VRL)..."
-  license_spdx: "Apache-2.0"
-
+  "path": "pld_runtime/01_schemas/runtime_event_envelope.json",
+  "kind": "schema",
+  "area": "schema",
+  "version": "2.0.0",
+  "status_tier": "draft",
+  "status_detail": "draft",
+  "authority_level": 5,
+  "authority_scope": "runtime implementation",
+  "purpose": "Runtime envelope template overlaying the Level 1 PLD event schema for valid event emission.",
+  "change_classification": "runtime extension + compliance annotation + TODO resolution + editorial clarification",
+  "dependencies": [
+    "docs/schemas/pld_event.schema.json",
+    "docs/event_matrix.yaml",
+    "docs/PLD_Runtime_Standard_v2.0.md"
+  ],
+  "notes": "Resolved TODO: Derived metric staging data (PRDR, VRL)...",
+  "license_spdx": "Apache-2.0"
 }
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -238,6 +233,7 @@
     }
   ]
 }
+
 
 
 
