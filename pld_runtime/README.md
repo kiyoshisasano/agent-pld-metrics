@@ -1,16 +1,13 @@
 ---
-
 license: "Apache License 2.0"
 spdx: "Apache-2.0"
 copyright:
-holder: "Kiyoshi Sasano"
-year: 2025
+  holder: "Kiyoshi Sasano"
+  year: 2025
 terms:
-
-* "Use of this software is permitted under the Apache License, Version 2.0."
-* "You may obtain a copy of the license at: [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)"
-* "Distributed on an 'AS IS' basis WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND."
-
+  - "Use of this software is permitted under the Apache License, Version 2.0."
+  - "You may obtain a copy of the license at: http://www.apache.org/licenses/LICENSE-2.0"
+  - "Distributed on an 'AS IS' basis WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND."
 ---
 
 # PLD Runtime Package
@@ -192,3 +189,4 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
