@@ -1,21 +1,21 @@
-  path: pld_runtime/01_schemas/runtime_event_envelope.ops.md
-  kind: "ops_guide"
-  area: "schema"
-  version: "2.0.0"
+---
+path: "pld_runtime/01_schemas/runtime_event_envelope.ops.md"
+kind: "ops_guide"
+area: "schema"
+version: "2.0.0"
 
-  status_tier: "candidate"
-  status_detail: "Exploratory — Candidate for Stabilization"
+status_tier: "candidate"
+status_detail: "Exploratory — Candidate for Stabilization"
 
-  authority_level: 5
-  authority_scope: "runtime implementation (operational layer)"
+authority_level: 5
+authority_scope: "runtime implementation (operational layer)"
 
-  purpose: "Provide runtime operational guidance for systems emitting, validating, transporting, and observing PLD runtime events."
-  change_classification: "extracted + normalized guidance from prior operational notes"
+purpose: "Provide runtime operational guidance for systems emitting, validating, transporting, and observing PLD runtime events."
+change_classification: "extracted + normalized guidance from prior operational notes"
 
-  dependencies: []
-  notes: "feedback_status: Actively seeking implementation feedback before stabilization"
-  license_spdx: "Apache-2.0"
-
+dependencies: []
+notes: "feedback_status: Actively seeking implementation feedback before stabilization"
+license_spdx: "Apache-2.0"
 ---
 
 # Runtime Event Envelope — Examples Catalog
