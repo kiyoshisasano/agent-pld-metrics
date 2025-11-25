@@ -400,6 +400,95 @@ Less relevant when:
 
 ---
 
+---
+
+## 🧭 Metadata & Manifest System (How Components Are Described)
+
+PLD is designed for collaboration — especially in environments where multiple teams,
+implementations, or runtime modules evolve over time.
+
+To support this, the repository includes a lightweight metadata system that makes
+components **discoverable, traceable, and machine-checkable** without restricting experimentation.
+
+This system consists of three parts:
+
+| Purpose                             | File                             |
+| ----------------------------------- | -------------------------------- |
+| Specification (the rules)           | `meta/METADATA_MANIFEST_SPEC.md` |
+| Reference example                   | `meta/manifest.example.yaml`     |
+| Active metadata for this repository | `manifest.yaml`                  |
+
+The manifest format is intentionally simple and may evolve as integrations and
+field usage mature.
+
+---
+
+### 📦 What Belongs in the Manifest?
+
+Any artifact that participates in runtime behavior, evaluation, documentation,
+or integration can be listed in the manifest — including:
+
+* runtime modules
+* schemas and metrics
+* documentation assets
+* examples and learning paths
+* experimental work
+
+Each entry includes:
+
+* a stable `component_id`
+* controlled vocabulary fields (`kind`, `status`, `authority_level`)
+* a short human-readable purpose
+
+Full details: `meta/METADATA_MANIFEST_SPEC.md`.
+
+---
+
+### 🛠 Validating the Manifest
+
+A helper script is included for contributors and teams automating runtime governance.
+
+```bash
+python validate_manifest.py
+```
+
+Validation levels:
+
+| Level | Meaning                                               |
+| ----- | ----------------------------------------------------- |
+| `L0`  | Structural only — useful for exploration              |
+| `L1`  | Format + vocabulary enforcement (default)             |
+| `L2`  | File existence + optional alignment with code headers |
+
+Example:
+
+```bash
+python validate_manifest.py --level L2
+```
+
+This allows gradual adoption — from prototype → controlled collaboration → automated CI enforcement.
+
+---
+
+### 🤝 Contributing Metadata
+
+When adding new runtime files, documents, or integration artifacts:
+
+1. Add or update an entry in `manifest.yaml`
+2. Run the validator:
+
+```bash
+python validate_manifest.py --level L1
+```
+
+3. Commit changes as part of the same PR.
+
+> Metadata is not bureaucracy — it is a map.
+> It helps others understand *what exists*, *why it exists*, and *how stable it is.*
+
+---
+
+
 ## 📜 License
 
 This project uses a dual-license model:
