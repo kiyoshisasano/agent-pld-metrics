@@ -1,0 +1,25 @@
+# manifest.yaml
+# Metadata manifest for this PLD repository
+# Format spec: METADATA_MANIFEST_SPEC v0.9.0
+# SPDX-License-Identifier: Apache-2.0
+
+version: 0.9.0
+default_license: Apache-2.0
+
+components:
+
+  # Example entry — update, duplicate, or remove as needed
+  - path: pld_runtime/
+    component_id: placeholder_entry
+    kind: doc
+    area: unassigned
+    status: draft
+    authority_level: 1
+    purpose: >
+      Placeholder entry demonstrating the required manifest format.
+      Replace with real components as the repository evolves.
+
+    # Optional (remove if not relevant)
+    authority_scope: unassigned
+    status_detail: "Pending classification"
+    deps: []
