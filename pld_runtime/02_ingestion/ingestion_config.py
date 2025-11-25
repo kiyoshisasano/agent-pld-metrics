@@ -1,5 +1,5 @@
 # =============================================================================
-# PLD Runtime Ingestion Configuration
+# ingestion config
 # version: 2.0.0
 # status: candidate  # runtime config; reasonably proven but still subject to change
 # authority_level: 5
@@ -16,18 +16,6 @@
 #               PLD_taxonomy_v2.0.md,
 #               runtime_event_envelope.schema.json
 # =============================================================================
-
-"""
-FILE MODE: runtime_template
-
-This module provides a Level 5 ingestion configuration overlay for PLD v2
-events. It MUST NOT redefine any rules from Levels 1–3. Instead, it binds
-runtime behavior (paths, modes, and operational flags) to the canonical
-specifications.
-
-This file is a runtime extension / proposal and MUST be treated as Level 5
-only. Any conflicts MUST be resolved in favor of Levels 1–3.
-"""
 
 from __future__ import annotations
 
@@ -300,5 +288,6 @@ def default_ingestion_config(
 # Singleton-style default used by simple integrations. More complex runtimes
 # SHOULD inject their own IngestionConfig instance explicitly.
 INGESTION_CONFIG: IngestionConfig = default_ingestion_config()
+
 
 
