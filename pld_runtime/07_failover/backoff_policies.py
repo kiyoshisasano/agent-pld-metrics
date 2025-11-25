@@ -1,272 +1,172 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-pld_runtime.failover.backoff_policies
-
-Concept
--------
-Central place for retry / backoff behavior definitions used during
-failover and recovery.
-
-This module provides:
-    - Named backoff profiles (none / light / medium / heavy)
-    - Pure functions to compute next delay and whether to continue
-    - A small config model to plug into host runtimes
-
-It does NOT:
-    - perform retries itself
-    - sleep or block
-    - call external systems
-
-Host runtimes should:
-    - read FailoverDecision.metadata["backoff_profile"] (if present)
-    - map it to a BackoffPolicy via this module
-    - drive their own retry loop accordingly
-"""
+# version: 0.1.0
+# status: draft / template (Variant B)
+# authority_level_scope: Level 5 — runtime implementation
+# purpose: Define pluggable backoff policies for failover strategies without interpreting PLD semantics.
+# scope: Module-level runtime behavior only.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from enum import Enum
-from typing import Any, Dict, Tuple, Union
+import abc
+import random
+import time
+from dataclasses import dataclass
+from typing import Optional, Protocol
 
 
 # ---------------------------------------------------------------------------
-# Backoff profile definitions
+# Runtime Backoff Policy Protocol
 # ---------------------------------------------------------------------------
 
-
-class BackoffProfile(str, Enum):
+class BackoffPolicy(Protocol):
     """
-    Named backoff profiles.
+    Contract for backoff strategies used by failover orchestration.
 
-    - NONE:
-        No backoff, no retries.
-
-    - LIGHT:
-        Few retries with small exponential delays.
-        Suitable for transient errors.
-
-    - MEDIUM:
-        Moderate number of retries with exponential backoff.
-        Use when downstream may be temporarily overloaded.
-
-    - HEAVY:
-        Conservative retries with larger delays and fewer attempts.
-        Appropriate for severe or systemic issues.
+    Notes:
+      - This interface MAY be extended with observability hooks but MUST NOT
+        emit or mutate PLD events.
+      - Any backoff implementation MUST remain deterministic and pure with
+        respect to PLD event semantics.
+      - Implementations MAY use time.sleep(...) but SHOULD support dry-run or
+        async execution patterns when integrated with runtime orchestration.
     """
 
-    NONE = "none"
-    LIGHT = "light"
-    MEDIUM = "medium"
-    HEAVY = "heavy"
+    def next_delay(self, attempt: int) -> float:
+        """
+        Compute the next backoff delay in seconds.
 
+        Constraints:
+          - attempt is 1-based.
+          - MUST NOT mutate attempt or maintain implicit state.
+        """
+        ...
+
+
+# ---------------------------------------------------------------------------
+# Constant Backoff Strategy
+# ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
-class BackoffPolicy:
-    """
-    Configuration for a backoff policy.
+class ConstantBackoff:
+    """A fixed-delay backoff policy.
 
-    Fields
-    ------
-    profile:
-        Named profile.
+    Useful for deterministic retry flows where jitter or exponential growth
+    are undesirable.
 
-    max_retries:
-        Maximum number of *retries* (excluding the initial attempt).
-
-        Example:
-            max_retries=3 → attempts with attempt_index:
-                0 (initial attempt),
-                1, 2, 3 (retries).
-
-    base_delay_seconds:
-        Base delay for an exponential schedule.
-
-    multiplier:
-        Exponential multiplier applied per attempt:
-
-            delay = base_delay_seconds * (multiplier ** (retry_number - 1))
-
-        where retry_number is 1-based for the first retry:
-
-            attempt_index = 0 → first attempt (no previous failures)
-            attempt_index = 1 → first retry  (retry_number = 1)
-            attempt_index = 2 → second retry (retry_number = 2)
-            ...
-
-    jitter_ratio:
-        Fraction of delay that host may use as +/- jitter range.
-        This module does not generate random jitter; it only
-        supplies the nominal delay.
-
-    Notes
-    -----
-    The backoff schedule is deterministic and purely numerical;
-    host systems are free to adjust it (e.g., adding randomness).
+    Parameters:
+      - delay_seconds: float — MUST be >= 0.
     """
 
-    profile: BackoffProfile
-    max_retries: int
-    base_delay_seconds: float
-    multiplier: float
-    jitter_ratio: float = 0.1
+    delay_seconds: float = 1.0
 
-    def to_dict(self) -> Dict[str, Any]:
-        data = asdict(self)
-        data["profile"] = self.profile.value
-        return data
-
-
-# Canonical profile registry
-_BACKOFF_POLICIES: Dict[BackoffProfile, BackoffPolicy] = {
-    BackoffProfile.NONE: BackoffPolicy(
-        profile=BackoffProfile.NONE,
-        max_retries=0,
-        base_delay_seconds=0.0,
-        multiplier=1.0,
-        jitter_ratio=0.0,
-    ),
-    BackoffProfile.LIGHT: BackoffPolicy(
-        profile=BackoffProfile.LIGHT,
-        max_retries=2,
-        base_delay_seconds=0.5,
-        multiplier=2.0,
-        jitter_ratio=0.25,
-    ),
-    BackoffProfile.MEDIUM: BackoffPolicy(
-        profile=BackoffProfile.MEDIUM,
-        max_retries=3,
-        base_delay_seconds=1.0,
-        multiplier=2.0,
-        jitter_ratio=0.25,
-    ),
-    BackoffProfile.HEAVY: BackoffPolicy(
-        profile=BackoffProfile.HEAVY,
-        max_retries=4,
-        base_delay_seconds=2.0,
-        multiplier=2.0,
-        jitter_ratio=0.3,
-    ),
-}
+    def next_delay(self, attempt: int) -> float:
+        if attempt < 1:
+            raise ValueError("attempt MUST be >= 1")
+        return self.delay_seconds
 
 
 # ---------------------------------------------------------------------------
-# Public API
+# Exponential Backoff Strategy
 # ---------------------------------------------------------------------------
 
+@dataclass(frozen=True)
+class ExponentialBackoff:
+    """An exponential growth policy with optional maximum bound.
 
-def _normalize_profile(profile: Union[str, BackoffProfile]) -> BackoffProfile:
+    Parameters:
+      - base_seconds: float — MUST be > 0
+      - factor: float — MUST be > 1
+      - max_seconds: Optional[float] — upper bound on computed delay.
     """
-    Normalize an incoming profile label into a BackoffProfile enum.
 
-    Unknown string values fall back to BackoffProfile.MEDIUM to remain
-    conservative.
+    base_seconds: float = 1.0
+    factor: float = 2.0
+    max_seconds: Optional[float] = None
+
+    def __post_init__(self) -> None:
+        if self.base_seconds <= 0:
+            raise ValueError("base_seconds MUST be > 0")
+        if self.factor <= 1:
+            raise ValueError("factor MUST be > 1")
+
+    def next_delay(self, attempt: int) -> float:
+        if attempt < 1:
+            raise ValueError("attempt MUST be >= 1")
+
+        delay = self.base_seconds * (self.factor ** (attempt - 1))
+        if self.max_seconds is not None:
+            delay = min(delay, self.max_seconds)
+        return delay
+
+
+# ---------------------------------------------------------------------------
+# Exponential Jitter Backoff Strategy
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class ExponentialJitterBackoff:
+    """Exponential backoff with bounded random jitter.
+
+    Behaves like exponential backoff, then applies jitter within ± jitter_ratio.
+
+    Parameters:
+      - base_seconds: float — MUST be > 0
+      - factor: float — MUST be > 1
+      - jitter_ratio: float — MUST be in [0, 1]
+      - max_seconds: Optional[float] — upper bound on post-jitter result.
+
+    Notes:
+      - The lifetime semantics of randomness are runtime-specific. This file
+        does NOT set seeds or reuse random streams.
     """
-    if isinstance(profile, BackoffProfile):
-        return profile
 
-    # Accept either exact enum values ("light") or their upper-case names ("LIGHT").
-    label = str(profile).strip().lower()
-    for p in BackoffProfile:
-        if label in (p.value, p.name.lower()):
-            return p
+    base_seconds: float = 1.0
+    factor: float = 2.0
+    jitter_ratio: float = 0.2
+    max_seconds: Optional[float] = None
 
-    return BackoffProfile.MEDIUM
+    def __post_init__(self) -> None:
+        if self.base_seconds <= 0:
+            raise ValueError("base_seconds MUST be > 0")
+        if self.factor <= 1:
+            raise ValueError("factor MUST be > 1")
+        if not (0.0 <= self.jitter_ratio <= 1.0):
+            raise ValueError("jitter_ratio MUST be in [0, 1]")
+        # TODO(JITTER-RANGE-POLICY): Confirm whether jitter is allowed to reduce
+        # the delay below the base exponential value or if a minimum percentage
+        # bound relative to the base delay is required.
+
+    def next_delay(self, attempt: int) -> float:
+        if attempt < 1:
+            raise ValueError("attempt MUST be >= 1")
+
+        delay = self.base_seconds * (self.factor ** (attempt - 1))
+        jitter_bound = delay * self.jitter_ratio
+
+        jitter = random.uniform(-jitter_bound, jitter_bound)
+        delay = delay + jitter
+
+        if self.max_seconds is not None:
+            delay = min(delay, self.max_seconds)
+        return max(0.0, delay)
 
 
-def get_backoff_policy(profile: Union[str, BackoffProfile]) -> BackoffPolicy:
+# ---------------------------------------------------------------------------
+# Sleep Utility (Optional execution helper)
+# ---------------------------------------------------------------------------
+
+def apply_backoff(policy: BackoffPolicy, attempt: int) -> float:
     """
-    Retrieve BackoffPolicy for a given profile name or enum.
+    Utility to apply a backoff policy.
 
-    Parameters
-    ----------
-    profile:
-        Either a BackoffProfile instance or a string such as
-        "none", "light", "medium", "heavy".
+    Behavior:
+      - Computes delay using policy.next_delay(attempt).
+      - Sleeps for the computed duration.
+      - Returns the computed delay without mutating PLD events.
 
-    Returns
-    -------
-    BackoffPolicy
-        The corresponding policy. Unknown values default to MEDIUM.
+    TODO(BACKOFF-OWNERSHIP): Confirm whether apply_backoff should remain in
+    this module or be delegated to the failover orchestrator component to keep
+    policy definition and execution ownership clearly separated.
     """
-    normalized = _normalize_profile(profile)
-    return _BACKOFF_POLICIES.get(normalized, _BACKOFF_POLICIES[BackoffProfile.MEDIUM])
-
-
-def compute_delay(
-    *,
-    attempt_index: int,
-    policy: BackoffPolicy,
-) -> Tuple[float, bool]:
-    """
-    Compute the nominal delay (in seconds) and whether another retry
-    is allowed under the given policy.
-
-    Parameters
-    ----------
-    attempt_index:
-        0-based index of the attempt.
-
-        - attempt_index = 0:
-            First attempt (no previous failures).
-            delay_seconds = 0.0, should_retry = True.
-
-        - attempt_index = 1:
-            First retry.
-
-        - attempt_index = n:
-            n-th retry.
-
-    policy:
-        BackoffPolicy to apply.
-
-    Returns
-    -------
-    (delay_seconds, should_retry)
-        delay_seconds:
-            Suggested delay *before this attempt* (not before the next).
-
-        should_retry:
-            True if this attempt is allowed under max_retries,
-            False if the caller should stop.
-
-    Behavior
-    --------
-    - For attempt_index == 0:
-        delay_seconds = 0.0, should_retry = True.
-
-    - For attempt_index > policy.max_retries:
-        should_retry = False and delay_seconds is returned as 0.0
-        (callers should ignore the delay in this case).
-
-    - For attempt_index in [1, max_retries]:
-        Exponential backoff is applied based on base_delay_seconds
-        and multiplier.
-    """
-    if attempt_index < 0:
-        attempt_index = 0
-
-    # Check retry allowance
-    if attempt_index > policy.max_retries:
-        # No more retries allowed. We still return a numeric delay,
-        # but callers should ignore it when should_retry is False.
-        return 0.0, False
-
-    if attempt_index == 0:
-        # First call: no delay before the attempt.
-        return 0.0, True
-
-    # Retry attempts: exponential schedule
-    retry_number = attempt_index  # 1, 2, 3, ...
-    delay = policy.base_delay_seconds * (policy.multiplier ** (retry_number - 1))
-
-    return float(delay), True
-
-
-__all__ = [
-    "BackoffProfile",
-    "BackoffPolicy",
-    "get_backoff_policy",
-    "compute_delay",
-]
+    delay = policy.next_delay(attempt)
+    time.sleep(delay)
+    return delay
