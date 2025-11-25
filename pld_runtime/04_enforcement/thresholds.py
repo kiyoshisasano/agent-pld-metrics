@@ -1,11 +1,13 @@
-"""
-version: 2.0.0
-status: draft (runtime extension)
-authority_level_scope: Level 5 — runtime implementation
-purpose: Non-normative threshold templates for PLD metrics enforcement in runtimes.
-change_classification: runtime-only (non-breaking, technical corrections applied)
-dependencies: PLD event schema v2.0; PLD Event Matrix v2.0; PLD Runtime Metrics Spec v2.0
+# component_id: enforcement_thresholds
+# kind: runtime_module
+# area: enforcement
+# status: draft
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Threshold templates for runtime enforcement of PLD metrics.
 
+"""
 Notes:
 - Core Technical Issues from reviews integrated (sanity-bound clamping + config ordering validation).
 - Architecture intent and naming preserved.
@@ -204,3 +206,4 @@ def evaluate_metric(
 def get_threshold(metric_name: str) -> Optional[MetricThreshold]:
     """Retrieve threshold configuration for external inspection."""
     return DEFAULT_THRESHOLDS.get(metric_name)
+
