@@ -1,24 +1,11 @@
-# =============================================================================
-# repair detector
-# version: 2.0.0
-# status: experimental  # runtime template; subject to refinement
+# component_id: repair_detector
+# kind: runtime_module
+# area: detection
+# status: experimental
 # authority_level: 5
-# authority_scope: runtime implementation
-# purpose: Provide a template for runtime repair detection and emitting PLD
-#          v2-compliant repair events.
-# change_classification: runtime-only, non-breaking (technical review alignment)
-# dependencies: PLD event schema v2.0,
-#               PLD Event Matrix v2.0,
-#               PLD Runtime Standard v2.0,
-#               PLD Taxonomy v2.0
-# notes: Proposal-level runtime extension; detection logic intentionally left
-#        implementation-specific.
-# =============================================================================
-
-"""
-Only Core Technical Issues from the review have been integrated.
-All “Open Questions” are now TODOs and MUST NOT be resolved here.
-"""
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Template for runtime repair detection that emits PLD v2-compliant repair events.
 
 from __future__ import annotations
 
@@ -199,5 +186,6 @@ def _extract_prefix(code: str) -> str:
     while i > 0 and head[i - 1].isdigit():
         i -= 1
     return head[:i] or head
+
 
 
