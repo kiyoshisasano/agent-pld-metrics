@@ -1,9 +1,11 @@
+# component_id: runtime_failover
+# kind: runtime_module
+# area: failover
+# status: draft
+# authority_level: 5
 # version: 2.0.0
-# status: draft / template (Variant B)
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Orchestrate failover execution using pluggable strategies, backoff, and reconciliation
-#          without constructing or mutating PLD events directly.
-# scope: Module-level coordination only; event semantics and construction are handled upstream.
+# license: Apache-2.0
+# purpose: Orchestrate failover execution using strategies, backoff, and reconciliation without mutating PLD events.
 
 from __future__ import annotations
 
@@ -263,3 +265,4 @@ class FailoverOrchestrator:
             reconciliation=reconciliation,
             backoff_delay=backoff_delay,
         )
+
