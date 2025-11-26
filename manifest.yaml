@@ -356,16 +356,33 @@ components:
     authority_level: 4
     purpose: Registry for failover strategies.
 
-  # ---------------------------------------------------------
-  # 4. Quickstart & Examples
-  # ---------------------------------------------------------
+# ---------------------------------------------------------
+# 4. Quickstart & Examples
+# ---------------------------------------------------------
+
   - path: quickstart/hello_pld_runtime.py
     component_id: hello_pld_runtime
     kind: example
-    area: onboarding
-    status: stable
-    authority_level: 2
-    purpose: Minimal executable example.
+    area: quickstart
+    status: experimental
+    authority_level: 1
+    purpose: Minimal quickstart script that builds a single PLD v2-compliant event via RuntimeSignalBridge and emits it using the Level 5 logging pipeline.
+
+  - path: quickstart/run_minimal_engine.py
+    component_id: run_minimal_engine
+    kind: example
+    area: quickstart
+    status: experimental
+    authority_level: 1
+    purpose: Minimal engine loop that processes a sequence of RuntimeSignals into PLD v2-compliant events via RuntimeSignalBridge and emits them through the Level 5 structured logging pipeline.
+
+  - path: quickstart/examples/minimal_pld_demo.py
+    component_id: minimal_pld_demo
+    kind: example
+    area: quickstart
+    status: experimental
+    authority_level: 1
+    purpose: End-to-end quickstart demonstration showing a scripted flow converted to PLD runtime events and logged through StructuredLogger for inspection.
 
   # ---------------------------------------------------------
   # 5. Field Collaboration
