@@ -1,9 +1,11 @@
-# version: 2.0.0
+# component_id: logging_config
+# kind: runtime_module
+# area: logging
 # status: draft
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Minimal logging configuration stub for a PLD-compatible runtime.
-# scope: Defines logger name and configuration entry point without binding semantics.
-# change_classification: runtime extension (proposal, experimental)
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Minimal logging configuration stub for PLD-compatible runtimes.
 
 import logging
 
