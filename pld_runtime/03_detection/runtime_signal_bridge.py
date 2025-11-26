@@ -1,15 +1,11 @@
-# =============================================================================
-# runtime_signal_bridge
-#
-# version: 2.0.0
+# component_id: runtime_signal_bridge
+# kind: runtime_module
+# area: detection
 # status: draft
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Bridge internal runtime signals into PLD v2-compliant events for
-#          emission, enforcing Level 1–3 constraints at the mapping boundary.
-# change_classification: runtime-only
-# dependencies: PLD runtime event schema v2.0, PLD event matrix v2.0,
-#               PLD runtime event envelope v2.0
-# =============================================================================
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Bridge internal runtime signals into PLD v2-compliant events while enforcing Level 1–3 constraints.
 
 from __future__ import annotations
 
