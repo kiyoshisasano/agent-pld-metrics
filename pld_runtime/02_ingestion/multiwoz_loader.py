@@ -1,38 +1,11 @@
-# =============================================================================
-# multiwoz_loader
-# version: 2.0.0
-# status: experimental  # template/adapter; structure may evolve
+# component_id: multiwoz_loader
+# kind: runtime_module
+# area: ingestion
+# status: experimental
 # authority_level: 5
-# authority_scope: runtime implementation (loader template)
-# purpose: Provide a template for loading MultiWOZ-style dialogues and
-#          projecting them into PLD v2-compliant runtime events using the
-#          Level 5 runtime event envelope.
-# change_classification: runtime modification (intended to resolve core issues)
-# dependencies: pld_event.schema.json,
-#               event_matrix.yaml,
-#               PLD_Event_Semantic_Spec_v2.0.md,
-#               PLD_Runtime_Standard_v2.0.md,
-#               PLD_taxonomy_v2.0.md,
-#               PLD_metrics_spec.md,
-#               runtime_event_envelope.schema.json
-# =============================================================================
-
-
-"""
-FILE MODE: runtime_template
-
-This module is a Level 5 adapter template for projecting MultiWOZ-style
-dialogues into PLD v2-compatible runtime events.
-
-Constraints:
-
-- MUST conform structurally to Level 1 schema: pld_event.schema.json.
-- MUST conform semantically to Level 2 matrix: event_matrix.yaml and
-  PLD_Event_Semantic_Spec_v2.0.md.
-- MUST respect Level 3 runtime standards and taxonomy mappings.
-
-This file intentionally provides wiring and mapping templates only.
-"""
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Template loader for MultiWOZ-style dialogues mapped into PLD v2 runtime envelope format.
 
 from __future__ import annotations
 from dataclasses import dataclass
@@ -255,5 +228,6 @@ def project_multiwoz_to_pld_events(
             event_id_factory=event_id_factory,
             timestamp_factory=timestamp_factory,
         )
+
 
 
