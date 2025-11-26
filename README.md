@@ -5,489 +5,152 @@
 ![Status: Active](https://img.shields.io/badge/status-active-brightgreen)
 
 > PLD is not a framework or agent library.  
-> It is a runtime governance model for stabilizing multi-turn agents across turns, tools, models, and environments.
+> It is a **runtime governance model** that stabilizes multi-turn LLM agents across **turns, tooling, models, and execution contexts.** 
 
 ---
 
-## 🎯 Is This For You?
+## 🎯 Why PLD Exists
 
-PLD becomes relevant when you're building **multi-turn agents** and begin seeing patterns that don’t feel random — but don’t feel controllable.
+Multi-turn agents rarely fail because they *don't know something*—  
+they fail because behavior becomes **unstable over time**.
 
-You may be here because your system:
+Common patterns include:
+- repeated tool calls without progress  
+- hallucinated or unstable context  
+- behavior shifts across models  
+- drift that temporarily recovers, then returns  
 
-- 🔧 Works in controlled tests, but behaves **unpredictably** in real usage  
-- 🔁 Repeats tool calls or re-enters retry loops without meaningful progress  
-- 🧩 Recovers from drift once — then misaligns later  
-- 🔄 Breaks when switching models (GPT → Claude → Llama) despite identical logic  
-- 🤷 Feels “stable only when untouched,” requiring intuition rather than governance  
-
-In other words:
-
-> **Your agent works — but not reliably, explainably, or repeatably.**
-
-As systems scale, drift stops being exceptional —  
-it becomes a predictable characteristic of multi-turn autonomy.  
-If your roadmap includes model migration, orchestration, or autonomous decision routing,  
-PLD shifts from **"helpful"** to **infrastructure**.
-
-PLD gives you the missing layer:  
-a runtime behavioral contract that maintains alignment **across turns — not just per response.**
-
-👉 **If your system *almost works*, you're entering the stage where structured governance becomes necessary.**
-
----
-
-## 🧠 Why PLD Exists — 10-Second Summary
-
-Modern multi-turn LLM agents rarely fail because of knowledge gaps —  
-they fail because alignment **drifts over time**.
-
-PLD introduces a **runtime control loop** that:
-
-- Detects drift early  
-- Repairs behavior  
-- Confirms alignment before continuing  
-
+PLD introduces a runtime behavioral contract:
 ```
 Drift → Repair → Reentry → Continue → Outcome
 ```
+This ensures alignment persists across turns — not just per isolated response.
 
 ---
 
-### 📍 High-Level Runtime Model (Visual Summary)
+## 🔁 The Runtime Loop
 
-> A compact view of the runtime loop, metrics integration, and conceptual role of PLD.
+| Phase | Purpose | Example Signals |
+|-------|---------|----------------|
+| **Drift** | Detect misalignment | contradiction, tool failure |
+| **Repair** | Soft → hard correction | clarification, boundary restatement |
+| **Reentry** | Confirm alignment restored | checkpoint summary |
+| **Continue** | Resume execution | next valid step |
+| **Outcome** | End state | complete / partial / failed |
+
+Visual summary:
 
 <img src="./README_model.svg" width="100%" />
-
 ---
 
-## 🧩 What PLD *Is* — In 30 Seconds
-
-
-PLD is:
-
-- A **runtime phase model** for interaction stability  
-- A structured method for **drift detection and repair**
-- A **behavioral governance layer**, not a model prompt or product
-- **Observable and measurable** — compatible with telemetry and evaluation
-- Implementation-agnostic: works with tool agents, retrieval systems, planners, and chat models  
-
-> PLD governs **how behavior evolves over turns**, not how a single output is generated.
-
----
-
-## 🚀 Who Uses PLD
-
-| Role | Value |
-|------|-------|
-| **LLM / Agent Engineers** | Reduced cascade errors, fewer resets |
-| **Interaction & UX Designers** | Predictable repair and alignment signaling |
-| **AgentOps & Evaluation Teams** | Observable behavioral diagnostics and metrics |
-
----
-
-## 🧭 The PLD Runtime Loop
-
-| Phase | Purpose | Signals |
-|-------|---------|---------|
-| **Drift** | Detect divergence from task or shared reality | tool errors, contradiction, missing context |
-| **Repair** | Soft/hard correction | clarification, reset, constraint restatement |
-| **Reentry** | Confirm restored alignment | checkpoint, summarization |
-| **Continue** | Resume execution | next step |
-| **Outcome** | End state | complete / partial / failed / abandoned |
-
-> Framework-agnostic: supports LangGraph, Assistants API, AutoGen, Swarm, Rasa, or custom orchestrators.
-
----
-
-## 📈 Runtime Model Diagram
-
-```mermaid
-flowchart LR
-    Start([Turn])
-    Drift{Drift?}
-    Repair["Repair\n(soft/hard)"]
-    Reentry["Reentry\n(confirm)"]
-    Continue[Continue]
-    Outcome[(Outcome)]
-
-    Start --> Drift
-    Drift -->|No| Continue
-    Drift -->|Yes| Repair --> Reentry -->|Aligned| Continue --> Outcome --> Start
-    Reentry -->|Not aligned| Drift
-```
-
-Full reference: `/docs/model_diagram.md`
-
----
-
-## 🆚 Before vs After PLD
-
-| Without PLD | With PLD |
-|-------------|----------|
-| Silent brittle failures | Explicit repair and confirmation |
-| Repeated invalid tool calls | Controlled retry + fallback |
-| Lost context | Structured reentry checkpoints |
-| Unpredictable user experience | Observable, governable behavior |
-
----
-
-### 🏗 Optional: Architectural Perspective
-
-📄 `/docs/architecture_layers.md`  
-A higher-level view for teams mapping PLD into large orchestration stacks.
-
----
-
-### 🏁 Quickstart — Run PLD in Under 10 Seconds
-
-Before diving into the full documentation, you can **experience PLD behavior immediately**.
-
-PLD is a telemetry-first paradigm.
-
-Every turn produces measurable behavioral events aligned to:
-
-- `quickstart/metrics/schemas/pld_event.schema.json`
-- `quickstart/metrics/schemas/metrics_schema.yaml`
-
-This enables governance not by intuition — but by data.
-
-
-#### Step 1 — Run the Teaching Runtime (Recommended First)
+## ⚡ Quickstart — Run PLD in Under 10 Seconds
 
 ```bash
 python quickstart/hello_pld_runtime.py
-```
-
-Try custom input:
-```bash
-python quickstart/hello_pld_runtime.py "Can we switch topics and talk about cooking?"
-```
-
-Run all example scenarios:
-```bash
-python quickstart/hello_pld_runtime.py --examples
-```
-
-> PLD is best understood through interaction — not just by reading.
-> This script demonstrates the core runtime loop:
-> Drift → Repair → Reentry → Continue → Outcome
-> (in a minimal mock runtime environment)
-
----
-
-#### Step 2 — Run the Real Runtime Engine
-
-Once the lifecycle makes sense conceptually, you can execute the actual runtime controller:
-
-```bash
 python quickstart/run_minimal_engine.py
-```
-
-- Uses real ingestion, controller, and enforcement logic
-
-- Simulates a drift condition (e.g., empty RAG result)
-
-- Outputs policy decisions, trace IDs, and next-action recommendations
-
-> 🛠️ This verifies PLD is installed and running as a real runtime, not just a conceptual demonstration.
-
----
-
-#### 📊 Optional Step — Verify Metrics Locally
-Once you've run the runtime and seen PLD behavior,
-you can also measure it using the included demo dataset:
-```bash
 python quickstart/metrics/verify_metrics_local.py
 ```
-
-- This will calculate sample operational metrics such as:
-- PRDR — Post-Repair Drift Recurrence
-- VRL — Visible Repair Load
-- MRBF — Mean Repairs Before Failover
-- FR — Failover Rate
-
-➡ Detailed guide: `quickstart/metrics/README_metrics.md`
-
----
- 
-For deeper usage patterns, continue with:  
-➡️` quickstart/README_quickstart.md` 
+Next steps → `quickstart/README_quickstart.md`
 
 ---
 
-### 📊 Operational Dashboard (Preview)
+## 🏛 Architecture: The PLD Level Model
 
-Once PLD is running and metrics are emitted, the system becomes observable — not just executable.
-
-<p align="center">
-  <img src="./docs/assets/dashboard_mockup.svg" width="60%" />
-</p>
-
-> This dashboard represents the **end-state goal**: a stable monitoring layer that makes system behavior measurable and governable — not assumed.
-
-This visualization corresponds to the five operational metrics defined in:
-
-➡ `docs/07_pld_operational_metrics_cookbook.md`
-
-| Metric | What it answers |
-|--------|----------------|
-| **PRDR** | Do repairs *stick*, or does drift recur? |
-| **REI** | Are repairs *worth the cost*? |
-| **VRL** | Does the system *feel stable* to users? |
-| **FR** | How often does the system reach failure fallback? |
-| **MRBF** | How long does the system try before giving up? |
-
-PLD is designed as a closed feedback loop:
-
-Runtime → Logging → Metrics → Dashboard → Policy Adjustment → Improved Behavior → Runtime
+| Level | Meaning | Folder |
+|-------|---------|--------|
+| **1 — Structure** | Canonical schema | `/docs/schemas/` |
+| **2 — Semantics** | Event meaning, prefix-phase rules | `/docs/PLD_Event_Semantic_Spec_v2.0.md` |
+| **3 — Operational Standards** | Metrics & taxonomy | `/docs/taxonomy/`, `/docs/metrics/` |
+| **4 — Consumer Layer** | Examples & adoption | `/quickstart/` |
+| **5 — Runtime Implementation** | Optional runtime engine | `/pld_runtime/` |
 
 ---
 
-#### When this dashboard becomes useful
-
-| Stage | Value |
-|-------|-------|
-| **Early prototyping** | Optional — behavior is still unpredictable |
-| **Beta rollout (10–200 users)** | 🔥 Most value — detects convergence vs fragility |
-| **Production** | Used for regression tracking and release gating |
-| **Mature system** | Moves from real-time monitoring → weekly health check |
-
-> The goal is not to chase perfect metrics —  
-> but to **make runtime behavior visible, measurable, and governable.**
-
----
-
-
-## 📂 Repository Overview
-
+## 📂 Repository Guide
 ```
-/quickstart     — Learning path + implementation patterns (start here)
-/pld_runtime    — Reference runtime (optional)
-/docs           — Taxonomy, conceptual model, reference material
-/analytics      — Benchmark datasets + case studies
-/field          — Collaboration playbooks and adoption patterns
+quickstart/     → start here
+pld_runtime/    → runtime implementation
+docs/           → specifications & conceptual core
+analytics/      → datasets, evaluation, metrics
+field/          → adoption and operational patterns
 ```
-
-➡ Full structure: `/docs/repo_structure.md`
-
+Full structure → `SUMMARY.md`
 ---
 
-## 📏 Operational Metrics
+## 📈 Observability
 
-Once PLD is active in a system, evaluation may include:
+Once structured events flow, the system becomes measurable:
+- PRDR — Post-Repair Drift Recurrence  
+- VRL — Visible Repair Load  
+- MRBF — Mean Repairs Before Failover  
+- FR — Failover Rate  
 
-- Drift frequency
-- Repair efficiency (soft vs hard)
-- Reentry confirmation success
-- Stability vs latency trade-offs
-- Outcome completion distribution
-
-Full operational framework including PRDR, REI, VRL and evaluation workflow:  
-👉 `/docs/07_pld_operational_metrics_cookbook.md`
-
+Metrics cookbook → `docs/07_pld_operational_metrics_cookbook.md`
 ---
 
-## 🧪 Practical Adoption Path
+## 🧪 When PLD Applies
+✔ multi-turn  
+✔ tools, planning, retrieval  
+✔ recovery > latency
 
-| Step | Folder | Purpose |
-|------|--------|---------|
-| **1** | `/quickstart/overview/` | Understand the runtime loop |
-| **2** | `/quickstart/operator_primitives/` | Apply operator logic |
-| **3** | `/quickstart/patterns/` | Modular behavior patterns |
-| **4** | `/quickstart/patterns/04_integration_recipes/` | **Runnable reference examples** |
-| **5** | `/quickstart/metrics/` | Log drift → repair → reentry → outcome |
-| **6** | `/analytics/` | Compare results against evaluated traces |
-| **7** | `/docs/07_pld_operational_metrics_cookbook.md` | Apply runtime metrics to optimize repairs and stability |
-
----
-
-### 🧩 Runnable Integration Recipes
-
-```
-quickstart/patterns/04_integration_recipes/
-```
-
-These reference examples are:
-
-| Property | Meaning |
-|----------|---------|
-| 🧪 Runnable | Executable locally (no infra required) |
-| 🔍 Observable | Emits structured PLD signals |
-| 📈 Measurable | Compatible with metrics cookbook |
-| 🧱 Modular | Works with memory, tools, or RAG systems |
-
----
-
-### ▶ Minimal Conceptual Example
-
-This illustrates the phase loop logic — not a runnable implementation.
-
-```python
-# Conceptual pseudo-implementation
-
-phase = detect_drift(turn)
-
-if phase is DRIFT:
-    turn = repair(turn)
-    phase = REPAIR
-
-if phase is REPAIR:
-    if confirm_alignment(turn):
-        phase = CONTINUE
-    else:
-        phase = DRIFT
-```
-
-> Actual implementation depends on the orchestration environment.
-
----
-
-## 📊 Evidence Layer
-
-Validated through:
-
-- MultiWOZ 2.4 (200 annotated dialogs)
-- Real tool-enabled agents
-- Applied SaaS support case studies
-- Field PoCs
-
-See: `/analytics/`
+Less necessary when:  
+⚠ single-turn  
+⚠ fully deterministic
 
 ---
 
 ## 🔌 Integrations
-
 Compatible with:
-
 - LangGraph
 - Assistants API
-- Swarm
 - Rasa
-- ReAct-style planners
-- Custom orchestration pipelines
+- Swarm
+- Custom orchestration
 
-No required framework — only the **loop semantics**.
-
----
-
-## 🤝 Contribution & Collaboration
-
-Contributions are welcome, especially:
-
-- Runtime bridges and adapters  
-- Evaluation datasets and traces  
-- Operational repair heuristics  
-- Metrics dashboards  
-
-For shared PoCs or partnership work → see `/field/`.
+Vendor-neutral — **only a runtime behavioral contract.**
 
 ---
 
-## 📍 When PLD Applies
+### 📌 Current Phase
 
-Best suited when:
+This repository is currently in an **Exploratory / Candidate Stage**.  
+Components may evolve based on evaluation, implementation feedback, and research findings.
 
-✔ Multi-turn workflows  
-✔ Tools, retrieval, memory, or planning  
-✔ Recovery matters more than one-shot accuracy  
-
-Less relevant when:
-
-⚠ Single-turn answers  
-⚠ Fully deterministic scripted flows  
+Feedback and field reports are welcome and help shape the next revision.
 
 ---
 
----
 
-## 🧭 Metadata & Manifest System (How Components Are Described)
+## 🌱 Community & Support
 
-PLD is designed for collaboration — especially in environments where multiple teams,
-implementations, or runtime modules evolve over time.
-
-To support this, the repository includes a lightweight metadata system that makes
-components **discoverable, traceable, and machine-checkable** without restricting experimentation.
-
-This system consists of three parts:
-
-| Purpose                             | File                             |
-| ----------------------------------- | -------------------------------- |
-| Specification (the rules)           | `meta/METADATA_MANIFEST_SPEC.md` |
-| Reference example                   | `meta/manifest.example.yaml`     |
-| Active metadata for this repository | `manifest.yaml`                  |
-
-The manifest format is intentionally simple and may evolve as integrations and
-field usage mature.
+📣 Discussions: https://github.com/kiyoshisasano/agent-pld-metrics/discussions
+🐛 Issues & tracking: https://github.com/kiyoshisasano/agent-pld-metrics/issues
 
 ---
 
-### 📦 What Belongs in the Manifest?
+## 🤝 Contribution
 
-Any artifact that participates in runtime behavior, evaluation, documentation,
-or integration can be listed in the manifest — including:
+Contributions welcome, especially:
+- bridges & adapters
+- traces / evaluation datasets
+- runtime patterns and observability tools
 
-* runtime modules
-* schemas and metrics
-* documentation assets
-* examples and learning paths
-* experimental work
-
-Each entry includes:
-
-* a stable `component_id`
-* controlled vocabulary fields (`kind`, `status`, `authority_level`)
-* a short human-readable purpose
-
-Full details: `meta/METADATA_MANIFEST_SPEC.md`.
+See: `CONTRIBUTING.md`
 
 ---
 
-### 🛠 Validating the Manifest
+## 📜 License & Attribution
 
-A helper script is included for contributors and teams automating runtime governance.
+| Scope | License |
+|--------|---------|
+| Runtime & code | Apache 2.0 |
+| Documentation & methodology | CC BY‑4.0 |
 
-```bash
-python validate_manifest.py
-```
-
-Validation levels:
-
-| Level | Meaning                                               |
-| ----- | ----------------------------------------------------- |
-| `L0`  | Structural only — useful for exploration              |
-| `L1`  | Format + vocabulary enforcement (default)             |
-| `L2`  | File existence + optional alignment with code headers |
-
-Example:
-
-```bash
-python validate_manifest.py --level L2
-```
-
-This allows gradual adoption — from prototype → controlled collaboration → automated CI enforcement.
+Full details: `LICENSES/LICENSES.md` 
+Trademark policy: `LICENSES/TRADEMARK_POLICY.md`
 
 ---
-
-### 🤝 Contributing Metadata
-
-When adding new runtime files, documents, or integration artifacts:
-
-1. Add or update an entry in `manifest.yaml`
-2. Run the validator:
-
-```bash
-python validate_manifest.py --level L1
-```
-
-3. Commit changes as part of the same PR.
-
-> Metadata is not bureaucracy — it is a map.
-> It helps others understand *what exists*, *why it exists*, and *how stable it is.*
-
----
-
+> **PLD ensures alignment persists *across interaction*, not only at initialization.**
 
 ## 📜 License
 
@@ -503,10 +166,18 @@ Trademark usage: `LICENSES/TRADEMARK_POLICY.md`
 
 ---
 
-"Phase Loop Dynamics" and "PLD" are claimed as common law trademarks of Kiyoshi Sasano.  
-Use of the marks is governed by the project's trademark policy.
+## 🏷 Trademark Notice
 
-Maintainer: **Kiyoshi Sasano** Copyright © 2025
+"Phase Loop Dynamics" and "PLD" are claimed as common-law trademarks of **Kiyoshi Sasano**.  
+Use of these marks is governed by the project's trademark policy:  
+➡ `LICENSES/TRADEMARK_POLICY.md`
+
+---
+
+## 👤 Maintainer
+
+**Maintainer:** Kiyoshi Sasano  
+© 2025 — All rights reserved where applicable.
 
 ---
 
