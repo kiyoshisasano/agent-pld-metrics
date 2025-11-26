@@ -147,22 +147,6 @@ See: `CONTRIBUTING.md`
 | Documentation & methodology | CC BY‑4.0 |
 
 Full details: `LICENSES/LICENSES.md` 
-Trademark policy: `LICENSES/TRADEMARK_POLICY.md`
-
----
-> **PLD ensures alignment persists *across interaction*, not only at initialization.**
-
-## 📜 License
-
-This project uses a dual-license model:
-
-| Scope | License |
-|--------|---------|
-| Runtime and code | Apache 2.0 |
-| Documentation and methodology | CC BY 4.0 |  
-
-Full details: `LICENSES/LICENSES.md`  
-Trademark usage: `LICENSES/TRADEMARK_POLICY.md`
 
 ---
 
