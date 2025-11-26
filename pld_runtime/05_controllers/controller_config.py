@@ -1,9 +1,11 @@
-# version: 2.0.0
+# component_id: controller_config
+# kind: runtime_module
+# area: controller
 # status: runtime
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Controller configuration template binding validation mode, taxonomy handling, and metrics usage for PLD-compatible runtimes.
-# change_classification: runtime-only
-# dependencies: PLD structural schema, semantic matrix, runtime standard, and metrics specification.
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Controller configuration template binding validation mode, taxonomy handling, and metrics usage.
 
 from __future__ import annotations
 
