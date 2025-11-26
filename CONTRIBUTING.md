@@ -1,3 +1,15 @@
+---
+path: CONTRIBUTING.md
+component_id: contributing_guide
+kind: doc
+area: meta
+status: stable
+authority_level: 3
+version: 2.0.0
+license: Apache-2.0
+purpose: Contribution guidelines for maintainers and external collaborators.
+---
+
 # **Contributing to PLD**
 
 Thank you for your interest in contributing to Phase Loop Dynamics (PLD).  
