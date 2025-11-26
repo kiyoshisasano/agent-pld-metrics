@@ -124,7 +124,7 @@ Feedback and field reports are welcome and help shape the next revision.
 
 ## 🌱 Community & Support
 
-📣 Discussions: https://github.com/kiyoshisasano/agent-pld-metrics/discussions
+📣 Discussions: https://github.com/kiyoshisasano/agent-pld-metrics/discussions  
 🐛 Issues & tracking: https://github.com/kiyoshisasano/agent-pld-metrics/issues
 
 ---
