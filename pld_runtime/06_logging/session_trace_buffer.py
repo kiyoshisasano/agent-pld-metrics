@@ -1,15 +1,11 @@
-# =============================================================================
-# session_trace_buffer
-#
-# version: 2.0.0
+# component_id: session_trace_buffer
+# kind: runtime_module
+# area: logging
 # status: runtime
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: In-memory buffer for PLD runtime events, preserving per-session
-#          turn_sequence ordering for downstream exporters without changing
-#          PLD event semantics.
-# change_classification: runtime-only
-# dependencies: RuntimeSignalBridge.build_event output contract (PLD v2 runtime)
-# =============================================================================
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: In-memory buffer for PLD runtime events preserving per-session turn order.
 
 from __future__ import annotations
 
@@ -245,3 +241,4 @@ class SessionTraceBuffer:
         """
         with self._lock:
             return sum(len(events) for events in self._events_by_session.values())
+
