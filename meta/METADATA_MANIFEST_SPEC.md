@@ -1,3 +1,15 @@
+---
+path: meta/METADATA_MANIFEST_SPEC.md
+component_id: manifest_spec
+kind: doc
+area: meta
+status: candidate
+authority_level: 4
+version: 0.9.1
+license: CC-BY-4.0
+purpose: Governing specification for PLD metadata.
+---
+
 # **Metadata Manifest Specification — v0.9.1**
 
 Status: Candidate Specification  
