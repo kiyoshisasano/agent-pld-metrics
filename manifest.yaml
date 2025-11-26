@@ -7,7 +7,6 @@ version: 0.9.1
 default_license: Apache-2.0
 
 components:
-
   # ---------------------------------------------------------
   # 1. Meta & Governance
   # ---------------------------------------------------------
@@ -19,13 +18,45 @@ components:
     authority_level: 1
     purpose: Repository entry point.
 
+  - path: SUMMARY.md
+    component_id: repo_summary
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 2
+    purpose: High-level summary and navigation index for the PLD repository contents.
+
+  - path: CONTRIBUTING.md
+    component_id: contributing_guide
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Contribution guidelines for maintainers and external collaborators.
+
+  - path: meta/ROADMAP.md
+    component_id: roadmap
+    kind: doc
+    area: meta
+    status: draft
+    authority_level: 3
+    purpose: Roadmap and future development plans for the PLD repository and runtime ecosystem.
+
+  - path: meta/CHANGELOG.md
+    component_id: changelog
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 5
+    purpose: Official change history for the PLD repository and runtime ecosystem.
+
   - path: meta/METADATA_MANIFEST_SPEC.md
     component_id: manifest_spec
     kind: doc
     area: meta
     status: candidate
-    authority_level: 4
-    purpose: Governing specification for PLD metadata (v0.9.1).
+    authority_level: 5
+    purpose: Governing specification for PLD metadata and manifest structure.
 
   - path: meta/VERSIONING_POLICY.md
     component_id: versioning_policy
@@ -33,7 +64,7 @@ components:
     area: meta
     status: stable
     authority_level: 5
-    purpose: Versioning rules for schemas and runtime modules.
+    purpose: Versioning rules and governance policy for schemas, runtime modules, and specifications.
 
   # ---------------------------------------------------------
   # 2. Documentation & Architecture
