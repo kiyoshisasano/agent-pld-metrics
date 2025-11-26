@@ -92,14 +92,15 @@ Metrics cookbook → `docs/07_pld_operational_metrics_cookbook.md`
 
 ---
 
-## 🧪 When PLD Applies
-✔ multi-turn  
-✔ tools, planning, retrieval  
-✔ recovery > latency
+## 🧪 PLD is most useful when:
 
-Less necessary when:  
-⚠ single-turn  
-⚠ fully deterministic
+✔ interaction spans multiple turns  
+✔ tools, retrieval, memory, or planning are involved  
+✔ alignment persistence matters more than single-response quality  
+
+Less relevant for:
+⚠ single-turn Q&A  
+⚠ fully deterministic scripted flows
 
 ---
 
