@@ -83,6 +83,34 @@ components:
     authority_level: 5
     purpose: JSON schema definition for the PLD Event Envelope.
 
+  - path: pld_runtime/01_schemas/runtime_event_envelope.ops.md
+    component_id: runtime_event_envelope_ops
+    kind: doc
+    area: schema
+    status: candidate
+    authority_level: 5
+    version: 2.0.0
+    purpose: Operational guidance for emitting, validating, transporting, and observing PLD runtime events.
+
+  - path: pld_runtime/01_schemas/runtime_event_envelope.examples.md
+    component_id: runtime_event_envelope_examples
+    kind: doc
+    area: schema
+    status: candidate
+    authority_level: 5
+    version: 2.0.0
+    purpose: Runtime event envelope examples for operational reference.
+
+  - path: pld_runtime/01_schemas/runtime_event_envelope.notes.md
+    component_id: runtime_event_envelope_notes
+    kind: doc
+    area: schema
+    status: draft
+    authority_level: 5
+    version: 2.0.0
+    purpose: Operational companion reference for the PLD runtime event envelope, including behavioral rules and deployment guidance.
+
+
   # --- 02_ingestion ---
   - path: pld_runtime/02_ingestion/ingestion_config.py
     component_id: ingestion_config
