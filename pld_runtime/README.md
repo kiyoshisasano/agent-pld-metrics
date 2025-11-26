@@ -1,13 +1,13 @@
 ---
-license: "Apache License 2.0"
-spdx: "Apache-2.0"
-copyright:
-  holder: "Kiyoshi Sasano"
-  year: 2025
-terms:
-  - "Use of this software is permitted under the Apache License, Version 2.0."
-  - "You may obtain a copy of the license at: http://www.apache.org/licenses/LICENSE-2.0"
-  - "Distributed on an 'AS IS' basis WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND."
+path: pld_runtime/README.md
+component_id: pld_runtime_readme
+kind: doc
+area: runtime
+status: stable
+authority_level: 5
+version: 2.0.0
+license: Apache-2.0
+purpose: Entry-point documentation for the PLD runtime directory.
 ---
 
 # PLD Runtime Package
@@ -189,5 +189,6 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
