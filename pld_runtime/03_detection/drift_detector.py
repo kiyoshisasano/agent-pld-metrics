@@ -1,35 +1,11 @@
-# =============================================================================
-# drift detector
-# version: 2.0.0
-# status: experimental  # runtime template; subject to change
+# component_id: drift_detector
+# kind: runtime_module
+# area: detection
+# status: experimental
 # authority_level: 5
-# authority_scope: runtime implementation
-# purpose: Provide a template for drift detection and emitting PLD v2-compliant
-#          drift events.
-# change_classification: runtime-only, non-breaking (technical review alignment)
-# dependencies: PLD event schema v2.0,
-#               PLD Event Matrix v2.0,
-#               PLD Runtime Standard v2.0,
-#               PLD Taxonomy v2.0
-# notes: Proposal-level runtime extension; detection logic intentionally left
-#        implementation-specific.
-# =============================================================================
-
-"""
-Runtime template for drift detection.
-
-This module is scoped to Level 5 (runtime implementation) and must remain
-compatible with:
-
-- Level 1 structural schema (pld_event.schema.json)
-- Level 2 event matrix + semantic spec (event_matrix.yaml, PLD_Event_Semantic_Spec_v2.0.md)
-- Level 3 runtime standard & taxonomy (PLD_Runtime_Standard_v2.0.md, PLD_taxonomy_v2.0.md)
-- Level 5 runtime event envelope overlay (runtime_event_envelope.schema.json)
-
-This file provides a skeleton implementation only:
-- You MUST supply concrete drift detection logic.
-- You MUST NOT change Level 1–3 behavior; this layer may only *use* them.
-"""
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Template for drift detection that emits PLD v2-compliant drift events.
 
 from __future__ import annotations
 
@@ -225,4 +201,5 @@ def _extract_prefix(code: str) -> str:
 
 # TODO: Clarify whether drift events must be co-emitted alongside primary
 # conversational events or replace them in cases of detected divergence.
+
 
