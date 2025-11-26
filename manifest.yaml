@@ -82,6 +82,55 @@ components:
     authority_level: 5
     purpose: Versioning rules and governance policy for schemas, runtime modules, and specifications.
 
+  - path: LICENSES/LICENSE-APACHE-2.0.txt
+    component_id: license_apache_2_0
+    kind: legal
+    area: compliance
+    status: stable
+    authority_level: 5
+    purpose: Primary open-source license governing repository use and redistribution.
+
+  - path: LICENSES/LICENSE-CC-BY-4.0.txt
+    component_id: license_cc_by_4_0
+    kind: legal
+    area: compliance
+    status: stable
+    authority_level: 5
+    purpose: Additional content license covering documentation, examples, and derivative works.
+
+  - path: LICENSES/NOTICE.txt
+    component_id: legal_notice
+    kind: legal
+    area: compliance
+    status: stable
+    authority_level: 5
+    purpose: Required legal notice for compliance with open-source redistribution requirements.
+
+  - path: LICENSES/TRADEMARK_POLICY.md
+    component_id: trademark_policy
+    kind: legal
+    area: compliance
+    status: stable
+    authority_level: 5
+    purpose: Trademark usage restrictions and authorized usage scope for the PLD name and branding.
+
+  - path: LICENSES/citation.bib
+    component_id: citation_reference
+    kind: doc
+    area: compliance
+    status: stable
+    authority_level: 3
+    purpose: Reference entry for proper scholarly citation of the PLD specification and runtime ecosystem.
+
+  - path: LICENSES/LICENSES.md
+    component_id: license_collection_overview
+    kind: doc
+    area: compliance
+    status: stable
+    authority_level: 3
+    purpose: Index and explanation of licensing models applicable across repository components.
+
+
   # ---------------------------------------------------------
   # 2. Documentation & Architecture
   # ---------------------------------------------------------
