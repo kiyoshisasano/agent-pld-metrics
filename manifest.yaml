@@ -8,7 +8,9 @@ default_license: Apache-2.0
 
 components:
 
-  # --- Meta & Governance ---
+  # ---------------------------------------------------------
+  # 1. Meta & Governance
+  # ---------------------------------------------------------
   - path: README.md
     component_id: repo_readme
     kind: doc
@@ -33,7 +35,9 @@ components:
     authority_level: 5
     purpose: Versioning rules for schemas and runtime modules.
 
-  # --- Documentation ---
+  # ---------------------------------------------------------
+  # 2. Documentation & Architecture
+  # ---------------------------------------------------------
   - path: docs/architecture/PLD_Runtime_Architecture_Principles.md
     component_id: arch_principles
     kind: doc
@@ -58,8 +62,45 @@ components:
     authority_level: 5
     purpose: Core taxonomy defining Drift, Repair, and Reentry types.
 
-  # --- PLD Runtime Core ---
-  # [Detection]
+  # ---------------------------------------------------------
+  # 3. PLD Runtime Core
+  # ---------------------------------------------------------
+  
+  # --- 01_schemas ---
+  - path: pld_runtime/01_schemas/runtime_event_envelope.json
+    component_id: runtime_event_envelope_json
+    kind: schema
+    area: runtime_schema
+    status: stable
+    authority_level: 5
+    purpose: JSON schema definition for the PLD Event Envelope.
+
+  # --- 02_ingestion ---
+  - path: pld_runtime/02_ingestion/ingestion_config.py
+    component_id: ingestion_config
+    kind: config
+    area: ingestion
+    status: experimental
+    authority_level: 3
+    purpose: Configuration for data ingestion pipelines.
+
+  - path: pld_runtime/02_ingestion/multiwoz_loader.py
+    component_id: multiwoz_loader
+    kind: runtime_module
+    area: ingestion
+    status: experimental
+    authority_level: 2
+    purpose: Loader for MultiWOZ dataset adaptation.
+
+  - path: pld_runtime/02_ingestion/normalization.py
+    component_id: normalization
+    kind: runtime_module
+    area: ingestion
+    status: stable
+    authority_level: 4
+    purpose: Normalizes input signals into PLD format.
+
+  # --- 03_detection ---
   - path: pld_runtime/03_detection/drift_detector.py
     component_id: drift_detector
     kind: runtime_module
@@ -76,7 +117,23 @@ components:
     authority_level: 5
     purpose: Identifies repair sequences.
 
-  # [Enforcement] - Added based on your update
+  - path: pld_runtime/03_detection/pattern_classifier.py
+    component_id: pattern_classifier
+    kind: runtime_module
+    area: detection
+    status: experimental
+    authority_level: 4
+    purpose: Classifies detected patterns against the taxonomy.
+
+  - path: pld_runtime/03_detection/runtime_signal_bridge.py
+    component_id: runtime_signal_bridge
+    kind: runtime_module
+    area: detection
+    status: stable
+    authority_level: 5
+    purpose: Bridges raw signals to runtime events.
+
+  # --- 04_enforcement ---
   - path: pld_runtime/04_enforcement/response_policy.py
     component_id: response_policy
     kind: runtime_module
@@ -109,7 +166,7 @@ components:
     authority_level: 5
     purpose: Threshold templates for runtime enforcement.
 
-  # [Controllers]
+  # --- 05_controllers ---
   - path: pld_runtime/05_controllers/pld_controller.py
     component_id: pld_controller
     kind: runtime_module
@@ -118,7 +175,31 @@ components:
     authority_level: 4
     purpose: Main runtime loop controller.
 
-  # [Logging]
+  - path: pld_runtime/05_controllers/action_router.py
+    component_id: action_router
+    kind: runtime_module
+    area: controller
+    status: experimental
+    authority_level: 4
+    purpose: Routes controller decisions to execution modules.
+
+  - path: pld_runtime/05_controllers/controller_config.py
+    component_id: controller_config
+    kind: config
+    area: controller
+    status: experimental
+    authority_level: 3
+    purpose: Configuration for the runtime controller.
+
+  - path: pld_runtime/05_controllers/state_machine.py
+    component_id: state_machine
+    kind: runtime_module
+    area: controller
+    status: experimental
+    authority_level: 5
+    purpose: Manages state transitions (Drift -> Repair -> Reentry).
+
+  # --- 06_logging ---
   - path: pld_runtime/06_logging/runtime_logging_pipeline.py
     component_id: logging_pipeline
     kind: runtime_module
@@ -127,7 +208,90 @@ components:
     authority_level: 3
     purpose: Structured logging pipeline.
 
-  # --- Quickstart ---
+  - path: pld_runtime/06_logging/event_writer.py
+    component_id: event_writer
+    kind: runtime_module
+    area: logging
+    status: stable
+    authority_level: 3
+    purpose: Writes validated events to storage.
+
+  - path: pld_runtime/06_logging/logging_config.py
+    component_id: logging_config
+    kind: config
+    area: logging
+    status: stable
+    authority_level: 3
+    purpose: Configuration for logging levels and outputs.
+
+  - path: pld_runtime/06_logging/session_trace_buffer.py
+    component_id: session_trace_buffer
+    kind: runtime_module
+    area: logging
+    status: experimental
+    authority_level: 4
+    purpose: Buffers session events for trace assembly.
+
+  - path: pld_runtime/06_logging/structured_logger.py
+    component_id: structured_logger
+    kind: runtime_module
+    area: logging
+    status: stable
+    authority_level: 3
+    purpose: Core logger implementation.
+
+  - path: pld_runtime/06_logging/exporters/exporter_jsonl.py
+    component_id: exporter_jsonl
+    kind: runtime_module
+    area: logging
+    status: stable
+    authority_level: 3
+    purpose: Exports logs to JSONL format.
+
+  - path: pld_runtime/06_logging/exporters/exporter_open_telemetry.py
+    component_id: exporter_open_telemetry
+    kind: runtime_module
+    area: logging
+    status: experimental
+    authority_level: 3
+    purpose: Exports logs via OpenTelemetry.
+
+  # --- 07_failover ---
+  - path: pld_runtime/07_failover/runtime_failover.py
+    component_id: runtime_failover
+    kind: runtime_module
+    area: failover
+    status: experimental
+    authority_level: 5
+    purpose: Manages failover logic when runtime errors occur.
+
+  - path: pld_runtime/07_failover/backoff_policies.py
+    component_id: backoff_policies
+    kind: runtime_module
+    area: failover
+    status: experimental
+    authority_level: 4
+    purpose: Defines retry and backoff strategies.
+
+  - path: pld_runtime/07_failover/reconciliation.py
+    component_id: reconciliation
+    kind: runtime_module
+    area: failover
+    status: experimental
+    authority_level: 5
+    purpose: Reconciles state after failover.
+
+  - path: pld_runtime/07_failover/strategy_registry.py
+    component_id: strategy_registry
+    kind: runtime_module
+    area: failover
+    status: experimental
+    authority_level: 4
+    purpose: Registry for failover strategies.
+
+  # ---------------------------------------------------------
+  # 4. Quickstart & Examples
+  # ---------------------------------------------------------
   - path: quickstart/hello_pld_runtime.py
     component_id: hello_pld_runtime
     kind: example
@@ -136,7 +300,9 @@ components:
     authority_level: 2
     purpose: Minimal executable example.
 
-  # --- Field Collaboration ---
+  # ---------------------------------------------------------
+  # 5. Field Collaboration
+  # ---------------------------------------------------------
   - path: field/README.md
     component_id: field_readme
     kind: doc
@@ -145,7 +311,9 @@ components:
     authority_level: 1
     purpose: Guide for external collaboration.
 
-  # --- Analytics ---
+  # ---------------------------------------------------------
+  # 6. Analytics
+  # ---------------------------------------------------------
   - path: analytics/taxonomy/taxonomy_observation_sheet_v2.0.csv
     component_id: taxonomy_sheet
     kind: metric
