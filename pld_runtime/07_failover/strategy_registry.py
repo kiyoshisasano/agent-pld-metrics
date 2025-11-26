@@ -1,10 +1,11 @@
+# component_id: strategy_registry
+# kind: runtime_module
+# area: failover
+# status: draft
+# authority_level: 5
 # version: 2.0.0
-# status: draft / template (Variant B)
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Provide a registry and factory helpers for wiring failover strategies,
-#          backoff policies, and reconciliation policies into FailoverOrchestrators
-#          without constructing or mutating PLD events.
-# scope: Module-level runtime wiring only; PLD semantics are handled upstream.
+# license: Apache-2.0
+# purpose: Registry and factory utilities for wiring failover strategies, backoff, and reconciliation policies.
 
 from __future__ import annotations
 
