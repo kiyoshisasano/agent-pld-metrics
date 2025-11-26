@@ -1,10 +1,13 @@
-version: "2.0.0"
-status: "Exploratory — Candidate for Stabilization"
-authority_level_scope: "Level 5 — runtime implementation (operational layer)"
-purpose: "Provide runtime operational guidance for systems emitting, validating, transporting, and observing PLD runtime events."
-change_classification: "extracted + normalized guidance from prior operational notes"
-feedback_status: "Actively seeking implementation feedback before stabilization"
-
+---
+path: pld_runtime/01_schemas/runtime_event_envelope.ops.md
+component_id: runtime_event_envelope_ops
+kind: doc
+area: schema
+status: candidate
+authority_level: 5
+version: 2.0.0
+license: Apache-2.0
+purpose: Operational guidance for emitting, validating, transporting, and observing PLD runtime events.
 ---
 
 # PLD Runtime Envelope — Operational Guidance  
