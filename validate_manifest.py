@@ -1,3 +1,12 @@
+# component_id: validate_manifest
+# kind: tooling
+# area: meta
+# status: stable
+# authority_level: 3
+# version: 0.1.0
+# license: Apache-2.0
+# purpose: Validate manifest coverage and metadata consistency across the repository.
+
 #!/usr/bin/env python
 """
 validate_manifest.py
