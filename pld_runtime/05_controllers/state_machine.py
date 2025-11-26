@@ -1,10 +1,11 @@
-# version: 2.0.0
+# component_id: state_machine
+# kind: runtime_module
+# area: controller
 # status: runtime
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Maintain a PLD-aware session state machine enforcing Level 2/3 lifecycle rules.
-# scope: Tracks lifecycle state evolution without modifying canonical spec text.
-# change_classification: runtime-only + session-init compliance adjustment
-# dependencies: Level1_pld_event.schema.json, Level2_event_matrix_schema.yaml, Level3_PLD_Runtime_Standard_v2.0.md
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Maintain PLD-aware session state machine enforcing lifecycle rules.
 
 from __future__ import annotations
 
@@ -279,3 +280,4 @@ class PLDStateMachine:
             last_turn_sequence=turn_sequence,
             failover_active=failover_active,
         ), reason
+
