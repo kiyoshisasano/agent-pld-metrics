@@ -1,10 +1,15 @@
-# Phase Loop Dynamics (PLD) — Trademark Policy
-
-**Version:** 1.0  
-**Last Updated:** 2025-11-18  
-**Status:** Active
-
 ---
+path: LICENSES/TRADEMARK_POLICY.md
+component_id: trademark_policy
+kind: doc
+area: compliance
+status: stable
+authority_level: 5
+version: 2.0.0
+license: Apache-2.0
+purpose: Trademark usage policy and restrictions for PLD-related names and branding.
+---
+
 **Trademarks Notice:**  
 "PLD", "Phase Loop Dynamics", and related marks are claimed as common law trademarks of Kiyoshi Sasano.  
 Use of the marks is welcomed when referring to the methodology, research, or implementations.  
