@@ -1,15 +1,11 @@
-# =============================================================================
-# runtime_logging_pipeline
-#
-# version: 2.0.0
+# component_id: logging_pipeline
+# kind: runtime_module
+# area: logging
 # status: runtime
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Wire SessionTraceBuffer to JSONL and OpenTelemetry exporters,
-#          preserving PLD event shape and semantics during transport.
-# change_classification: runtime-only
-# dependencies: SessionTraceBuffer, JsonlExporter, OpenTelemetryExporter,
-#               RuntimeSignalBridge.build_event output contract
-# =============================================================================
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Connect session trace buffering to exporters while preserving PLD event semantics.
 
 from __future__ import annotations
 
