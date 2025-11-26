@@ -1,3 +1,15 @@
+---
+path: pld_runtime/01_schemas/runtime_event_envelope.notes.md
+component_id: runtime_event_envelope_notes
+kind: doc
+area: schema
+status: draft
+authority_level: 5
+version: 2.0.0
+license: Apache-2.0
+purpose: Operational companion reference for the PLD runtime event envelope, including behavioral rules and deployment guidance.
+---
+
 # PLD Runtime Event Envelope — Operational Notes (Working Draft — v2.0) (v2.0 — Operational Edition)
 
 This document supplements the schema file located at:
