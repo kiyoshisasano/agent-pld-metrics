@@ -81,12 +81,15 @@ Full structure → `SUMMARY.md`
 ## 📈 Observability
 
 Once structured events flow, the system becomes measurable:
-- PRDR — Post-Repair Drift Recurrence  
-- VRL — Visible Repair Load  
-- MRBF — Mean Repairs Before Failover  
-- FR — Failover Rate  
+
+- **PRDR — Post-Repair Drift Recurrence**
+- **REI — Repair Efficiency**
+- **VRL — Visible Repair Load**
+- **MRBF — Mean Repairs Before Failover**
+- **FR — Failover Rate**
 
 Metrics cookbook → `docs/07_pld_operational_metrics_cookbook.md`
+
 ---
 
 ## 🧪 When PLD Applies
