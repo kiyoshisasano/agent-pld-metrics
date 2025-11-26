@@ -1,3 +1,12 @@
+# component_id: minimal_pld_demo
+# kind: example
+# area: quickstart
+# status: experimental
+# authority_level: 1
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: End-to-end quickstart demonstration that turns a scripted flow of RuntimeSignals into PLD v2-compliant events and writes them to stdout via StructuredLogger.
+
 """
 Minimal PLD Runtime Demonstration — Variant B
 ---------------------------------------------
