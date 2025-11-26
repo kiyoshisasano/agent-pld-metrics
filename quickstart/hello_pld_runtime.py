@@ -1,3 +1,12 @@
+# component_id: hello_pld_runtime
+# kind: example
+# area: quickstart
+# status: experimental
+# authority_level: 1
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Minimal quickstart script that builds a single PLD v2-compliant event via RuntimeSignalBridge and emits it using the Level 5 logging pipeline.
+
 """
 Quickstart Minimal PLD Runtime Demo — Variant A
 ------------------------------------------------
