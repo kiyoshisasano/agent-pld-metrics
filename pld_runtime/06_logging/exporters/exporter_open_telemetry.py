@@ -1,14 +1,11 @@
-# =============================================================================
-# exporter_open_telemetry
-#
-# version: 2.0.1
+# component_id: exporter_open_telemetry
+# kind: runtime_module
+# area: logging
 # status: runtime
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Safely map PLD runtime events into OpenTelemetry logs/spans without
-#          modifying PLD event semantics or structure.
-# change_classification: runtime-only (implementation refinement)
-# dependencies: RuntimeSignalBridge.build_event output contract (PLD v2 runtime)
-# =============================================================================
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Export PLD runtime events into OpenTelemetry logs/spans without altering semantics.
 
 from __future__ import annotations
 
@@ -380,3 +377,4 @@ class OpenTelemetryExporter:
                 # Shutdown callbacks are best-effort; failures MUST NOT impact
                 # PLD event semantics or require retries at this layer.
                 continue
+
