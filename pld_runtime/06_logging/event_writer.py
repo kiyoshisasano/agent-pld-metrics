@@ -1,9 +1,11 @@
-# version: 2.0.0
+# component_id: event_writer
+# kind: runtime_module
+# area: logging
 # status: draft
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Transport-only event writers and a runtime stub entry point for PLD-compatible systems.
-# scope: runtime.logging.module
-# change_classification: runtime-only
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Transport-only event writers and runtime stub entry point for PLD-compatible systems.
 
 from typing import Any, Dict, Optional, Protocol
 import logging
@@ -210,3 +212,4 @@ __all__ = [
     "make_stdout_writer",
     "make_stderr_writer",
 ]
+
