@@ -1,16 +1,11 @@
-# =============================================================================
-# normalization
-# version: 2.0.0
-# status: draft  # runtime extension; details expected to evolve
+# component_id: normalization
+# kind: runtime_module
+# area: ingestion
+# status: draft
 # authority_level: 5
-# authority_scope: runtime implementation
-# purpose: Provide an ingestion-time normalization and validation shim for PLD
-#          runtime events, checking Level 1 structure and Level 2 semantics
-#          without mutating persisted logs.
-# change_classification: runtime-only, non-breaking (message text + TODO notes)
-# dependencies: PLD Level 1–3 specifications (schema, event matrix, runtime standard)
-# =============================================================================
-
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Ingestion-time normalization and validation shim enforcing Level 1 structure and Level 2 semantics.
 
 from __future__ import annotations
 
@@ -367,6 +362,7 @@ def make_jsonschema_validator(schema):
             return False, [str(e)]
 
     return _validate
+
 
 
 
