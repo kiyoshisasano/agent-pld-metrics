@@ -1,8 +1,11 @@
-# version: 0.1.0
-# status: draft / template (Variant B)
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Define pluggable backoff policies for failover strategies without interpreting PLD semantics.
-# scope: Module-level runtime behavior only.
+# component_id: backoff_policies
+# kind: runtime_module
+# area: failover
+# status: draft
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Pluggable backoff policies for runtime failover strategies without interpreting PLD semantics.
 
 from __future__ import annotations
 
@@ -170,3 +173,4 @@ def apply_backoff(policy: BackoffPolicy, attempt: int) -> float:
     delay = policy.next_delay(attempt)
     time.sleep(delay)
     return delay
+
