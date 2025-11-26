@@ -59,6 +59,7 @@ components:
     purpose: Core taxonomy defining Drift, Repair, and Reentry types.
 
   # --- PLD Runtime Core ---
+  # [Detection]
   - path: pld_runtime/03_detection/drift_detector.py
     component_id: drift_detector
     kind: runtime_module
@@ -75,6 +76,40 @@ components:
     authority_level: 5
     purpose: Identifies repair sequences.
 
+  # [Enforcement] - Added based on your update
+  - path: pld_runtime/04_enforcement/response_policy.py
+    component_id: response_policy
+    kind: runtime_module
+    area: enforcement
+    status: draft
+    authority_level: 5
+    purpose: Map PLD runtime events to advisory response policy.
+
+  - path: pld_runtime/04_enforcement/schema_validator.py
+    component_id: schema_validator
+    kind: runtime_module
+    area: enforcement
+    status: draft
+    authority_level: 5
+    purpose: Validate PLD runtime events against Level 1 schema.
+
+  - path: pld_runtime/04_enforcement/sequence_rules.py
+    component_id: sequence_rules
+    kind: runtime_module
+    area: enforcement
+    status: draft
+    authority_level: 5
+    purpose: Evaluate ordering constraints in runtime event sequences.
+
+  - path: pld_runtime/04_enforcement/thresholds.py
+    component_id: enforcement_thresholds
+    kind: runtime_module
+    area: enforcement
+    status: draft
+    authority_level: 5
+    purpose: Threshold templates for runtime enforcement.
+
+  # [Controllers]
   - path: pld_runtime/05_controllers/pld_controller.py
     component_id: pld_controller
     kind: runtime_module
@@ -83,6 +118,7 @@ components:
     authority_level: 4
     purpose: Main runtime loop controller.
 
+  # [Logging]
   - path: pld_runtime/06_logging/runtime_logging_pipeline.py
     component_id: logging_pipeline
     kind: runtime_module
