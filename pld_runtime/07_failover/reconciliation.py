@@ -1,8 +1,11 @@
-# version: 0.1.0
-# status: draft / template (Variant B)
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Runtime reconciliation logic determining whether failover paths should continue, revert, or finalize.
-# scope: Module-level behavior only — MUST NOT mutate or reinterpret PLD semantics.
+# component_id: reconciliation
+# kind: runtime_module
+# area: failover
+# status: draft
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Runtime reconciliation logic determining continuation, revert, or finalize paths in failover operations.
 
 from __future__ import annotations
 
@@ -161,3 +164,4 @@ def reconcile(policy: ReconciliationPolicy, state: Mapping[str, Any]) -> Reconci
       - Caller is responsible for interpreting the returned outcome.
     """
     return policy.evaluate(state)
+
