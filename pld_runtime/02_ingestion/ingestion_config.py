@@ -1,21 +1,11 @@
-# =============================================================================
-# ingestion config
-# version: 2.0.0
-# status: candidate  # runtime config; reasonably proven but still subject to change
+# component_id: ingestion_config
+# kind: runtime_module
+# area: ingestion
+# status: candidate
 # authority_level: 5
-# authority_scope: runtime implementation
-# purpose: Configure PLD v2 ingestion so that accepted events align with
-#          Level 1 schema, Level 2 event matrix, and Level 3 runtime/metrics
-#          expectations.
-# change_classification: runtime extension (non-breaking)
-# dependencies: pld_event.schema.json,
-#               event_matrix.yaml,
-#               PLD_Event_Semantic_Spec_v2.0.md,
-#               PLD_Runtime_Standard_v2.0.md,
-#               PLD_metrics_spec.md,
-#               PLD_taxonomy_v2.0.md,
-#               runtime_event_envelope.schema.json
-# =============================================================================
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Configure PLD v2 ingestion to align runtime events with schema, event matrix, and runtime specification.
 
 from __future__ import annotations
 
@@ -288,6 +278,7 @@ def default_ingestion_config(
 # Singleton-style default used by simple integrations. More complex runtimes
 # SHOULD inject their own IngestionConfig instance explicitly.
 INGESTION_CONFIG: IngestionConfig = default_ingestion_config()
+
 
 
 
