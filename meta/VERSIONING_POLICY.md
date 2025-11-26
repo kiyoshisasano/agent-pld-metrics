@@ -1,12 +1,14 @@
-# **Versioning Policy**
-
-Applies to: PLD repository (code, schema, documentation, and examples)  
-Version: 2.0  
-Status: stable  
-Last Updated: 2025-11  
-This document defines how versions are applied, incremented, and interpreted across the PLD repository.  
-It is intended to provide consistency as the project evolves and to support future collaboration.  
-This policy governs modification of Level 1, Level 2, and Level 3 specification assets and ensures alignment across schema, taxonomy, event semantics, runtime enforcement, and metrics artifacts.
+---
+path: meta/VERSIONING_POLICY.md
+component_id: versioning_policy
+kind: doc
+area: meta
+status: stable
+authority_level: 5
+version: 2.0.0
+license: Apache-2.0
+purpose: Versioning rules and governance policy for schemas, runtime modules, and specifications.
+---
 
 ## **1\. Overview**
 
