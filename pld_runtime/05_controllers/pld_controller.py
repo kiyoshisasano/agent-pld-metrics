@@ -1,9 +1,11 @@
-# version: 2.0.0
+# component_id: pld_controller
+# kind: runtime_module
+# area: controller
 # status: draft
-# authority_level_scope: Level 5 — runtime implementation
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
 # purpose: PLD runtime controller template for validation, normalization routing, and metrics staging.
-# change_classification: runtime extension (non-breaking)
-# dependencies: Level 1 PLD event schema, Level 2 event matrix + semantic spec, Level 3 runtime standard + metrics spec.
 
 from __future__ import annotations
 
