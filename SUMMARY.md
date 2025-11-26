@@ -1,4 +1,14 @@
-# PLD — High-Level Summary
+---
+path: SUMMARY.md
+component_id: repo_summary
+kind: doc
+area: meta
+status: stable
+authority_level: 2
+version: 2.0.0
+license: Apache-2.0
+purpose: High-level summary and navigation index for the PLD repository contents.
+---
 
 > A runtime governance model for stabilizing multi-turn LLM agents — making behavior measurable, recoverable, and repeatable across turns.
 
