@@ -26,6 +26,22 @@ components:
     authority_level: 2
     purpose: High-level summary and navigation index for the PLD repository contents.
 
+  - path: SUMMARY.svg
+    component_id: repo_summary_diagram
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 2
+    purpose: Visual overview diagram of the PLD repository structure.
+
+  - path: README_model.svg
+    component_id: readme_model_diagram
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 2
+    purpose: Diagram illustrating the core PLD runtime model referenced by the repository README.
+
   - path: CONTRIBUTING.md
     component_id: contributing_guide
     kind: doc
