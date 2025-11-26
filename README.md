@@ -41,6 +41,7 @@ This ensures alignment persists across turns — not just per isolated response.
 Visual summary:
 
 <img src="./README_model.svg" width="100%" />
+
 ---
 
 ## ⚡ Quickstart — Run PLD in Under 10 Seconds
