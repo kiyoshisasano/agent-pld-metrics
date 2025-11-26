@@ -1,14 +1,13 @@
-# PLD Project Roadmap
-
-**Version:** 2.0  
-**Status:** Active Development (Working Draft)  
-**Last Updated:** 2025-11  
-
-This roadmap outlines the expected direction and evolution of the PLD project.  
-The core concepts are increasingly stable, while supporting materials, tooling, and ecosystem practices continue to evolve through implementation feedback.
-
-Changes to this roadmap are expected as the project matures.
-
+---
+path: meta/ROADMAP.md
+component_id: roadmap
+kind: doc
+area: meta
+status: draft
+authority_level: 3
+version: 2.0.0
+license: Apache-2.0
+purpose: Roadmap and future development plans for the PLD repository and runtime ecosystem.
 ---
 
 ## Purpose of This Roadmap
