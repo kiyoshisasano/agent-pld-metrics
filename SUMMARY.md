@@ -1,156 +1,124 @@
 ---
 path: SUMMARY.md
-component_id: repo_summary
-kind: doc
-area: meta
+kind: toc
 status: stable
-authority_level: 2
 version: 2.0.0
+authority_level: 2
 license: Apache-2.0
-purpose: High-level summary and navigation index for the PLD repository contents.
+purpose: High-level navigation index for the PLD repository aligned to the Level Model.
 ---
 
-> A runtime governance model for stabilizing multi-turn LLM agents — making behavior measurable, recoverable, and repeatable across turns.
+# SUMMARY
 
----
-
-## Why PLD Exists
-
-Multi-turn LLM agents rarely fail because they "don’t know" —  
-they fail because behavior **drifts across turns**.
-
-Without runtime governance, agents develop:
-
-- cascading tool failures  
-- hallucinated or unstable context  
-- contradictory reasoning  
-- silent misalignment with user intent  
-- repeated retries without progress  
-
-PLD provides a structured runtime loop that detects misalignment early, applies proportional repair, and verifies alignment before continuing.
-
-```
-Drift → Repair → Reentry → Continue → Outcome
-```
+## 0 — Overview
+- What is PLD?
+- Version & Scope
+- Level Model Overview (`/docs/architecture_layers.md`)
+- Change Log (`/meta/CHANGELOG.md`)
+- Versioning Policy (`/meta/VERSIONING_POLICY.md`)
 
 ---
 
-## What PLD Is (and Is Not)
+## 1 — Core Specifications (Levels 1–3)
 
-PLD is:
+### 1.1 Level 1 — Structural Schema
+- PLD Event Schema (`/docs/schemas/pld_event.schema.json`)
+- Event Matrix (`/docs/schemas/event_matrix.yaml`)
+- Metrics Schema (`/docs/schemas/metrics_schema.yaml`)
+- Schema Examples (`/pld_runtime/01_schemas/runtime_event_envelope.examples.md`)
 
-- a **runtime phase model** for stability  
-- a method for detecting, repairing, and validating alignment  
-- **observable and telemetry-driven**  
-- implementation-agnostic — compatible with tool agents, retrieval systems, planners, and memory-based architectures  
+### 1.2 Level 2 — Semantic Specification
+- PLD Event Semantic Spec v2.0 (`/docs/PLD_Event_Semantic_Spec_v2.0.md`)
+- Event Matrix Reference (`/docs/event_matrix.md`)
+- Phase and Prefix Rules
+- Taxonomy Diagram (`/docs/taxonomy/PLD_taxonomy_v2.0_diagram.svg`)
 
-PLD is **not**:
-
-- a prompt template  
-- a tuning trick  
-- a static framework  
-- a single metric or evaluation benchmark  
-
-> PLD governs **how the agent behaves over time**, not how a single message is generated.
-
----
-
-## Who Uses PLD
-
-| Role | Why |
-|------|------|
-| Agent Engineers | Stability, fewer resets, repeatable behavior |
-| UX & Conversation Design | Predictable visible repair and pacing |
-| AgentOps / Evaluation Teams | Drift & repair signals mapped to telemetry |
-| Applied ML / Research | Study alignment dynamics, not just accuracy |
+### 1.3 Level 3 — Operational Standards
+- PLD Runtime Standard v2.0 (`/docs/PLD_Runtime_Standard_v2.0.md`)
+- Metrics Specification (`/docs/metrics/PLD_metrics_spec.md`)
+- Taxonomy v2.0 (`/docs/taxonomy/PLD_taxonomy_v2.0.md`)
+- Validation Traceability Map (`/docs/validation/PLD_v2_Traceability_Map.md`)
 
 ---
 
-## The Runtime Loop
+## 2 — Runtime Implementation (Level 5)
 
-| Phase | Purpose | Signals |
-|-------|---------|---------|
-| **Drift** | Detect divergence from shared state or constraints | tool errors, contradictions, missing constraints |
-| **Repair** | Apply correction (soft → hard escalation) | clarification, reset, constraint restatement |
-| **Reentry** | Confirm restored alignment | checkpoint summary, short acknowledgment |
-| **Continue** | Resume execution | next valid step |
-| **Outcome** | Resolve the interaction | complete / partial / failed / abandoned |
+### 2.1 Runtime Core
+- Runtime Event Envelope (`/pld_runtime/01_schemas/runtime_event_envelope.json`)
+- RuntimeSignalBridge (`/pld_runtime/03_detection/runtime_signal_bridge.py`)
+- Enforcement Rules (`/pld_runtime/04_enforcement/`)
+- Controller Logic (`/pld_runtime/05_controllers/`)
 
-> Works with LangGraph, Assistants API, Rasa, Swarm, AutoGen, or custom orchestration.
+### 2.2 Logging & Telemetry
+- Structured Logger (`/pld_runtime/06_logging/structured_logger.py`)
+- Event Writers (`/pld_runtime/06_logging/event_writer.py`)
+- Runtime Logging Pipeline (`/pld_runtime/06_logging/runtime_logging_pipeline.py`)
+- Session Trace Buffer
 
----
+### 2.3 Ingestion & Normalization
+- Ingestion Config (`/pld_runtime/02_ingestion/ingestion_config.py`)
+- MultiWOZ Loader
+- Normalization Logic
 
-## Repository Structure
-
-```
-/quickstart     — Learning path + implementation patterns (start here)
-/pld_runtime    — Optional reference runtime
-/docs           — Conceptual model + taxonomy
-/analytics      — Benchmarks + evaluated traces
-/field          — Operational adoption playbooks
-```
-
-A simplified conceptual map:
-
-| Layer | Role |
-|-------|------|
-| Concept Model | `/docs` |
-| Implementation Patterns | `/quickstart` |
-| Runtime Reference | `/pld_runtime` |
-| Evidence & Evaluation | `/analytics` |
-| Operational Adoption | `/field` |
+### 2.4 Failover & Recovery
+- Failover Strategies (`/pld_runtime/07_failover/`)
+- Backoff Policies
+- Strategy Registry
 
 ---
 
-## Adoption Path
+## 3 — Level 4: Quickstart (Consumer Layer)
 
-A recommended onboarding sequence:
+### 3.1 Getting Started
+- hello_pld_runtime.py
+- run_minimal_engine.py
+- Minimal Demo (`/quickstart/examples/minimal_pld_demo.py`)
 
-1. Learn the lifecycle → `/quickstart/overview/`
-2. Run the teaching runtime → `hello_pld_runtime.py`  
-   → First behavioral intuition: Drift → Repair → Reentry → Continue
-3. Run the real runtime engine → `run_minimal_engine.py`  
-   → Verify ingestion, thresholds, and enforcement policy behavior
-4. Apply drift/repair/reentry primitives → `/quickstart/operator_primitives/`
-5. Use modular runtime patterns → `/quickstart/patterns/`
-6. Implement runnable integration flows → `04_integration_recipes/`
-7. Emit structured events → `/quickstart/metrics/`
-8. Benchmark against traces → `/analytics/`
-9. Apply operational metrics → `/docs/07_pld_operational_metrics_cookbook.md`  
-   → Measure: **PRDR · REI · VRL · FR · MRBF**
+### 3.2 Operator Primitives
+- Drift Detection
+- Soft Repair
+- Hard Repair
+- Latency Control
+- Reentry Operators
 
-> Adoption path moves from **concept → behavior → implementation → observability → operational stability.**
+### 3.3 Patterns & Recipes
+- Runtime Patterns (`/quickstart/patterns/`)
+- Integration Recipes (`/quickstart/patterns/04_integration_recipes/`)
+- Tooling Patterns
+- RAG / LangGraph / Rasa Integration
 
----
-
-## Telemetry and Evidence
-
-PLD is **telemetry-first**:
-
-- events are logged every turn  
-- signals map to schemas (`pld_event.schema.json`)  
-- runtime is evaluated using operational metrics  
-- dashboards measure whether repairs "stick" over time  
-
-Evidence includes:
-
-- MultiWOZ 2.4 (200 annotated dialogs)  
-- tool-enabled agent traces  
-- applied SaaS support cases  
-- field PoCs  
+### 3.4 Metrics Quickstart
+- Verification Scripts (`/quickstart/metrics/verify_metrics_local.py`)
+- Dashboards (`/quickstart/metrics/dashboards/`)
+- Example Logs (`/quickstart/metrics/datasets/pld_events_demo.jsonl`)
+- Reporting Examples
 
 ---
 
-## One Sentence Summary
+## 4 — Analytics & Evaluation
 
-> **PLD is a runtime governance model that stabilizes multi-turn LLM agents through structured drift detection, proportional repair, and confirmed reentry — making behavior measurable, recoverable, and operationally reliable.**
+- PRDR Framework (`/analytics/PRDR_framework.md`)
+- VRL Framework (`/analytics/VRL_framework.md`)
+- Clustering & Observability Studies
+- Benchmarks & Datasets (MultiWOZ 2.4)
+- Case Studies
 
 ---
 
-Maintainer: **Kiyoshi Sasano**  
-License: **CC BY 4.0 (methodology)** • **Apache 2.0 (code)**  
-Trademark usage governed by `LICENSES/TRADEMARK_POLICY.md`.
+## 5 — Field Adoption Playbooks
 
+- Trace Examples
+- Anti-Patterns
+- Role Alignment Guide
+- Operational Onboarding
+- Conversation Protocols
 
+---
 
+## 6 — Meta & Governance
 
+- ROADMAP (`/meta/ROADMAP.md`)
+- Manifest Spec (`/meta/METADATA_MANIFEST_SPEC.md`)
+- Contribution Guidelines (`/docs/contributing/PLD_Runtime_Implementation_Rules.md`)
+- Licenses & Trademark Policy (`/LICENSES/`)
+- Citation (`/LICENSES/citation.bib`)
