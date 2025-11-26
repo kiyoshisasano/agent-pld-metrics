@@ -1,9 +1,11 @@
-# version: 2.0.0
+# component_id: structured_logger
+# kind: runtime_module
+# area: logging
 # status: draft
-# authority_level_scope: Level 5 — runtime implementation
-# purpose: Structured logger facade over transport-only event writers for PLD-compatible runtimes.
-# scope: runtime.logging.module
-# change_classification: runtime-only
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Structured logger facade over transport event writers for PLD-compatible runtimes.
 
 from __future__ import annotations
 
@@ -136,3 +138,4 @@ def make_console_logger(
 
 
 __all__ = ["LoggingMode", "StructuredLogger", "make_console_logger"]
+
