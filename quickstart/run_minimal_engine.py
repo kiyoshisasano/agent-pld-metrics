@@ -1,16 +1,11 @@
-"""
-Quickstart Minimal Runtime Engine Loop — Variant A
--------------------------------------------------
-This script demonstrates a tiny loop where runtime signals are turned
-into PLD events and emitted through the runtime logging pipeline.
-
-It shows:
-  ✔ One bridge instance
-  ✔ One logger instance
-  ✔ A small list of runtime signals processed sequentially
-
-This file is *non-authoritative* and serves only as a runnable demo.
-"""
+# component_id: run_minimal_engine
+# kind: example
+# area: quickstart
+# status: experimental
+# authority_level: 1
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Minimal engine loop that processes a small sequence of RuntimeSignals into PLD v2-compliant events and emits them through the Level 5 logging stack.
 
 from pld_runtime.runtime_signal_bridge import (
     RuntimeSignalBridge,
