@@ -18,6 +18,9 @@ import yaml
 # ---------------------------------------------------------------------------
 # Adjust import path so that pld_runtime and this example package are importable
 # from the repo root.
+#
+# In this example, PLD is consumed only via the public Level-5 API surface
+# exposed by `pld_runtime`, and wired in through `pld_runtime_integration.py`.
 # ---------------------------------------------------------------------------
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -28,6 +31,7 @@ if str(ROOT) not in sys.path:
 from examples.langgraph_assistants.graph import build_graph  # noqa: E402
 from examples.langgraph_assistants.pld_runtime_integration import (  # noqa: E402
     init_pld_observer,
+    shutdown_pld_observer,
     emit_tool_error,
     emit_session_closed,
 )
@@ -68,29 +72,35 @@ def main() -> None:
         ],
     }
 
-    # Run a short scripted loop of turns.
-    max_turns = 3
-    for _ in range(max_turns):
-        try:
-            # Invoke the LangGraph app; this will call the AssistantNode and
-            # emit a 'continue' PLD observer event in graph.py.
-            state = app.invoke(state)
-        except Exception as exc:
-            # If something goes wrong (e.g., API failure), emit a TOOL_ERROR event
-            # and stop the loop. The PLD observer remains non-disruptive to the
-            # caller's flow; here we simply break as part of the demo.
-            emit_tool_error(state, reason=str(exc))
-            print(f"[warn] Encountered error during assistant turn: {exc!r}")
-            break
+    try:
+        # Run a short scripted loop of turns.
+        max_turns = 3
+        for _ in range(max_turns):
+            try:
+                # Invoke the LangGraph app; this will call the AssistantNode and
+                # emit a 'continue' PLD observer event in graph.py.
+                state = app.invoke(state)
+            except Exception as exc:
+                # If something goes wrong (e.g., API failure), emit a TOOL_ERROR event
+                # and stop the loop. The PLD observer remains non-disruptive to the
+                # caller's flow; here we simply break as part of the demo.
+                emit_tool_error(state, reason=str(exc))
+                print(f"[warn] Encountered error during assistant turn: {exc!r}")
+                break
 
-        # Increment the turn counter on the state (1-based).
-        state["turn"] = int(state.get("turn", 1)) + 1
+            # Increment the turn counter on the state (1-based).
+            state["turn"] = int(state.get("turn", 1)) + 1
 
-    # Emit a 'session_closed' observer event at the end of the conversation.
-    emit_session_closed(state)
+        # Emit a 'session_closed' observer event at the end of the conversation.
+        emit_session_closed(state)
 
-    print("Final state:", state)
-    print(f"PLD JSONL logs → {jsonl_path}")
+        print("Final state:", state)
+        print(f"PLD JSONL logs → {jsonl_path}")
+
+    finally:
+        # Flush and close the JSONL logging pipeline. Forgetting to call this is
+        # not fatal, but some of the last events may not be written to disk.
+        shutdown_pld_observer()
 
 
 if __name__ == "__main__":
