@@ -94,14 +94,11 @@ Failover is invoked only when standard policy resolution and control logic canno
 
 ---
 
-## Submodule Index (01–07)
-
 ---
 
 ## Public API Surface (`pld_runtime/__init__.py`)
 
-As of v2.0, this package now exposes a **stable and minimal integration API**
-via the top-level namespace:
+Beginning with **Runtime v2.0**, the package now exposes a **stable, intentionally minimal integration API** from the top-level namespace:
 
 ```python
 from pld_runtime import (
@@ -113,30 +110,94 @@ from pld_runtime import (
     RuntimeLoggingPipeline,
     JsonlExporter,
 )
+
+bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
+
+signal = RuntimeSignal(kind=SignalKind.CONTINUE_NORMAL, payload={})
+context = EventContext(
+    session_id="demo",
+    turn_sequence=1,
+    source="runtime",
+    model="gpt-4.1-mini",
+    current_phase="continue",
+)
+
+event = bridge.build_event(signal, context)
+
+pipeline = RuntimeLoggingPipeline(jsonl_exporter=JsonlExporter("logs/demo.jsonl"))
+pipeline.on_event(event)
+
 ```
 
-This surface represents the **Level-5 operational boundary** and is the
-recommended import path for:
+This surface defines the **official Level-5 boundary** for PLD runtime integrations.
 
-- external integrations
-- orchestration frameworks (LangGraph, LangChain, Swarm, AgentOps, etc.)
-- examples and reference implementations in this repository
+It is the recommended import path for:
 
-You SHOULD:
-
-import from the top-level `pld_runtime` namespace
-
-treat deeper module paths (`03_detection/...`, `06_logging/...`) as internal
-
-You SHOULD NOT:
-
-- import PLD runtime internals directly unless contributing to the runtime
-- redefine or mutate event schema, enumeration, or taxonomy values
-
-This keeps the integration experience stable even if internal module layout
-changes in future releases.
+* LangGraph / LangChain / Swarm / AgentOps connectors
+* orchestration frameworks and middleware
+* examples, demos, and field experimentation
+* production-facing integrations where stability matters
 
 ---
+
+### Design Intent
+
+This API exists to ensure that **external integrations remain stable** even if the internal folder structure evolves.
+
+It establishes:
+
+| Scope                                             | Status              | Notes                 |
+| ------------------------------------------------- | ------------------- | --------------------- |
+| `pld_runtime.<symbol>`                            | **Public / Stable** | Safe for external use |
+| Internal folders (`detection/`, `logging/`, etc.) | **Private**         | Subject to change     |
+| Schema, taxonomy, lifecycle rules                 | **Immutable**       | Defined by Levels 1–3 |
+
+---
+
+### Usage Rules
+
+#### ✅ You SHOULD:
+
+* import only from the top-level namespace:
+
+  ```python
+  from pld_runtime import RuntimeSignalBridge
+  ```
+
+* treat internal module paths as **implementation details**
+
+* assume backward-compatibility for top-level API names only
+
+#### ❌ You SHOULD NOT:
+
+* import directly from internal paths:
+
+  ```python
+  # discouraged — bypasses stability guarantees
+  from pld_runtime.logging.runtime_logging_pipeline import RuntimeLoggingPipeline
+  ```
+
+* modify event dictionaries built by the runtime
+
+* redefine or extend taxonomy values (`event_type`, `phase`, `pld.code`, etc.)
+
+---
+
+### Why This Matters
+
+The goal of PLD is to act as a **runtime reasoning layer**, not a library of loosely defined helper utilities.
+By defining a **stable API boundary**, the system preserves:
+
+* interoperability across agent frameworks
+* predictable behavior under refactors
+* replay-safe event semantics
+* versioned compatibility with schema levels
+
+> *“There may be many frameworks — but only one governing runtime boundary.”*
+
+---
+
+## Submodule Index (01–07)
 
 Each directory corresponds to a lifecycle stage.
 Descriptions reflect current intent, not a locked standard.
@@ -231,6 +292,7 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
 
