@@ -1,3 +1,10 @@
+# component_id: langgraph_assistants_config
+# kind: config
+# area: integration
+# status: experimental
+# authority_level: 2
+# purpose: Configuration for the LangGraph demo (model, logs).
+
 model: gpt-4.1-mini
 pld_validation_mode: strict
 
