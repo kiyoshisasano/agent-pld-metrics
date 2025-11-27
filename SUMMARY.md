@@ -88,6 +88,8 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 - RAG / LangGraph / Rasa Integration
 - **LangGraph + OpenAI Assistants API + PLD Runtime v2.0 (Observer-Mode Example)**
   (/examples/langgraph_assistants/)
+  → Minimal example demonstrating how to attach PLD Runtime as an **observer-only telemetry layer**  
+     without influencing LangGraph behavior. Emits `continue`, `drift`, and `outcome` events to JSONL.
 
 ### 3.4 Metrics Quickstart
 - Verification Scripts (`/quickstart/metrics/verify_metrics_local.py`)
