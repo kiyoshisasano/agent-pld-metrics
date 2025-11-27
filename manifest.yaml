@@ -470,3 +470,54 @@ components:
     status: draft
     authority_level: 2
     purpose: Observation log for aligning taxonomy against real data.
+
+# ---------------------------------------------------------
+  # 7. Examples: LangGraph Integration
+  # ---------------------------------------------------------
+  - path: examples/langgraph_assistants/README.md
+    component_id: langgraph_assistants_readme
+    kind: doc
+    area: integration
+    status: stable
+    authority_level: 2
+    purpose: Documentation for the LangGraph observer-mode integration example.
+
+  - path: examples/langgraph_assistants/config.yaml
+    component_id: langgraph_assistants_config
+    kind: config
+    area: integration
+    status: experimental
+    authority_level: 2
+    purpose: Configuration for the LangGraph demo (model, logs).
+
+  - path: examples/langgraph_assistants/run.py
+    component_id: langgraph_pld_run
+    kind: example
+    area: integration
+    status: experimental
+    authority_level: 2
+    purpose: Entry point for the LangGraph + PLD observer-mode integration.
+
+  - path: examples/langgraph_assistants/graph.py
+    component_id: langgraph_pld_graph
+    kind: example
+    area: integration
+    status: experimental
+    authority_level: 2
+    purpose: LangGraph definition wiring the PLD observer.
+
+  - path: examples/langgraph_assistants/agent_node.py
+    component_id: langgraph_assistant_node
+    kind: example
+    area: integration
+    status: experimental
+    authority_level: 2
+    purpose: Wrapper for OpenAI Assistants API (Application Layer).
+
+  - path: examples/langgraph_assistants/pld_runtime_integration.py
+    component_id: langgraph_pld_bridge
+    kind: example
+    area: integration
+    status: experimental
+    authority_level: 2
+    purpose: Observer-only bridge from LangGraph state to PLD runtime events.
