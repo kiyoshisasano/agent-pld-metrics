@@ -65,14 +65,6 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 - Backoff Policies
 - Strategy Registry
 
-### 2.5 Integration Surface (Public Runtime API)
-
-- Public API (`/pld_runtime/__init__.py`)
-- Specification & Stability Contract (`/pld_runtime/README.md#public-api-surface`)
-- Lifecycle Notes:
-  - `init_pld_observer()` — initialize observer stack
-  - `shutdown_pld_observer()` — optional finalization step for flushing buffered logs
-
 ---
 
 ## 3 — Level 4: Quickstart (Consumer Layer)
@@ -90,10 +82,12 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 - Reentry Operators
 
 ### 3.3 Patterns & Recipes
-- Runtime Patterns (`/quickstart/patterns/`)
-- Integration Recipes (`/quickstart/patterns/04_integration_recipes/`)
+- Runtime Patterns (/quickstart/patterns/)
+- Integration Recipes (/quickstart/patterns/04_integration_recipes/)
 - Tooling Patterns
 - RAG / LangGraph / Rasa Integration
+- **LangGraph + OpenAI Assistants API + PLD Runtime v2.0 (Observer-Mode Example)**
+  (/examples/langgraph_assistants/)
 
 ### 3.4 Metrics Quickstart
 - Verification Scripts (`/quickstart/metrics/verify_metrics_local.py`)
