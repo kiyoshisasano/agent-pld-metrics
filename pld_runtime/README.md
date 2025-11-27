@@ -94,8 +94,6 @@ Failover is invoked only when standard policy resolution and control logic canno
 
 ---
 
----
-
 ## Public API Surface (`pld_runtime/__init__.py`)
 
 Beginning with **Runtime v2.0**, the package now exposes a **stable, intentionally minimal integration API** from the top-level namespace:
@@ -110,23 +108,6 @@ from pld_runtime import (
     RuntimeLoggingPipeline,
     JsonlExporter,
 )
-
-bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
-
-signal = RuntimeSignal(kind=SignalKind.CONTINUE_NORMAL, payload={})
-context = EventContext(
-    session_id="demo",
-    turn_sequence=1,
-    source="runtime",
-    model="gpt-4.1-mini",
-    current_phase="continue",
-)
-
-event = bridge.build_event(signal, context)
-
-pipeline = RuntimeLoggingPipeline(jsonl_exporter=JsonlExporter("logs/demo.jsonl"))
-pipeline.on_event(event)
-
 ```
 
 This surface defines the **official Level-5 boundary** for PLD runtime integrations.
@@ -265,18 +246,37 @@ Developers SHOULD treat this runtime as a test harness for exploring PLD-aligned
 
 ## Minimal Integration Example
 
-```python
-from pld_runtime import ingestion, detection, enforcement, controller, logging
+from pld_runtime import (
+    RuntimeSignalBridge,
+    RuntimeSignal,
+    SignalKind,
+    EventContext,
+    ValidationMode,
+    RuntimeLoggingPipeline,
+    JsonlExporter,
+)
 
-turn = ingest(raw_input)
-signals = detect(turn)
-result = enforce(turn, signals)
-decision = controller.process(turn, result)
+# Initialize the runtime bridge
+bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
 
-logging_pipeline.on_event(decision.event)
-```
+# Example event generation
+signal = RuntimeSignal(kind=SignalKind.CONTINUE_NORMAL, payload={})
+context = EventContext(
+    session_id="demo-session",
+    turn_sequence=1,
+    source="runtime",
+    model="gpt-4.1-mini",
+    current_phase="continue",
+)
 
-Actual production integration MAY differ depending on orchestration frameworks.
+event = bridge.build_event(signal, context)
+
+# Logging pipeline
+pipeline = RuntimeLoggingPipeline(jsonl_exporter=JsonlExporter("logs/example.jsonl"))
+pipeline.on_event(event)
+
+print("Event written:", event)
+
 
 ---
 
@@ -292,6 +292,7 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
 
