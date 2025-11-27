@@ -13,24 +13,23 @@ from typing import Any, Dict, Optional
 import logging
 
 # NOTE:
-# The import paths below assume a layout such as:
+# This example treats `pld_runtime` as the Level 5 API surface.
+# The package is expected to re-export the following symbols:
 #
-#   pld_runtime/
-#     03_detection/runtime_signal_bridge.py
-#     06_logging/runtime_logging_pipeline.py
-#     06_logging/exporters/exporter_jsonl.py
+#   RuntimeSignalBridge, RuntimeSignal, SignalKind, EventContext, ValidationMode
+#   RuntimeLoggingPipeline, JsonlExporter
 #
-# If your repository uses different module paths or exposes a public
-# "api surface" package, adjust these imports to match that layout.
-from pld_runtime.03_detection.runtime_signal_bridge import (
+# If your repository uses a different public API module, adjust this import
+# accordingly (but keep the examples as consumers of the official API surface).
+from pld_runtime import (
     RuntimeSignalBridge,
     RuntimeSignal,
     SignalKind,
     EventContext,
     ValidationMode,
+    RuntimeLoggingPipeline,
+    JsonlExporter,
 )
-from pld_runtime.06_logging.runtime_logging_pipeline import RuntimeLoggingPipeline
-from pld_runtime.06_logging.exporters.exporter_jsonl import JsonlExporter
 
 logger = logging.getLogger(__name__)
 
@@ -109,9 +108,12 @@ def shutdown_pld_observer() -> None:
     This is a convenience wrapper around RuntimeLoggingPipeline.close().
 
     Design intent:
-        - This function is safe to call from a finally-block in run.py.
+        - Safe to call from a finally-block in run.py.
         - Failures here should NOT bring down the LangGraph application.
           They are logged as errors but not re-raised.
+
+    Forgetting to call this is not fatal, but some of the last events
+    may not be written to disk.
     """
     global _logging_pipeline
 
