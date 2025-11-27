@@ -136,6 +136,7 @@ You SHOULD NOT:
 This keeps the integration experience stable even if internal module layout
 changes in future releases.
 
+---
 
 Each directory corresponds to a lifecycle stage.
 Descriptions reflect current intent, not a locked standard.
@@ -230,6 +231,7 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
 
