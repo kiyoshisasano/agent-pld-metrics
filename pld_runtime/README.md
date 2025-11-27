@@ -1,5 +1,4 @@
----
-path: pld_runtime/README.md
+<!--
 component_id: pld_runtime_readme
 kind: doc
 area: runtime
@@ -8,7 +7,7 @@ authority_level: 5
 version: 2.0.0
 license: Apache-2.0
 purpose: Entry-point documentation for the PLD runtime directory.
----
+-->
 
 # PLD Runtime Package
 
@@ -292,4 +291,5 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
