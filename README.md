@@ -124,7 +124,8 @@ Vendor-neutral — only a runtime behavioral contract.
 > - PLD as a non-intrusive observer layer  
 > - automatic emission of structured runtime events (`continue`, `drift`, `outcome`)  
 > - JSONL logging via the Level-5 runtime (`RuntimeSignalBridge` + `RuntimeLoggingPipeline`)  
-> - a simple lifecycle pattern: `init → emit → shutdown`  
+> - a simple lifecycle pattern: `init → emit → shutdown`
+>   
 > Try it:  
 > `export OPENAI_API_KEY=your_key_here  
 >  python examples/langgraph_assistants/run.py`  
