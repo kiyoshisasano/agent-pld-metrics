@@ -1,0 +1,5 @@
+model: gpt-4.1-mini
+pld_validation_mode: strict
+
+logging:
+  jsonl_path: "logs/langgraph_pld_demo.jsonl"
