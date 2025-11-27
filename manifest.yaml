@@ -521,3 +521,95 @@ components:
     status: experimental
     authority_level: 2
     purpose: Observer-only bridge from LangGraph state to PLD runtime events.
+
+# ---------------------------------------------------------
+  # Package Initializers & Public API
+  # ---------------------------------------------------------
+  - path: pld_runtime/__init__.py
+    component_id: pld_runtime_public_api
+    kind: runtime_module
+    area: api
+    status: stable
+    authority_level: 5
+    purpose: Public API surface for PLD Runtime v2.0.
+
+  # --- Internal Package Markers (Optional but good for completeness) ---
+  - path: pld_runtime/01_schemas/__init__.py
+    component_id: schemas_pkg_init
+    kind: code
+    area: schema
+    status: stable
+    authority_level: 5
+    purpose: Package initialization for schemas.
+
+  - path: pld_runtime/02_ingestion/__init__.py
+    component_id: ingestion_pkg_init
+    kind: code
+    area: ingestion
+    status: stable
+    authority_level: 5
+    purpose: Package initialization for ingestion.
+
+  - path: pld_runtime/03_detection/__init__.py
+    component_id: detection_pkg_init
+    kind: code
+    area: detection
+    status: stable
+    authority_level: 5
+    purpose: Package initialization for detection.
+
+  - path: pld_runtime/04_enforcement/__init__.py
+    component_id: enforcement_pkg_init
+    kind: code
+    area: enforcement
+    status: stable
+    authority_level: 5
+    purpose: Package initialization for enforcement.
+
+  - path: pld_runtime/05_controllers/__init__.py
+    component_id: controllers_pkg_init
+    kind: code
+    area: controller
+    status: stable
+    authority_level: 5
+    purpose: Package initialization for controllers.
+
+  - path: pld_runtime/06_logging/__init__.py
+    component_id: logging_pkg_init
+    kind: code
+    area: logging
+    status: stable
+    authority_level: 5
+    purpose: Package initialization for logging.
+
+  - path: pld_runtime/06_logging/exporters/__init__.py
+    component_id: exporters_pkg_init
+    kind: code
+    area: logging
+    status: stable
+    authority_level: 5
+    purpose: Package initialization for logging exporters.
+
+  - path: pld_runtime/07_failover/__init__.py
+    component_id: failover_pkg_init
+    kind: code
+    area: failover
+    status: stable
+    authority_level: 5
+    purpose: Package initialization for failover.
+
+  - path: examples/__init__.py
+    component_id: examples_pkg_init
+    kind: code
+    area: examples
+    status: stable
+    authority_level: 2
+    purpose: Package initialization for examples.
+
+  - path: examples/langgraph_assistants/__init__.py
+    component_id: langgraph_assistants_pkg_init
+    kind: code
+    area: integration
+    status: experimental
+    authority_level: 2
+    purpose: Package initialization for LangGraph integration.
