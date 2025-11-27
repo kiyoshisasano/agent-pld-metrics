@@ -127,6 +127,13 @@ Responsibilities:
   ```python
   init_pld_observer(jsonl_path=..., validation_mode=...)
   ```
+And, at the end of the run, you may optionally call:
+
+```python
+shutdown_pld_observer()
+```
+
+to flush and close the underlying logging pipeline.
 
 * Expose simple, observer-only functions:
 
