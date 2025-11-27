@@ -65,6 +65,14 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 - Backoff Policies
 - Strategy Registry
 
+### 2.5 Integration Surface (Public Runtime API)
+
+- Public API (`/pld_runtime/__init__.py`)
+- Specification & Stability Contract (`/pld_runtime/README.md#public-api-surface`)
+- Lifecycle Notes:
+  - `init_pld_observer()` — initialize observer stack
+  - `shutdown_pld_observer()` — optional finalization step for flushing buffered logs
+
 ---
 
 ## 3 — Level 4: Quickstart (Consumer Layer)
