@@ -96,6 +96,47 @@ Failover is invoked only when standard policy resolution and control logic canno
 
 ## Submodule Index (01–07)
 
+---
+
+## Public API Surface (`pld_runtime/__init__.py`)
+
+As of v2.0, this package now exposes a **stable and minimal integration API**
+via the top-level namespace:
+
+```python
+from pld_runtime import (
+    RuntimeSignalBridge,
+    RuntimeSignal,
+    SignalKind,
+    EventContext,
+    ValidationMode,
+    RuntimeLoggingPipeline,
+    JsonlExporter,
+)
+```
+
+This surface represents the **Level-5 operational boundary** and is the
+recommended import path for:
+
+- external integrations
+- orchestration frameworks (LangGraph, LangChain, Swarm, AgentOps, etc.)
+- examples and reference implementations in this repository
+
+You SHOULD:
+
+import from the top-level `pld_runtime` namespace
+
+treat deeper module paths (`03_detection/...`, `06_logging/...`) as internal
+
+You SHOULD NOT:
+
+- import PLD runtime internals directly unless contributing to the runtime
+- redefine or mutate event schema, enumeration, or taxonomy values
+
+This keeps the integration experience stable even if internal module layout
+changes in future releases.
+
+
 Each directory corresponds to a lifecycle stage.
 Descriptions reflect current intent, not a locked standard.
 
@@ -189,6 +230,7 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
 
