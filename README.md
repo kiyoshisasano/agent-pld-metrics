@@ -127,8 +127,8 @@ It demonstrates:
 - a simple lifecycle pattern: `init → emit → shutdown`
     
 Try it:  
-`export OPENAI_API_KEY=your_key_here  
- python examples/langgraph_assistants/run.py`  
+`export OPENAI_API_KEY=your_key_here`
+ `python examples/langgraph_assistants/run.py`  
 Logs will appear in:  
  `logs/langgraph_pld_demo.jsonl`  
  Status: **Experimental — seeking evaluation feedback**.
