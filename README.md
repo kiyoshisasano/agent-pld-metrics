@@ -117,19 +117,19 @@ Compatible with:
 Vendor-neutral — only a runtime behavioral contract.
 
 > 🆕 **Observer-Mode Integration Example (Experimental)**
-> A minimal reference integration is available under:
-> `examples/langgraph_assistants/`
-> This example shows how PLD Runtime v2.0 can be attached to a LangGraph + OpenAI Assistants-style agent without modifying its behavior.
-> It demonstrates:
-> - PLD as a non-intrusive observer layer
-> - automatic emission of structured runtime events (`continue`, `drift`, `outcome`)
-> - JSONL logging via the Level-5 runtime (`RuntimeSignalBridge` + `RuntimeLoggingPipeline`)
-> - a simple lifecycle pattern: `init → emit → shutdown`
-> Try it:
-> `export OPENAI_API_KEY=your_key_here
->  python examples/langgraph_assistants/run.py`
-> Logs will appear in:
-> `logs/langgraph_pld_demo.jsonl`
+> A minimal reference integration is available under:  
+> `examples/langgraph_assistants/`  
+> This example shows how PLD Runtime v2.0 can be attached to a LangGraph + OpenAI Assistants-style agent without modifying its behavior.  
+> It demonstrates:  
+> - PLD as a non-intrusive observer layer  
+> - automatic emission of structured runtime events (`continue`, `drift`, `outcome`)  
+> - JSONL logging via the Level-5 runtime (`RuntimeSignalBridge` + `RuntimeLoggingPipeline`)  
+> - a simple lifecycle pattern: `init → emit → shutdown`  
+> Try it:  
+> `export OPENAI_API_KEY=your_key_here  
+>  python examples/langgraph_assistants/run.py`  
+> Logs will appear in:  
+> `logs/langgraph_pld_demo.jsonl`  
 > Status: **Experimental — seeking evaluation feedback**.
 
 
