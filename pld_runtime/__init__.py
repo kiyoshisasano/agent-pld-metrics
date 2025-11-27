@@ -18,12 +18,22 @@ Consumers SHOULD import from here rather than internal folders:
 
 This maintains a stable integration boundary even if internals evolve.
 
+Note:
+    The internal package layout is intentionally hidden behind this module.
+    If you change file locations inside `pld_runtime/`, update only the
+    imports below — external integrations should remain stable.
 """
 
 # -------------------------
 # Level 5 — Runtime Detection (Signals)
 # -------------------------
-from .03_detection.runtime_signal_bridge import (
+# Internal layout example (adjust if your package names differ):
+#
+# pld_runtime/
+#   detection/
+#     runtime_signal_bridge.py
+#
+from .detection.runtime_signal_bridge import (
     RuntimeSignalBridge,
     RuntimeSignal,
     SignalKind,
@@ -34,8 +44,16 @@ from .03_detection.runtime_signal_bridge import (
 # -------------------------
 # Level 5 — Logging Surface
 # -------------------------
-from .06_logging.runtime_logging_pipeline import RuntimeLoggingPipeline
-from .06_logging.exporters.exporter_jsonl import JsonlExporter
+# Internal layout example:
+#
+# pld_runtime/
+#   logging/
+#     runtime_logging_pipeline.py
+#     exporters/
+#       exporter_jsonl.py
+#
+from .logging.runtime_logging_pipeline import RuntimeLoggingPipeline
+from .logging.exporters.exporter_jsonl import JsonlExporter
 
 
 __all__ = [
