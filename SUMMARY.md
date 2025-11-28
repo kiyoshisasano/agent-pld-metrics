@@ -16,6 +16,7 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 - Level Model Overview (`/docs/architecture_layers.md`)
 - Change Log (`/meta/CHANGELOG.md`)
 - Versioning Policy (`/meta/VERSIONING_POLICY.md`)
+- **For Product & Decision Makers — PLD in under 30 seconds (`/pitch/`)**
 
 ---
 
