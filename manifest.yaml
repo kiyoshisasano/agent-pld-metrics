@@ -522,7 +522,7 @@ components:
     authority_level: 2
     purpose: Observer-only bridge from LangGraph state to PLD runtime events.
 
-# ---------------------------------------------------------
+  # ---------------------------------------------------------
   # Package Initializers & Public API
   # ---------------------------------------------------------
   - path: pld_runtime/__init__.py
