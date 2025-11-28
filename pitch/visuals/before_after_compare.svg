@@ -46,7 +46,7 @@
   <text x="920" y="820" class="label">Stable Over Turns</text>
 
   <!-- Footer caption (brought back inside viewBox, between loop and labels) -->
-  <text x="650" y="720" text-anchor="middle" class="caption">
+  <text x="650" y="750" text-anchor="middle" class="caption">
     Same model. Same stack. Different stability.
   </text>
 
