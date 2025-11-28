@@ -1,0 +1,65 @@
+<svg width="1300" height="820" viewBox="0 0 1300 820" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-size: 36px; font-family: sans-serif; font-weight: 600; fill: #111; }
+    .label { font-size: 22px; font-family: sans-serif; fill: #333; }
+    .small { font-size: 18px; font-family: sans-serif; fill: #555; }
+    .accent { fill: #3B82F6; stroke: #3B82F6; }
+    .box { fill: none; stroke: #999; stroke-width: 2; rx: 16; ry: 16; }
+    .loop-text { font-size: 20px; font-family: sans-serif; fill: #222; }
+    .arrow { stroke: #3B82F6; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+  </style>
+
+  <!-- arrowhead definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="14" markerHeight="14" refX="10" refY="7" orient="auto">
+      <polyline points="0,0 14,7 0,14" fill="#3B82F6"></polyline>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="650" y="70" text-anchor="middle" class="title">
+    PLD — A Stability Layer for Multi-Turn AI
+  </text>
+
+  <!-- Left Box: Existing Stack -->
+  <rect x="80" y="200" width="340" height="260" class="box"/>
+  <text x="250" y="260" text-anchor="middle" class="label">Existing Stack</text>
+  <text x="250" y="300" text-anchor="middle" class="small">Models • Tools • Frameworks</text>
+  <text x="250" y="335" text-anchor="middle" class="small">(LangGraph / Rasa / Assistants API / Custom)</text>
+
+  <!-- Right Box: Output Behavior -->
+  <rect x="880" y="200" width="340" height="260" class="box"/>
+  <text x="1050" y="260" text-anchor="middle" class="label">Output Behavior</text>
+  <text x="1050" y="300" text-anchor="middle" class="small">Stable • Predictable • Aligned</text>
+
+  <!-- Middle Layer: PLD -->
+  <rect x="480" y="200" width="340" height="260" class="box" stroke="#3B82F6"/>
+  <text x="650" y="250" text-anchor="middle" class="label">PLD Runtime Layer</text>
+  <text x="650" y="285" text-anchor="middle" class="small">Observe → Detect → Repair → Continue</text>
+  <text x="650" y="315" text-anchor="middle" class="small">(Optional • Non-intrusive • Reversible)</text>
+
+  <!-- Loop Arrows Inside Middle Box -->
+  <circle cx="650" cy="380" r="95" fill="none" class="accent" stroke-width="2"/>
+
+  <text x="650" y="300" text-anchor="middle"></text>
+
+  <text x="650" y="305"></text>
+
+  <!-- Loop Labels -->
+  <text x="650" y="285"></text>
+
+  <text x="650" y="365" text-anchor="middle" class="loop-text">Continue</text>
+  <text x="650" y="465" text-anchor="middle" class="loop-text">Repair</text>
+  <text x="560" y="415" text-anchor="middle" class="loop-text">Drift</text>
+  <text x="740" y="415" text-anchor="middle" class="loop-text">Reentry</text>
+
+  <!-- Outer Arrows connecting boxes -->
+  <line x1="420" y1="330" x2="480" y2="330" class="arrow"/>
+  <line x1="820" y1="330" x2="880" y2="330" class="arrow"/>
+
+  <!-- Footer text -->
+  <text x="650" y="750" text-anchor="middle" class="small" fill="#555">
+    No migration. No lock-in. A lightweight behavioral governance layer.
+  </text>
+
+</svg>
