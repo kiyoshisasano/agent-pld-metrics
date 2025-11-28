@@ -12,8 +12,6 @@ multi-turn LLM systems remain **stable, aligned, and predictable — across turn
 
 This repository contains **specifications, runtime components, examples, adoption resources, and evaluation patterns.**
 
----
-
 ## 🧭 Start Here Based on Your Role
 
 | You Are… | Recommended Entry Point |
