@@ -114,6 +114,7 @@ analytics/      → datasets, evaluation, metrics
 field/          → adoption and operational patterns
 ```
 Full structure → `SUMMARY.md`
+
 ---
 
 ## 📈 Observability
@@ -223,8 +224,6 @@ It can be **added, removed, or run in observer-mode** without altering existing 
 If your agent already works — PLD helps it stay stable.
 If your agent drifts — PLD makes the drift visible and recoverable.
 ```
-
----
 
 ---
 
