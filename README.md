@@ -44,7 +44,7 @@ Contributions and field reports are welcome.
 
 ---
 
-> “PLD is not a framework — it is a behavioral stabilizer for multi-turn AI systems.”
+“PLD is not a framework — it is a behavioral stabilizer for multi-turn AI systems.”
 
 ---
 
