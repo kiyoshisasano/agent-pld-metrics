@@ -471,7 +471,7 @@ components:
     authority_level: 2
     purpose: Observation log for aligning taxonomy against real data.
 
-# ---------------------------------------------------------
+  # ---------------------------------------------------------
   # 7. Examples: LangGraph Integration
   # ---------------------------------------------------------
   - path: examples/langgraph_assistants/README.md
