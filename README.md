@@ -104,6 +104,36 @@ Less relevant for:
 
 ---
 
+### 🧩 Where PLD Fits in the Agent Stack
+
+PLD is **not a framework replacement** — it is a **runtime governance layer**.
+
+It sits:
+
+```
+┌───────────────────────────────────────────────┐
+│  Application Logic / Domain Tools / UX       │
+└───────────────────────────────────────────────┘
+                 ▲
+                 │
+     (behavioral governance / stability)
+                 │
+         **PLD Runtime Layer**
+                 │
+                 ▼
+┌───────────────────────────────────────────────┐
+│ LangGraph | Assistants API | Rasa | AgentOps │
+│ Memory | Routing | Planning | Tooling        │
+└───────────────────────────────────────────────┘
+                 ▼
+            Foundation Models
+```
+
+PLD does not generate responses.  
+It **observes**, **labels**, and **stabilizes** multi-turn behavior across models, tools, and execution strategies.
+
+---
+
 ## 🔌Integrations
 
 Compatible with:
