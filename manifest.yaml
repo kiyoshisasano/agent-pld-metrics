@@ -7,6 +7,26 @@ version: 0.9.1
 default_license: Apache-2.0
 
 components:
+# ---------------------------------------------------------
+# 0. Adoption & Communication (New)
+# ---------------------------------------------------------
+
+- path: pitch/
+  component_id: pitch_kit
+  kind: doc
+  area: adoption
+  status: candidate
+  authority_level: 1
+  version: 0.1.0
+  license: CC-BY-4.0
+  purpose: >
+    Communication and adoption materials intended to help product teams,
+    engineering leadership, and decision-makers understand the value and role
+    of PLD in stabilizing multi-turn AI systems. This folder exists as part of
+    the OSS distribution but remains in an evolving exploratory phase, seeking
+    field feedback before stabilization.
+  feedback: "Feedback from implementers and internal advocates is encouraged."
+
   # ---------------------------------------------------------
   # 1. Meta & Governance
   # ---------------------------------------------------------
