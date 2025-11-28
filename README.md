@@ -1,5 +1,12 @@
 # Phase Loop Dynamics™ (PLD)
 
+![License: Apache-2.0 | CC-BY-4.0](https://img.shields.io/badge/license-Apache%202.0%20%7C%20CC--BY--4.0-blue)
+![Status: Active](https://img.shields.io/badge/status-active-brightgreen)
+
+*A Runtime Phase Model for Stable Multi-Turn LLM Systems*
+
+---
+
 # 👋 Welcome to PLD
 
 **Phase Loop Dynamics (PLD)** is a runtime governance model designed to help  
@@ -43,16 +50,10 @@ Contributions and field reports are welcome.
 
 ---
 
-![License: Apache-2.0 | CC-BY-4.0](https://img.shields.io/badge/license-Apache%202.0%20%7C%20CC--BY--4.0-blue)
-![Status: Active](https://img.shields.io/badge/status-active-brightgreen)
-
-*A Runtime Phase Model for Stable Multi-Turn LLM Systems*
-
 PLD does not replace architectures like LangGraph, Assistants API, or custom orchestration.  
-Instead, it **observes, labels, and stabilizes behavior across the stack, without requiring workflow redesign.**
+Instead, it **observes, labels, and stabilizes behavior across the stack — without requiring workflow redesign.**
 
 ---
-
 
 ## 🎯 Why PLD Exists
 
