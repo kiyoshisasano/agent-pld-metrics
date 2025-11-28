@@ -1,0 +1,53 @@
+<svg width="1300" height="820" viewBox="0 0 1300 820" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font-family: sans-serif; font-size: 38px; font-weight: 600; fill: #111; }
+    .section { font-family: sans-serif; font-size: 32px; font-weight: 600; fill: #111; }
+    .label { font-family: sans-serif; font-size: 24px; fill: #333; }
+    .caption { font-family: sans-serif; font-size: 22px; fill: #444; }
+    .before-line { stroke: #D63C3C; stroke-width: 6; fill: none; }
+    .after-line { stroke: #3B82F6; stroke-width: 6; fill: none; }
+    .divider { stroke: #888; stroke-width: 3; }
+  </style>
+
+  <!-- Title -->
+  <text x="650" y="80" text-anchor="middle" class="title">
+    Before vs After (PLD Applied)
+  </text>
+
+  <!-- Divider -->
+  <line x1="650" y1="140" x2="650" y2="690" class="divider" />
+
+  <!-- BEFORE section -->
+  <text x="180" y="180" class="section">Before</text>
+
+  <!-- Chaotic path -->
+  <polyline class="before-line"
+    points="220,300 330,360 260,445 400,490 290,550 380,620 260,700"
+  />
+
+  <!-- Before text (shifted left) -->
+  <text x="120" y="740" class="label">Unpredictable</text>
+  <text x="120" y="780" class="label">Repetitive</text>
+  <text x="120" y="820" class="label">Behavior Drift</text>
+
+  <!-- AFTER section -->
+  <text x="920" y="180" class="section">After</text>
+
+  <!-- Clean loop -->
+  <path class="after-line"
+    d="M950,300 
+       C1050,350 1050,450 950,500 
+       C850,450 850,350 950,300 Z"
+  />
+
+  <!-- After text (shifted right) -->
+  <text x="920" y="740" class="label">Aligned</text>
+  <text x="920" y="780" class="label">Recoverable</text>
+  <text x="920" y="820" class="label">Stable Over Turns</text>
+
+  <!-- Footer caption (brought back inside viewBox, between loop and labels) -->
+  <text x="650" y="720" text-anchor="middle" class="caption">
+    Same model. Same stack. Different stability.
+  </text>
+
+</svg>
