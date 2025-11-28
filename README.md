@@ -1,13 +1,58 @@
-# Phase Loop Dynamics™ (PLD) 
-*A Runtime Phase Model for Stable Multi-Turn LLM Systems*
+# Phase Loop Dynamics™ (PLD)
+
+# 👋 Welcome to PLD
+
+**Phase Loop Dynamics (PLD)** is a runtime governance model designed to help  
+multi-turn LLM systems remain **stable, aligned, and predictable — across turns, tools, and models.**
+
+This repository contains **specifications, runtime components, examples, adoption resources, and evaluation patterns.**
+
+---
+
+## 🧭 Start Here Based on Your Role
+
+| You Are… | Recommended Entry Point |
+|----------|------------------------|
+| 🧑‍💻 **Developer / Engineer** | Start with: `quickstart/` → run an example, emit structured runtime events. |
+| 🧪 **Researcher / Architect** | Explore: `docs/` (Levels 1–3) → semantics, schema, taxonomy, runtime reasoning. |
+| 🧑‍💼 **Product / Decision Maker** | View: `pitch/` → understand why multi-turn systems fail and how PLD stabilizes them. |
+| 🧭 **Evaluating or Integrating** | Check: `examples/` and `analytics/` for patterns, metrics, and field workflows. |
+
+---
+
+## ⚠️ Repository Status
+
+> **Status: Candidate — actively evolving.**  
+Behavioral patterns, taxonomy, and runtime conventions may continue to evolve based on implementation feedback.
+
+Contributions and field reports are welcome.
+
+---
+
+## 🔗 Quick Links
+
+- 📄 Core Specifications → `/docs/`
+- ⚙️ Runtime Implementation → `/pld_runtime/`
+- 🚀 Quickstart → `/quickstart/`
+- 🎨 Adoption & Communication → `/pitch/`
+- 📊 Metrics & Observability → `/analytics/`
+
+---
+
+> “PLD is not a framework — it is a behavioral stabilizer for multi-turn AI systems.”
+
+---
 
 ![License: Apache-2.0 | CC-BY-4.0](https://img.shields.io/badge/license-Apache%202.0%20%7C%20CC--BY--4.0-blue)
 ![Status: Active](https://img.shields.io/badge/status-active-brightgreen)
 
-> PLD is not a framework or agent library.  
-> It is a **runtime governance model** that stabilizes multi-turn LLM agents across **turns, tooling, models, and execution contexts.** 
+*A Runtime Phase Model for Stable Multi-Turn LLM Systems*
+
+PLD does not replace architectures like LangGraph, Assistants API, or custom orchestration.  
+Instead, it **observes, labels, and stabilizes behavior across the stack, without requiring workflow redesign.**
 
 ---
+
 
 ## 🎯 Why PLD Exists
 
