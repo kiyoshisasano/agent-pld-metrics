@@ -144,31 +144,87 @@ Less relevant for:
 
 ### 🧩 Where PLD Fits in the Agent Stack
 
-PLD is **not a framework replacement** — it is a **runtime governance layer**.
+PLD does **not** replace agent frameworks, orchestration layers, or tool execution pipelines. Instead, PLD focuses on the **behavior of the system over time**.
 
-It sits:
+PLD works **alongside existing stacks**, ensuring that multi-turn systems:
+
+* stay aligned across turns
+* recover from drift instead of compounding it
+* avoid looping or unstable behavior
+* maintain predictable runtime dynamics across tools, models, and prompts
+
+---
+
+#### 📍 Conceptual Position in the Stack
 
 ```
 ┌───────────────────────────────────────────────┐
-│  Application Logic / Domain Tools / UX       │
+│ Application Logic / Domain Tools / UX        │
+│ (Tasks, business logic, user orchestration)   │
 └───────────────────────────────────────────────┘
-                 ▲
-                 │
-     (behavioral governance / stability)
-                 │
-         **PLD Runtime Layer**
-                 │
-                 ▼
+                      ▲
+                      │
+        Behavioral stability / runtime signals
+                      │
+        ┌─────────────────────────────────┐
+        │      **PLD Runtime Layer**      │
+        └─────────────────────────────────┐
+                      │
+                      ▼
 ┌───────────────────────────────────────────────┐
 │ LangGraph | Assistants API | Rasa | AgentOps │
-│ Memory | Routing | Planning | Tooling        │
+│ Routing | Planning | Memory | Tooling        │
 └───────────────────────────────────────────────┘
-                 ▼
-            Foundation Models
+                      ▼
+                Foundation Models
 ```
 
-PLD does not generate responses.  
-It **observes**, **labels**, and **stabilizes** multi-turn behavior across models, tools, and execution strategies.
+---
+
+#### 🧠 What PLD Actually Does
+
+PLD does **not** generate responses, plan actions, or execute tools.
+Instead, it:
+
+* **observes** the system
+* **interprets runtime signals**
+* **governs behavioral stability across turns**
+
+PLD relies on a structured runtime loop:
+
+> **Drift → Repair → Reentry → Continue → Outcome**
+
+This keeps systems consistent even when:
+
+* external APIs fail
+* context grows large
+* system logic evolves
+* model behavior changes
+
+---
+
+#### 🚫 What PLD Does **Not** Do
+
+| Area                              | Owned by PLD? | Owner                       |
+| --------------------------------- | ------------- | --------------------------- |
+| Model inference                   | ❌             | Foundation model            |
+| Tool execution                    | ❌             | Agent / orchestrator        |
+| Memory strategy                   | ❌             | Framework or design pattern |
+| Behavioral stability across turns | ✔             | **PLD Runtime Layer**       |
+
+---
+
+#### 🎯 Summary
+
+PLD is a **governance and stabilization layer — not a replacement for frameworks or agents.**
+It can be **added, removed, or run in observer-mode** without altering existing business logic.
+
+```
+If your agent already works — PLD helps it stay stable.
+If your agent drifts — PLD makes the drift visible and recoverable.
+```
+
+---
 
 ---
 
