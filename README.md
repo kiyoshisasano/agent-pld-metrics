@@ -5,9 +5,7 @@
 
 *A Runtime Phase Model for Stable Multi-Turn LLM Systems*
 
----
-
-# 👋 Welcome to PLD
+### 👋 Welcome to PLD
 
 **Phase Loop Dynamics (PLD)** is a runtime governance model designed to help  
 multi-turn LLM systems remain **stable, aligned, and predictable — across turns, tools, and models.**
