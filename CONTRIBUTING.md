@@ -1,4 +1,4 @@
----
+<!--
 path: CONTRIBUTING.md
 component_id: contributing_guide
 kind: doc
@@ -8,7 +8,7 @@ authority_level: 3
 version: 2.0.0
 license: Apache-2.0
 purpose: Contribution guidelines for maintainers and external collaborators.
----
+-->
 
 # **Contributing to PLD**
 
