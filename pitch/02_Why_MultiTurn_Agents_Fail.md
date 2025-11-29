@@ -1,4 +1,4 @@
----
+<!--
 path: pitch/02_Why_MultiTurn_Agents_Fail.md
 kind: doc
 audience: product leaders, engineering leads, applied ML teams
@@ -8,7 +8,7 @@ version: 0.1.0
 purpose: Describe why multi-turn AI systems become unstable, using relatable examples and narrative framing.
 license: CC-BY-4.0
 feedback: "If this resonates — or if your experience differs — feedback is welcome."
----
+-->
 
 # Why Multi-Turn Agents Fail  
 *A short story most teams eventually recognize.*
