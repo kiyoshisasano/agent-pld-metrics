@@ -1,4 +1,4 @@
----
+<!--
 path: SUMMARY.md
 kind: toc
 status: stable
@@ -6,7 +6,7 @@ version: 2.0.0
 authority_level: 2
 license: Apache-2.0
 purpose: High-level navigation index for the PLD repository aligned to the Level Model.
----
+-->
 
 # SUMMARY
 
