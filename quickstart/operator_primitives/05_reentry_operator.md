@@ -44,19 +44,21 @@ The boundary between repair and reentry may be ambiguous — this document does 
 
 ## Runtime Intent Mapping (Observed)
 
-The runtime includes a mapping related to reentry under the following pattern:
+The runtime schema reserves a lifecycle phase for reentry and an event type for reentry observation. A typical interpretation is:
 
-| SignalKind | Event Type        | Phase     | Taxonomy Code |
-| ---------- | ----------------- | --------- | ------------- |
-| `REENTRY`  | `reentry_started` | `reentry` | `RE1_reentry` |
+| Event Type         | Phase     | Example Taxonomy Code |
+| ------------------ | --------- | --------------------- |
+| `reentry_observed` | `reentry` | `RE1_reentry`         |
 
-As with other operators in this series, taxonomy codes are assigned automatically at event construction time by the runtime.
+This table mirrors the existing event matrix and taxonomy; it does **not** introduce new SignalKind values. In many implementations, reentry events may be produced by higher-level controllers or orchestration logic rather than directly from the quickstart-level signal mapping.
+
+Taxonomy codes are assigned automatically at event construction time by the runtime or associated controllers; quickstart examples are consumers of those events rather than their definitive source.
 
 ---
 
-## Example: Minimal Usage
+## Example: Minimal Usage (Conceptual)
 
-*Not normative — shown only as representation.*
+*Not normative — shown as a conceptual representation rather than a guaranteed API surface.*
 
 ```python
 from pld_runtime.runtime_signal_bridge import (
@@ -68,7 +70,12 @@ from pld_runtime.logging.event_writer import make_stdout_writer
 logger = StructuredLogger(writer=make_stdout_writer())
 bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
 
-signal = RuntimeSignal(kind=SignalKind.REENTRY)
+# NOTE:
+# As of the current runtime version, reentry events may be emitted by
+# higher-level controllers rather than a dedicated SignalKind. This
+# example illustrates the *shape* of such a flow only.
+
+signal = RuntimeSignal(kind=SignalKind.INFO)  # placeholder for a future or controller-specific signal
 
 context = EventContext(
     session_id="example-session-5",
@@ -81,6 +88,23 @@ event = bridge.build_event(signal=signal, context=context)
 logger.log(event)
 ```
 
+```
+
+---
+
+---
+
+## Source of Reentry Decisions
+
+In the example above, `source="assistant"` is used to reflect a scenario where the model or assistant logic judges that the interaction is ready to resume normal flow.
+
+The runtime does not require that reentry decisions come from the assistant itself. Depending on architecture, reentry may be:
+- inferred by a controller or coordinator,
+- emitted by a monitoring or evaluation component,
+- or represented indirectly by other event patterns.
+
+Implementations are free to route reentry-related signals through whichever component owns conversation control.
+
 ---
 
 ## Relationship to Repair, Drift, and Normal Operation
@@ -88,27 +112,31 @@ logger.log(event)
 A loose representation of reentry may look like:
 
 ```
+
 (repair or clarification) → reentry → continuation
+
 ```
 
 Reentry is not a confirmation of success — it is a **transition attempt**.
+
+Current PLD semantics do not define an explicit "repair complete" signal. In practice, reentry is often interpreted as "the system believes repair has reached a good-enough point to attempt continuation", but the exact boundary between repair and reentry remains implementation-dependent. This operator note does not introduce new SignalKind values such as `REPAIR_COMPLETE`; instead, it documents how a reentry phase can be interpreted when such events appear in the log stream.  
 Systems may return to repair or drift if inconsistencies reappear.
 
-In this sense, reentry can be seen as:
+Reentry events are best treated as markers in the event stream rather than exclusive turn owners. The runtime does not guarantee that no other lifecycle events (for example, `continue_*` or outcome-related events) will occur near the same turn. Implementations may choose to emit reentry events just before, with, or immediately after other events that reflect ongoing conversation progress.
 
-* an optimistic pivot back to progress,
-* a checkpoint, rather than a guarantee.
+In this sense, reentry can be seen as:
+- an optimistic pivot back to progress,  
+- a checkpoint, rather than a guarantee.
 
 ---
 
 ## Open Exploration Areas
 
 Some open areas worth documenting for future consideration:
-
-* Should reentry be explicit or implicit when repair completes successfully?
-* How many reentry attempts are reasonable before reconsidering the repair stage?
-* Should user-visible acknowledgments exist to signal stabilization?
-* Do reentry strategies differ between tool-driven workflows and pure conversational models?
+- Should reentry be explicit or implicit when repair completes successfully?
+- How many reentry attempts are reasonable before reconsidering the repair stage?
+- Should user-visible acknowledgments exist to signal stabilization?
+- Do reentry strategies differ between tool-driven workflows and pure conversational models?
 
 No assumptions are made here — these are open design questions.
 
@@ -116,5 +144,7 @@ No assumptions are made here — these are open design questions.
 
 ## Feedback Notes
 
-This document, like the rest of the series, is exploratory.
+This document, like the rest of the series, is exploratory.  
 Future revisions may clarify sequencing, examples, or distinctions based on usage feedback.
+
+```
