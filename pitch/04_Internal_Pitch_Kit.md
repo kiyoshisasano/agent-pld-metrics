@@ -1,4 +1,4 @@
----
+<!--
 path: pitch/04_Internal_Pitch_Kit.md
 kind: doc
 audience: engineering leads, product owners, internal champions preparing to justify PLD adoption
@@ -8,7 +8,7 @@ version: 0.1.0
 purpose: Provide ready-to-use internal communication material to help teams explain, justify, and request evaluation of PLD.
 license: CC-BY-4.0
 feedback: "If you use this internally and learn what resonates (or doesn’t), please share."
----
+-->
 
 # Internal Pitch Kit  
 *Use this when you need to explain PLD to someone — quickly and clearly.*
