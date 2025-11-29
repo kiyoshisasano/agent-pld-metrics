@@ -1,4 +1,4 @@
----
+<!--
 path: meta/CHANGELOG.md
 component_id: changelog
 kind: doc
@@ -8,7 +8,7 @@ authority_level: 5
 version: 2.0.0
 license: Apache-2.0
 purpose: Official change history for the PLD runtime and metadata ecosystem.
----
+-->
 
 # PLD Repository — Unified CHANGELOG
 
