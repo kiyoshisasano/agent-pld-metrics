@@ -1,4 +1,12 @@
-{"path":"quickstart/metrics/datasets/pld_events_demo.jsonl","component_id":"pld_events_demo_dataset","kind":"metric","area":"metrics","status":"draft","authority_level":2,"version":"2.0.0","license":"Apache-2.0","purpose":"Handcrafted demo PLD event dataset for exploring drift, repair, and recovery patterns."}
+# path: quickstart/metrics/datasets/pld_events_demo.jsonl
+# component_id: pld_events_demo_dataset
+# kind: metric
+# area: metrics
+# status: draft
+# authority_level: 2
+# version: 0.1.0
+# license: Apache-2.0
+# purpose: Handcrafted demo PLD event dataset for exploring drift, repair, and recovery patterns.
 
 {"schema_version":"2.0","event_id":"11111111-aaaa-4000-8000-000000000001","timestamp":"2025-01-15T10:00:00Z","session_id":"demo-fail-01","turn_sequence":1,"source":"runtime","event_type":"continue_allowed","pld":{"phase":"continue","code":"C0_user_turn"},"payload":{"role":"user","text":"Start complex task"},"runtime":{"turn_sequence":1,"model":"example-model"},"ux":{"user_visible_state_change":true},"metrics":{},"extensions":{}}
 {"schema_version":"2.0","event_id":"11111111-aaaa-4000-8000-000000000002","timestamp":"2025-01-15T10:00:05Z","session_id":"demo-fail-01","turn_sequence":2,"source":"runtime","event_type":"drift_detected","pld":{"phase":"drift","code":"D4_tool_error","confidence":0.9,"metadata":{"reason":"tool_timeout"}},"payload":{"error":"Tool timeout","tool_name":"search-api"},"runtime":{"turn_sequence":2,"model":"example-model"},"ux":{"user_visible_state_change":false},"metrics":{},"extensions":{}}
