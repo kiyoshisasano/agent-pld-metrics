@@ -1,151 +1,140 @@
----
-title: "Drift Event Logging Guide — Applied-AI Edition"
-version: 2025.1.1
-maintainer: "Kiyoshi Sasano"
-status: stable
-category: "metrics/logging"
-tags:
-  - PLD
-  - telemetry
-  - alignment
-  - runtime logging
----
+# Drift Event Logging — Quickstart Guide
 
-# Drift Event Logging Guide (Applied Runtime Edition)
+This guide explains how **drift events** appear in the PLD runtime and how to
+interpret them when reviewing exported PLD logs.
 
-This guide defines how to record **PLD-aligned runtime interaction events** using the canonical schema:
+> This document is *educational only* and does **not** define new taxonomy,
+validation rules, or runtime behavior.  
+Canonical rules exist in the Level 1–3 specification set.
 
-📄 `quickstart/metrics/schemas/pld_event.schema.json`
-
-Logging with a shared schema enables:
-
-- Drift / repair / failover tracking  
-- Operational stability metrics (PRDR, VRL, MRBF, FR, REI)
-- A/B evaluation of recovery strategies
-- Dashboard-based monitoring (`reentry_success_dashboard.json`)
 
 ---
 
-## 1. What Must Be Logged?
+## 1. What Is a Drift Event?
 
-Every turn MUST emit a PLD event containing:
+A **drift event** indicates that the model response or reasoning path is moving
+away from the intended instruction, behavior, or expected context.
 
-| Field | Requirement | Source |
-|-------|------------|--------|
-| `event_id` | required | UUID |
-| `timestamp` | required | Runtime clock |
-| `session_id` | required | Conversation or task identifier |
-| `turn_id` | required | Monotonic sequence |
-| `event_type` | required | Drift / repair / outcome / failover / info |
-| `pld.phase` | required | none / drift / repair / reentry / failover / complete |
-| `pld.code` | required | Canonical code from taxonomy |
+Examples of drift conditions include:
 
-Optional but recommended fields:
+| Drift Type | Example Signal |
+|-----------|----------------|
+| Instruction drift | The response does not follow the user request. |
+| Repetition drift | The model repeats previous responses. |
+| Tooling drift | Tool call failed or produced irrelevant output. |
 
-| Field | Usage |
-|-------|-------|
-| `payload.text` | Debugging, UX attribution |
-| `runtime.latency_ms` | Correlation with drift / repair patterns |
-| `metrics.cost_tokens` | Enables REI + MRBF trending |
-| `tags[]` | Feature flags, rollout phases |
+A drift event is always logged using:
 
----
+- `event_type = drift_detected`
+- `pld.phase = "drift"`
+- `pld.code` indicating a subtype (mapped in runtime bridges)
 
-## 2. Logging Convention
+Example (from the demo dataset):
 
-- **No missing keys** → use `null`, do not omit  
-- **Events must be chronological**  
-- **Identity continuity:** `session_id` never resets during repair loops  
-- **Event type must reflect agent intent** (not UI wording)
-
-Example mapping:
-
-| Agent behavior | event_type | example pld.code |
-|----------------|------------|------------------|
-| Drift detected | `drift_detected` | `D5_information` |
-| Soft repair | `repair_triggered` | `R2_soft_repair` |
-| Visible repair message | `repair_visible` | `R1_clarify` |
-| Successful reentry | `reentry_observed` | `RE3_auto` |
-| Hard failure / abandon | `failover_triggered` | `OUT3_abandoned` |
-
----
-
-## 3. Minimal Logging Implementation (Python)
-
-```python
-import uuid, time, json
-from jsonschema import validate
-from pathlib import Path
-
-SCHEMA_PATH = "quickstart/metrics/schemas/pld_event.schema.json"
-LOG_PATH     = Path("logs/pld_events.jsonl")
-
-schema = json.loads(Path(SCHEMA_PATH).read_text())
-
-def log_pld_event(session_id, turn_id, event_type, pld_code, payload=None, runtime=None):
-    event = {
-        "event_id": str(uuid.uuid4()),
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "session_id": session_id,
-        "turn_id": turn_id,
-        "event_type": event_type,
-        "pld": {
-            "phase": pld_code.split("_")[0].lower().replace("d","drift").replace("r","repair"),
-            "code": pld_code
-        },
-        "payload": payload or {},
-        "runtime": runtime or {}
-    }
-
-    validate(event, schema)
-
-    LOG_PATH.parent.mkdir(exist_ok=True)
-    with LOG_PATH.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(event) + "\n")
+```json
+{
+  "event_type": "drift_detected",
+  "pld": {
+    "phase": "drift",
+    "code": "D1_instruction",
+    "confidence": 0.8
+  },
+  "payload": {
+    "note": "User request underspecified; needs clarification."
+  }
+}
 ```
 
----
-
-## 4. Recommended Logging Frequency
-
-| Situation | Log event? | Notes |
-|-----------|------------|-------|
-| Every turn | ✔ | Ensures baseline |
-| Drift detection triggered | ✔ | Required |
-| Any repair attempt | ✔ | Counted in VRL + MRBF |
-| Failover / abandonment | ✔ | Mandatory |
-| Tool call execution | ✔ | High-risk drift source |
+This line means:
+> "The model detected that it cannot execute the request correctly."
 
 ---
 
-## 5. Validation Workflow
+## 2. What Happens After Drift?
 
-```python
-from jsonschema import validate
-validate(instance=event, schema=schema)
+A drift event does not end the session.  
+It typically triggers a **repair sequence**.
+
+Most commonly:
+
+```kotlin
+drift_detected  →  repair_triggered  →  (reentry_observed)  →  continue
 ```
 
-For batch ingestion:
+The `reentry_observed` step may be explicit or implicit depending on context.  
+Both are valid in PLD logging.
 
+Example snippet:
+
+```json
+{"event_type": "drift_detected", "pld": {"phase": "drift"}}
+{"event_type": "repair_triggered", "pld": {"phase": "repair"}}
+{"event_type": "continue_allowed", "pld": {"phase": "continue"}}
 ```
-duckdb  🡪  parquet 🡪 supabase table 🡪 dashboards
-```
+
+This indicates the runtime took corrective action and returned to normal flow.
 
 ---
 
-## 6. Next Steps
+## 3. Measuring Drift
 
-| Task | Reference |
-|------|----------|
-| Test logging sample | `datasets/pld_events_demo.jsonl` |
-| Confirm schema compliance | `schemas/pld_event.schema.json` |
-| Enable monitoring | `dashboards/reentry_success_dashboard.json` |
-| Interpret drift patterns | Operational Metrics Cookbook |
+When analyzing exported PLD event logs, developers often track:
+
+| Metric              | Purpose                                                |
+| ------------------- | ------------------------------------------------------ |
+| Drift rate          | How often drift is detected across sessions.           |
+| Repair depth        | Number of repair attempts required before recovery.    |
+| Recovery success    | Whether drift resolves without escalation or failover. |
+| Latency interaction | Whether drift correlates with higher latency.          |
+
+The accompanying script
+`verify_metrics_local.py`
+computes a minimal set of derived drift metrics from the dataset.
 
 ---
 
-Maintainer:  
-**Kiyoshi Sasano — Applied AI Runtime Systems (2025)**
+## 4. Example Scenario (from the demo dataset)
 
+```arduino
+turn 2 → drift_detected (D1_instruction)
+turn 3 → repair_triggered (R1_clarify)
+turn 4 → continue_allowed (successful output)
+turn 5 → latency_spike (observability-only, not drift)
+turn 6 → session_closed
+```
 
+Interpretation:
 
+- The model noticed ambiguity in the request.
+- Performed a clarification repair.
+- Successfully resumed normal operation.
+
+This pattern reflects a **healthy recovery loop**.
+
+---
+
+## 5. When Drift Persists
+
+If repeated drift and repair attempts fail to return the system to stability,
+the runtime may escalate to failover or end the session.
+
+Example pattern (included in dataset):
+```nginx
+drift_detected → repair xN → session closed
+```
+
+Persistent drift is useful for:
+
+- Model tuning and quality evaluation
+- Prompt or tool reliability analysis
+- Failure mode mapping
+
+---
+
+## 6. Summary
+
+- Drift logs are **signals of deviation**, not failures.
+- Repair and recovery sequences help diagnose **model resilience**.
+- The dataset demonstrates both **successful recovery** and **persistent drift cases**.
+- Metrics derived from drift events help teams understand **quality, stability, and
+runtime behavior under ambiguity**.
