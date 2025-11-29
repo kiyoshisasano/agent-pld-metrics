@@ -1,162 +1,159 @@
----
-title: "PLD Metrics Module — Quickstart Edition"
-version: 2025.1.1
-maintainer: "Kiyoshi Sasano"
-status: stable
-tags:
-  - PLD
-  - evaluation
-  - drift metrics
-  - applied UX
-  - behavioral logging
----
+# Quickstart Metrics Module
 
-# 📊 PLD Metrics Module — Quickstart Edition
+This folder contains a minimal, example-driven workflow for exploring metrics derived
+from PLD event logs.
 
-This module provides the **measurement layer** of the PLD Applied Interaction Framework.  
-It enables developers to **log, aggregate, and visualize** behavioral signals that reflect an agent’s runtime stability and ability to recover from misalignment.
+It does **not** define official evaluation rules, taxonomy, or analysis standards.
+Those are governed by Level 1–3 canonical specifications.
 
-This edition is intended as the **minimal operational implementation** — consistent with the evaluation workflow used in the MultiWOZ-style benchmark baseline (N≈200 sessions).
+Instead, this folder demonstrates how a developer can:
+
+* Inspect PLD event logs locally
+* Compute lightweight derived metrics
+* View early patterns such as drift, repair, and recovery sequences
+* Use dashboards and reports to reason about behavior
 
 ---
 
-### 🚀 Quick Validation — Run Metrics Locally
+## 📁 Folder Structure
 
-To verify schema integrity and metric computation against the bundled demo log:
+```
+metrics/
+├── dashboards/
+│   └── reentry_success_dashboard.json
+├── datasets/
+│   └── pld_events_demo.jsonl
+├── guides/
+│   └── drift_event_logging.md
+├── reports/
+│   └── pld_events_demo_report.md
+└── verify_metrics_local.py
+```
 
-```bash
-cd quickstart/metrics
-pip install duckdb
+Each component plays a specific role in the Quickstart workflow.
+
+---
+
+## 1. `datasets/pld_events_demo.jsonl`
+
+A handcrafted, educational PLD event dataset.
+
+It includes:
+
+* A successful recovery case
+* A partial recovery case with recurrence
+* A failure case after repeated repairs
+
+This dataset is intentionally small and interpretable.
+It is **not synthetic evaluation data** and should not be used for benchmarking.
+
+---
+
+## 2. `verify_metrics_local.py`
+
+A lightweight script that:
+
+* Loads the dataset
+* Counts drift, repair, and reentry patterns
+* Outputs summary metrics in the terminal
+
+Run it with:
+
+```sh
 python verify_metrics_local.py
 ```
 
-This validates end-to-end flow:
-
-```metalab
-Raw PLD events → Aggregated metrics → Dashboard tiles
-```
+This provides a **first-pass analytical view** without modifying or validating events.
 
 ---
 
-## 1. What This Module Enables
+## 3. `guides/drift_event_logging.md`
 
-After integration, you can:
+A short reference explaining:
 
-- Log runtime behaviors using a standard PLD JSON schema
-- Track Drift → Repair → Reentry → Outcome sequences
-- Measure timing effects (latency and pacing sensitivity)
-- Generate stability dashboards and longitudinal comparisons
-- Compare runtime configurations, model versions, and prompting strategies
+* What drift means in the PLD lifecycle
+* How drift, repair, and continuation events relate
+* How drift appears in exported logs
 
-  - LangChain / LangGraph / Agents API
-  - Rasa / Orchestrated tool-use runtimes
-  - Custom controller architectures   
-
-> This module is optimized for **runtime observability**, not offline annotation.
+This guide complements the dataset and is intended for readers new to PLD event flow.
 
 ---
 
-## 2. Module Structure
+## 4. `reports/pld_events_demo_report.md`
 
-```txt
-quickstart/metrics/
-│
-├── README_metrics.md                 ← You are here
-│
-├── schemas/                          ← Canonical data definitions
-│   ├── pld_event.schema.json         ← Event-level logging schema
-│   └── metrics_schema.yaml           ← Aggregated session-level metrics schema
-│
-├── datasets/
-│   └── pld_events_demo.jsonl         ← Sample event log (for validation)
-│
-├── guides/
-│   └── drift_event_logging.md        ← Logging implementation guide
-│
-├── reports/
-│   └── pld_events_demo_report.md     ← Example analysis output
-│
-└── dashboards/
-    └── reentry_success_dashboard.json ← Operational visualization configuration
-```
+A narrative case study that walks through the demo dataset from a metrics lens.
+
+It explains:
+
+* What patterns appear
+* How they relate to expected runtime behavior
+* How developers might interpret model performance or interaction structure
+
+This is meant to be read after running the dataset and reviewing raw logs.
 
 ---
 
-## 3. Core Metric Categories
+## 5. `dashboards/reentry_success_dashboard.json`
 
-| Class           | Purpose                                 | Example Signals                     |
-| --------------- | --------------------------------------- | ----------------------------------- |
-| Drift Metrics   | Detect and categorize divergence        | D2_context, D3_intent, D4_tool      |
-| Repair Metrics  | Understand local vs systemic correction | Soft vs Hard Repair Count           |
-| Reentry Metrics | Measure post-repair stability           | Reentry Success Rate (RE1–RE3)      |
-| Timing Metrics  | UX pacing + latency sensitivity         | P95 latency, pacing-repair triggers |
-| Outcome Metrics | Completion and trajectory               | Complete / Reset / Abandoned        |
-| Derived KPIs    | Operational decision signals            | PRDR / VRL / FR / MRBF / REI        |
+A placeholder dashboard configuration showing how an analyst or tooling system
+might visualize:
 
-These metrics align directly with:
+* Drift frequency
+* Repair depth
+* Successful recovery
+* Session timelines
 
-- `docs/07_pld_operational_metrics_cookbook.md`
-- Dashboard tiles in `dashboards/reentry_success_dashboard.json`
-- Session-level schema in `schemas/metrics_schema.yaml`
+The structure is tool-agnostic and conceptual.
 
 ---
 
-## 4. Adoption Workflow
+## How to Use This Folder
 
-| Phase  | Action                        | Reference                                   |
-| ------ | ----------------------------- | ------------------------------------------- |
-| Step 1 | Instrument runtime logging    | `schemas/pld_event.schema.json`             |
-| Step 2 | Validate logged data          | `guides/drift_event_logging.md`             |
-| Step 3 | Aggregate per-session metrics | `schemas/metrics_schema.yaml`               |
-| Step 4 | Run analysis locally          | `reports/pld_events_demo_report.md`         |
-| Step 5 | Visualize stability at scale  | `dashboards/reentry_success_dashboard.json` |
+1. **Read the dataset**
 
+   * Open the JSONL file or scan with a log viewer.
 
-This workflow supports CI, model comparison, regression tracking and rollout validation.
+2. **Run the metric script**
 
----
+   * Inspect summary metrics and repair patterns.
 
-## 5. Quick Interpretation Rules
+3. **Compare behavior using the report**
 
-> Use these during development and debugging:
+   * Use the walkthrough to connect metrics to event semantics.
 
-| Observed Pattern           | Meaning                           | What to Adjust                            |
-| -------------------------- | --------------------------------- | ----------------------------------------- |
-| Drift ↑ + Repair Success ↑ | Interpretation OK, grounding weak | Improve constraints or RAG                |
-| Drift ↑ + Hard Repair ↑    | Systemic misalignment             | Review orchestration or memory            |
-| Reentry Success ↓          | Repair didn't resolve state       | Improve repair phrasing or reentry policy |
-| Stable but slow responses  | User-perceived fragility          | Reduce latency or pacing                  | |
+4. **Explore drift handling using the guide**
 
-> These patterns guide runtime tuning and release gating.
+   * Understand how drift and repair relate in the runtime lifecycle.
+
+5. **Visualize with the dashboard**
+
+   * Optional: load the config into a compatible viewer.
 
 ---
 
-## 7. When to Expand
+## Design Philosophy
 
-Expand instrumentation when:
+This Quickstart module follows three rules:
 
-- Evaluating **>200 interactions**
-- Running A/B or rollout experiments
-- Tracking multiple repair policies or model variants
-- Using dashboards as part of CI or release blocking
-
-If you are still validating early integration:
-
-→ **This Quickstart edition is sufficient.**
+| Principle               | Meaning                                                  |
+| ----------------------- | -------------------------------------------------------- |
+| **Minimal**             | Focus on one pathway: inspect → measure → interpret      |
+| **Non-authoritative**   | Does not redefine taxonomy, schema, or runtime contracts |
+| **Human-interpretable** | Designed for clarity over completeness                   |
 
 ---
 
-## 7. License
+## Next Steps
 
-Creative Commons — **CC BY 4.0**  
-© 2025 — DeepZenSpace  
-Maintainer: **Kiyoshi Sasano**
+If extending this module, consider:
+
+* Additional session types (longer conversations, tools, ambiguity)
+* Expanded metric dimensions (latency, plan validation, reasoning traces)
+* Workflows integrating BI, Jupyter, or runtime dashboards
 
 ---
 
-> **PLD Metrics measure whether the agent maintains the interaction contract across turns —
-not how smart the model is, but how stable the system behaves.**
-
+✔ Metrics Quickstart module complete.
 
 
 
