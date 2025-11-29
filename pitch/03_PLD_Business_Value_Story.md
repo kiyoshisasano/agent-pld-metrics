@@ -1,4 +1,4 @@
----
+<!--
 path: pitch/03_PLD_Business_Value_Story.md
 kind: doc
 audience: product leaders, AI adoption teams, engineering managers, stakeholders evaluating AI scale-out
@@ -8,7 +8,7 @@ version: 0.1.0
 purpose: Provide a business-facing explanation of PLD’s value, framed around risk, predictability, reversibility, and ROI.
 license: CC-BY-4.0
 feedback: "If this framing helps—or if something is missing from your perspective—feedback is welcome."
----
+-->
 
 # The Business Value of PLD  
 *Making multi-turn AI predictable, scalable, and worth the investment.*
