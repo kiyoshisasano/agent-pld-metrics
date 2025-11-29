@@ -10,16 +10,6 @@ license: Apache-2.0
 purpose: Runtime event envelope examples for operational reference.
 -->
 
-
-# Metadata
-
-purpose: Provide runtime operational guidance...  
-scope: runtime implementation (operational layer)  
-notes: actively seeking feedback  
-
-
----
-
 # Runtime Event Envelope — Examples Catalog
 
 This file provides example payloads intended to support:
