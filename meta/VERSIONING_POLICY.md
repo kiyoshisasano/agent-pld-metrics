@@ -1,4 +1,4 @@
----
+<!--
 path: meta/VERSIONING_POLICY.md
 component_id: versioning_policy
 kind: doc
@@ -8,7 +8,7 @@ authority_level: 5
 version: 2.0.0
 license: Apache-2.0
 purpose: Versioning rules and governance policy for schemas, runtime modules, and specifications.
----
+-->
 
 ## **1\. Overview**
 
