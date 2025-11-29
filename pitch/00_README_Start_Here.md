@@ -1,4 +1,4 @@
----
+<!--
 path: pitch/00_README_Start_Here.md
 kind: doc
 audience: product leaders, engineering managers, technical decision-makers, internal adoption champions
@@ -8,7 +8,7 @@ version: 0.1.0
 purpose: Provide a starting point and reading order for the pitch folder, and clarify who this content is for and when to use it.
 license: CC-BY-4.0
 feedback: "If the structure or flow can be improved, suggestions are welcome."
----
+-->
 
 # Start Here  
 *A short guide before exploring this folder.*
