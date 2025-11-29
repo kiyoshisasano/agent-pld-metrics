@@ -1,3 +1,15 @@
+<!--
+path: quickstart/metrics/README_metrics.md
+component_id: quickstart_metrics_readme
+kind: doc
+area: metrics
+status: draft
+authority_level: 2
+version: 0.1.0
+license: Apache-2.0
+purpose: Entry-point README for the metrics quickstart module, describing structure and usage.
+-->
+
 # Quickstart Metrics Module
 
 This folder contains a minimal, example-driven workflow for exploring metrics derived
@@ -154,6 +166,7 @@ If extending this module, consider:
 ---
 
 ✔ Metrics Quickstart module complete.
+
 
 
 
