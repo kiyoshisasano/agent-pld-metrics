@@ -1,5 +1,17 @@
 {
-  "version": "1.0",
+  "_meta": {
+    "path": "quickstart/metrics/dashboards/reentry_success_dashboard.json",
+    "component_id": "reentry_success_dashboard",
+    "kind": "config",
+    "area": "metrics",
+    "status": "draft",
+    "authority_level": 2,
+    "version": "2.0.0",
+    "license": "Apache-2.0",
+    "purpose": "Example dashboard configuration for visualizing reentry-related metrics and session timelines."
+  },
+
+  "version": "2.0",
   "title": "Reentry Success Overview (Demo)",
   "description": "Quickstart dashboard configuration for inspecting reentry-related behavior in PLD event logs. This file is illustrative only and does not define canonical metrics.",
   "data_source": {
