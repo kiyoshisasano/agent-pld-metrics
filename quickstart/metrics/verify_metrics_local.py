@@ -4,7 +4,7 @@
 # area: metrics
 # status: draft
 # authority_level: 2
-# version: 0.1.0
+# version: 2.0.0
 # license: Apache-2.0
 # purpose: Local inspection script that loads demo PLD events and computes lightweight drift/repair metrics.
 
