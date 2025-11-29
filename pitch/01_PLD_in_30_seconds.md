@@ -1,4 +1,4 @@
----
+<!--
 path: pitch/01_PLD_in_30_seconds.md
 kind: doc
 audience: product leaders, engineering leads, applied ML teams
@@ -8,7 +8,7 @@ version: 0.1.0
 purpose: Provide a concise, business-friendly explanation of PLD, suitable for internal onboarding or executive review.
 license: CC-BY-4.0
 feedback: "Feedback welcome — this document is evolving."
----
+-->
 
 # PLD in 30 Seconds  
 *A high-level explanation for teams evaluating multi-turn AI systems.*
