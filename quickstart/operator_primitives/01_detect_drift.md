@@ -1,8 +1,14 @@
-Status: Working Draft
-Audience: Developers exploring PLD runtime behavior
-Feedback: Welcome and encouraged
-
----
+<!--
+path: quickstart/operator_primitives/01_detect_drift.md
+component_id: detect_drift_operator
+kind: doc
+area: runtime_operators
+status: candidate
+authority_level: 2
+version: 2.0.0
+license: CC-BY-4.0
+purpose: Exploratory operator notes describing drift detection patterns in PLD runtime contexts.
+-->
 
 # Detecting Drift — Operator Notes
 
