@@ -1,181 +1,120 @@
-# 05 — Reentry Operator  
-*Operator Primitive (Applied-AI Edition v1.1 — Canonical Code Compliant)*  
-
-> **Purpose:** Restore stable execution after drift and repair by confirming alignment, shared understanding, and next action.  
-> Reentry is the checkpoint between **repair → resumed flow**, ensuring confidence and continuity.
+Status: Working Draft
+Audience: Developers exploring PLD runtime behavior
+Feedback: welcome and encouraged
 
 ---
 
-## 1 — Why Reentry Exists
+# Reentry Operator — Stabilization Notes
 
-Repair resolves the issue — but **does not confirm shared alignment**.
+This document completes the current operator exploration series.
+It does **not** define new lifecycle semantics or taxonomy values.
+Instead, it describes how "reentry" can be interpreted in the context of the PLD runtime.
 
-Without Reentry:
+Reentry reflects the moment when the system attempts to return from a disrupted or uncertain state into a stable conversational flow.
 
-- the user may not know if the system is corrected  
-- assumptions may diverge  
-- drift recurrence risk increases  
-- task confidence remains unstable  
-
-Reentry ensures:
-
-✔ repair acknowledged  
-✔ memory and intent aligned  
-✔ next step confirmed  
-✔ interaction rhythm restored  
+Interpretation and refinement are ongoing.
 
 ---
 
-## 2 — When Reentry Is Required
+## What Reentry Represents
 
-| Event Type | Required? | Reason |
-|------------|-----------|--------|
-| Soft Repair (**R1_soft_repair / R2**) | **Yes (minimal)** | Light alignment check |
-| Hard Repair (**R5_hard_reset**) | **Mandatory** | Reset requires explicit anchor |
-| Latency disruption + repair | **Yes** | Timing breaks confidence |
-| Silent correction or inconsistency fix | **Yes** | Prevent hidden divergence |
-| No repair detected | No | Continue normal flow |
+Reentry can be seen as the *transition point* after drift or repair work has occurred, where the system attempts to resume normal interaction.
 
----
+It does not imply that the conversation resets or that the past context is invalid.
+Instead, reentry suggests:
 
-## 3 — Reentry Forms
-
-| Form | Description | Use Case |
-|------|-------------|----------|
-| **RE1_minimal_check** | Lightweight verification | After minor drift or R1 clarification |
-| **RE2_state_refresh** | Brief structured summary | After confusion or multiple drift events |
-| **RE3_auto** | Automatic system-led reentry | When correction required no user input |
-| **RE4_memory_restore** | Reconfirm recovered memory | Memory or context rebuild after reset |
-| **RE5_commit_gate** | User must choose before branching | Irreversible or branching actions |
+* enough stabilization has occurred,
+* the previous uncertainty or misalignment has been resolved or reduced,
+* the assistant can continue in a forward, productive manner.
 
 ---
 
-### Canonical Examples
+## When This Operator May Be Relevant
 
-#### **RE1_minimal_check**
+Reentry signals can be useful in situations such as:
 
-> “Just confirming — we’re still searching for a 4-star hotel under £150, correct?”
+* following a soft or hard repair event
+* after a clarification step completes
+* when a new plan or corrected assumption replaces an earlier incorrect one
+* when the model returns to a coherent state after interruption or confusion
 
----
-
-#### **RE2_state_refresh**
-
-> “Quick recap:  
-> • City: Cambridge  
-> • Budget: £120/night  
-> • Room type: Double  
->  
-> Should I continue?”
+The boundary between repair and reentry may be ambiguous — this document does not attempt to formalize it.
 
 ---
 
-#### **RE3_auto** (system-driven confidence restoration)
+## Runtime Intent Mapping (Observed)
 
-> “Alignment confirmed — continuing.”
+The runtime includes a mapping related to reentry under the following pattern:
 
----
+| SignalKind | Event Type        | Phase     | Taxonomy Code |
+| ---------- | ----------------- | --------- | ------------- |
+| `REENTRY`  | `reentry_started` | `reentry` | `RE1_reentry` |
 
-#### **RE4_memory_restore**
-
-> “Context reset complete.  
-> Confirm: hotel search, 4-star limit, budget £150?”
-
----
-
-#### **RE5_commit_gate**
-
-> “Before I continue: do you prefer free cancellation or lowest price?”
+As with other operators in this series, taxonomy codes are assigned automatically at event construction time by the runtime.
 
 ---
 
-## 4 — Implementation Templates
+## Example: Minimal Usage
 
-### Python (Canonical Logic)
+*Not normative — shown only as representation.*
 
 ```python
-def reentry(state, code):
-    if code == "R5_hard_reset":
-        return f"Context restored. Confirm: {state}"
-    return f"To confirm — we're continuing with: {state}?"
+from pld_runtime.runtime_signal_bridge import (
+    RuntimeSignal, RuntimeSignalBridge, EventContext, SignalKind, ValidationMode
+)
+from pld_runtime.logging.structured_logger import StructuredLogger
+from pld_runtime.logging.event_writer import make_stdout_writer
+
+logger = StructuredLogger(writer=make_stdout_writer())
+bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
+
+signal = RuntimeSignal(kind=SignalKind.REENTRY)
+
+context = EventContext(
+    session_id="example-session-5",
+    turn_sequence=12,
+    source="assistant",
+    model="example-model",
+)
+
+event = bridge.build_event(signal=signal, context=context)
+logger.log(event)
 ```
 
 ---
 
-### LangGraph Transition
+## Relationship to Repair, Drift, and Normal Operation
 
-```yaml
-after_repair:
-  on_enter: reentry_operator
-  next: proceed
+A loose representation of reentry may look like:
+
+```
+(repair or clarification) → reentry → continuation
 ```
 
----
+Reentry is not a confirmation of success — it is a **transition attempt**.
+Systems may return to repair or drift if inconsistencies reappear.
 
-### OpenAI Assistants API — Schema-Aligned Logging
+In this sense, reentry can be seen as:
 
-```json
-{
-  "event_type": "reentry_triggered",
-  "pld": {
-    "phase": "reentry",
-    "code": "RE3_auto",
-    "confidence": 0.97
-  },
-  "payload": {
-    "previous_phase": "repair",
-    "requires_confirmation": true
-  }
-}
-```
+* an optimistic pivot back to progress,
+* a checkpoint, rather than a guarantee.
 
 ---
 
-## 5 — Anti-Patterns
+## Open Exploration Areas
 
-| Anti-Pattern                  | Result                             |
-| ----------------------------- | ---------------------------------- |
-| ❌ repair without reentry      | user uncertainty continues         |
-| ❌ generic confirmation        | feels robotic and unclear          |
-| ❌ requesting full restatement | unnecessary effort → disengagement |
-| ❌ repeating confirmation loop | perceived incompetence             |
+Some open areas worth documenting for future consideration:
 
----
+* Should reentry be explicit or implicit when repair completes successfully?
+* How many reentry attempts are reasonable before reconsidering the repair stage?
+* Should user-visible acknowledgments exist to signal stabilization?
+* Do reentry strategies differ between tool-driven workflows and pure conversational models?
 
-Reentry must be precise, minimal, confident.
+No assumptions are made here — these are open design questions.
 
 ---
 
-## 6 — Timing Requirements
+## Feedback Notes
 
-Reentry must occur immediately after repair and before:
-> assumptions
-> tool calls
-> branching
-> irreversible steps
-
-It functions as a checkpoint, not conversation padding.
-
----
-
-## 7 — Validation Checklist
-
-| Check                                | Required |
-| ------------------------------------ | -------- |
-| User understands repair completed    | ✔        |
-| Task state explicitly confirmed      | ✔        |
-| No additional uncertainty introduced | ✔        |
-| Interaction pacing restored          | ✔        |
-| Tone confident (not apologetic)      | ✔        |
-
----
-
-## Summary
-
-Reentry converts repair from a local fix into restored task stability.
-> “Alignment confirmed — continuing.”
-
----
-
-Maintainer: Kiyoshi Sasano
-Edition: PLD Applied 2025 v1.1
-License: CC-BY 4.0
+This document, like the rest of the series, is exploratory.
+Future revisions may clarify sequencing, examples, or distinctions based on usage feedback.
