@@ -1,190 +1,151 @@
-# 02 — Soft Repair  
-*Operator Primitive (Canonical Code Edition — 2025)*  
-
-> **Purpose:** Restore alignment after detected drift **without resetting context**.  
-> Soft Repair provides a reversible correction path that preserves task continuity, memory integrity, and user trust.
+Status: Working Draft
+Audience: Developers exploring PLD runtime behavior
+Feedback: Welcome and encouraged
 
 ---
 
-## **1 — Why Soft Repair Exists**
+# Soft Repair — Operator Notes
 
-Most drift events are **recoverable** — not catastrophic.  
-However, naive agent behavior often responds with:
+This document is part of an ongoing exploration of runtime operator patterns. It does **not** introduce new PLD semantics or taxonomy. Instead, it aims to describe how "soft repair" can be understood and applied within existing runtime behavior.
 
-- a full state reset  
-- repetition  
-- contradiction  
-- or ignoring the drift  
-
-Soft Repair introduces a **low-cost recovery layer** that maintains:
-
-- shared context  
-- conversational rhythm  
-- verified memory  
-- workflow continuity  
-
-It should trigger **immediately after drift detection**, especially when drift confidence ≥ operational threshold (default: `0.55–0.78` depending on domain).
+The content may evolve as more implementation experience is collected.
 
 ---
 
-## **2 — PLD Canonical Repair Taxonomy Alignment (v2.1)**
+## What Soft Repair Refers To
 
-> ⛔ 旧名称は廃止。すべて **Canonical Codes** に統一。
+Soft repair can be considered a lightweight intervention used when the system experiences *minor drift* or uncertainty, but the interaction still feels recoverable without a restart or strong correction.
 
-| Repair Type (Old Name) | Canonical Code | Use Case |
-|------------------------|---------------|----------|
-| Repair-Clarify | **R1_clarify** | Meaning unclear / missing confirmation |
-| Repair-AddInfo / Repair-Correct | **R2_soft_repair** | Information mismatch / correction / evidence update |
-| — (reserved) | R3_tool_repair *(optional)* | Tool reconciliation / retry mediated repair |
-| Repair-OfferOptions | R4_negotiation | Constraint negotiation / alternatives |
-| Repair-Reframe | R5_reframe | Intent drift recovery / goal correction |
+It sits between two extremes:
 
-> NOTE: For most systems, **R1 and R2 are required minimum viable operators.**
+* continuing normally
+* performing a hard reset or reentry flow
 
----
+Soft repair may reflect attempts to:
 
-## **3 — When Soft Repair Should Trigger**
+* request clarification
+* rewrite a response for accuracy or relevance
+* adjust tone or interpretation
+* refine assumptions based on new input
 
-Soft Repair activates when **drift is detected and recoverable**, such as:
-
-| Drift Code | Trigger Example | Repair Start |
-|------------|----------------|--------------|
-| **D1_instruction** | Answer does not match user request | → R1_clarify |
-| **D2_context** | constraint violation / mismatched memory | → R2_soft_repair |
-| **D4_tool** | agent contradicts tool output | → R2_soft_repair + tool_ref_check |
-| **D5_information** | incorrect fact or outdated assumption | → R2_soft_repair |
-| (Repeated drift) | pattern persists beyond threshold | → escalate → Hard Repair |
+Some systems perform soft repair implicitly; others treat it as an observable event.
 
 ---
 
-## **4 — Canonical Soft Repair Pattern**
+## When This Operator May Be Useful
 
-The format is intentionally predictable:
+Patterns where soft repair may help:
 
-```
-(1) Acknowledge  
-(2) Correct or Clarify  
-(3) Confirm next step
-```
+* the assistant continues correctly, but tone or specificity feels slightly off
+* user intent was partially understood but requires refining
+* previous output needs adjustment rather than replacement
+* tool or reasoning step produced a usable but flawed result
 
-
-Example:
-
-> “Thanks — let me correct that.  
-> You’re right: there *are* 4 available options.  
-> Should I sort them by lowest cost or highest rating?”
+These patterns are intentionally flexible — they may change with feedback and experimentation.
 
 ---
 
-## **5 — Implementation Examples (Updated)**
+## Runtime Intent Mapping (Observed)
 
-### **A. LangChain Function Pattern — Updated to Canonical Codes**
+Soft repair aligns with several existing signal kinds. The following table reflects current runtime defaults (not new definitions):
+
+| SignalKind                   | Event Type         | Phase    | Taxonomy Code              |
+| ---------------------------- | ------------------ | -------- | -------------------------- |
+| `CLARIFICATION`              | `repair_triggered` | `repair` | `R1_clarify`               |
+| `SOFT_REPAIR`                | `repair_triggered` | `repair` | `R2_soft_repair`           |
+| `REWRITE`                    | `repair_triggered` | `repair` | `R3_rewrite`               |
+| `REQUEST_USER_CLARIFICATION` | `repair_triggered` | `repair` | `R4_request_clarification` |
+
+As with drift detection, these codes are automatically resolved by the runtime using the PLD `RuntimeSignalBridge` mapping table.
+
+---
+
+## Example: Minimal Usage
+
+*Not normative — only an example of how a soft repair event may be represented using existing runtime APIs.*
 
 ```python
-def soft_repair(drift_code: str, memory: dict):
-    if drift_code == "D5_information":
-        return f"Thanks — updating based on verified information: {memory.get('latest_results')}"
+from pld_runtime.runtime_signal_bridge import RuntimeSignal, RuntimeSignalBridge, EventContext, SignalKind, ValidationMode
+from pld_runtime.logging.structured_logger import StructuredLogger
+from pld_runtime.logging.event_writer import make_stdout_writer
 
-    if drift_code == "D2_context":
-        return f"Just confirming: your budget is {memory['constraints'].get('budget')} — still correct?"
+logger = StructuredLogger(writer=make_stdout_writer())
+bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
 
-    if drift_code == "D1_instruction":
-        return "Quick check — are we continuing with the original goal?"
+# Example soft repair signal
+signal = RuntimeSignal(kind=SignalKind.REWRITE)
 
-    return "Let me clarify briefly."
-```
+context = EventContext(
+    session_id="example-session-2",
+    turn_sequence=5,
+    source="assistant",
+    model="example-model",
+)
 
-### B. Autogen Callback (Canonical Revision)
-```python
-class SoftRepair:
-    def handle(self, drift_code, context):
-        responses = {
-            "D5_information": "Updating based on verified facts.",
-            "D1_instruction": "Quick alignment check — continuing the same task?",
-            "D2_context": "Adjusting based on stored constraints."
-        }
-        return responses.get(drift_code, "Let me clarify that.")
+event = bridge.build_event(signal=signal, context=context)
+logger.log(event)
 ```
 
 ---
 
-### C. OpenAI Assistants API Event (Schema-Compliant)
-```python
-{
-  "event_type": "repair",
-  "pld": {
-    "phase": "repair",
-    "code": "R1_clarify"
-  },
-  "applied_to": {
-    "drift_code": "D2_context"
-  },
-  "prompt": "Confirming: your maximum budget was $100 — correct?",
-  "timestamp": "2025-01-14T12:05:44Z"
-}
-```
+## Relation to Drift and Hard Repair
+
+Soft repair does not require a preceding detected drift signal, although that may happen in some workflows. It may also precede or prevent:
+
+* repeated drift events
+* user-visible confusion
+* escalation into a harder recovery strategy
+
+In some cases, soft repair may be sufficient to bring the system back into alignment.
 
 ---
 
-## 6 — Logging Format (PLD Schema Compatible)
-```python
-{
-  "event_type": "repair",
-  "turn_id": 8,
-  "pld": {
-    "phase": "repair",
-    "code": "R2_soft_repair"
-  },
-  "applied_to": {
-    "drift_code": "D5_information"
-  },
-  "confidence": 0.92,
-  "timestamp": "2025-01-14T12:05:44Z"
-}
-```
+---
+
+## Additional Notes on Event Type and Lifecycle Role
+
+The `event_type="repair_triggered"` value is part of the PLD runtime schema and indicates the point at which the repair lifecycle begins. While taxonomy codes (such as `R1_clarify` or `R3_rewrite`) convey specific meaning, the event type provides a consistent classification boundary that may support filtering, routing, or downstream reasoning. These roles are complementary rather than redundant.
 
 ---
 
-## 7 — Anti-Patterns
+## How Soft Repair Signals Are Initiated
 
-| Anti-Pattern                      | Effect                             |
-| --------------------------------- | ---------------------------------- |
-| ❌ Ignoring drift                  | leads to compounding contradiction |
-| ❌ Over-apologizing                | perceived instability              |
-| ❌ Repeating repair multiple times | creates UX fatigue                 |
-| ❌ Resetting too early             | destroys workflow trust            |
-| ❌ Adding new unverified claims    | introduces secondary drift         |
+The runtime does not prescribe a single component responsible for generating soft repair signals. Implementations may explore different approaches. For example, a signal may be emitted by:
 
----
+* a heuristic observer or monitoring layer,
+* the model or assistant generating the response,
+* or an external reasoning or evaluation component.
 
-## 8 — Validation Checklist
-
-| Requirement                                | Must be true |
-| ------------------------------------------ | ------------ |
-| acknowledgment present                     | ✔️           |
-| correction evidence-grounded               | ✔️           |
-| user direction confirmed                   | ✔️           |
-| no new uncertainty introduced              | ✔️           |
-| memory updates deferred until confirmation | ✔️           |
+This flexibility is intentional and reflects ongoing exploration.
 
 ---
 
-## 9 — Quick Test
+## A Note on `REQUEST_USER_CLARIFICATION`
 
-### Input:
-> User constraint: “No seafood.”
-> Assistant recommends sushi.
+Soft repair may involve both internal adjustments and lightweight interactive repairs. `REQUEST_USER_CLARIFICATION` reflects the latter case, where the model or system seeks a short user-visible correction rather than applying internal restructuring or resetting.
 
-### Expected Canonical Output:
-```bash
-[R2_soft_repair applied → drift source: D2_context]
-```
+---
 
-> “Thanks — correcting that.
-> You mentioned avoiding seafood, so I’ll remove sushi from the list.
-> Should I filter for Italian or vegan options instead?”
+## Future Direction: Hard Repair
 
+The distinction between soft and hard repair remains an open question. Whether future work introduces additional phases or continues refining taxonomy codes under the existing `repair` phase is still under consideration.
 
-Maintainer: **Kiyoshi Sasano**  
-Edition: **PLD Applied 2025**  
-License: **CC-BY 4.0**
+---
+
+## Open Questions and Ongoing Exploration
+
+Soft repair sits in a nuanced space, and the following areas may benefit from future refinement:
+
+* When should soft repair be visible to the user (if at all)?
+* Should repeated soft repairs escalate automatically to a hard repair pattern?
+* How can tooling or heuristics detect the transition between "soft" and "hard" repair conditions?
+* Are there useful counterexamples where soft repair makes outcomes worse?
+
+These are left open intentionally.
+
+---
+
+## Feedback Notes
+
+As with other operator notes in this series, this document remains iterative.
+Feedback, examples, and real-world usage reports may inform future versions.
