@@ -1,8 +1,14 @@
-Status: Working Draft
-Audience: Developers exploring PLD runtime behavior
-Feedback: Welcome and encouraged
-
----
+<!--
+path: quickstart/operator_primitives/02_soft_repair.md
+component_id: soft_repair_operator
+kind: doc
+area: runtime_operators
+status: candidate
+authority_level: 2
+version: 2.0.0
+license: CC-BY-4.0
+purpose: Working draft describing soft corrective behavior interpretations for PLD.
+-->
 
 # Soft Repair — Operator Notes
 
