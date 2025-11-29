@@ -1,4 +1,4 @@
----
+<!--
 path: meta/ROADMAP.md
 component_id: roadmap
 kind: doc
@@ -8,7 +8,7 @@ authority_level: 3
 version: 2.0.0
 license: Apache-2.0
 purpose: Roadmap and future development plans for the PLD repository and runtime ecosystem.
----
+-->
 
 ## Purpose of This Roadmap
 
