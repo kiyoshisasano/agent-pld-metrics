@@ -1,4 +1,4 @@
----
+<!--
 path: LICENSES/LICENSES.md
 component_id: license_collection_overview
 kind: doc
@@ -8,7 +8,7 @@ authority_level: 3
 version: 2.0.0
 license: Apache-2.0
 purpose: Index and explanation of the licenses applicable across repository components.
----
+-->
 
 # License
 
