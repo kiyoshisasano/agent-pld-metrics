@@ -1,143 +1,144 @@
----
-title: "PLD Runtime Metrics — Demo Analysis Report"
-version: 2025.1.1
-status: reference
-maintainer: "Kiyoshi Sasano"
-source_dataset: "datasets/pld_events_demo.jsonl"
-category: "metrics/reports"
-tags:
-  - PLD
-  - runtime telemetry
-  - drift
-  - repair
-  - failover
-  - metrics
+# PLD Event Report — Demo Dataset
+
+This report summarizes observable behavior patterns found in the demo PLD
+event dataset.  
+It is intended for learning, debugging, and inspection — not for formal model
+evaluation or compliance certification.
+
 ---
 
-# 📊 PLD Runtime Metrics — Demo Analysis Report  
-_Sample Dataset Evaluation (Schema-Aligned)_
+## 1. Dataset Overview
 
-This report demonstrates how to interpret PLD-structured runtime logs using the demo dataset:
+- **Total sessions:** 3  
+- **Event types observed:**
+  - `continue_allowed`
+  - `drift_detected`
+  - `repair_triggered`
+  - `latency_spike`
+  - `session_closed`
+  - `info (derived metric: M1_PRDR)`
+
+This dataset intentionally represents **contrasting runtime outcomes**:
+
+| Session ID | Pattern Type | Outcome |
+|-----------|--------------|---------|
+| `demo-fail-01` | Persistent drift + repeated repair | Session terminated after failed recovery |
+| `demo-ok-01` | Drift → single repair → successful recovery | Completed normally |
+| `demo-metrics-01` | Drift → repair → recurrence → metric emission | Completed with derived metric logging |
+
+---
+
+## 2. Session Case Studies
+
+### 2.1 `demo-fail-01` — Persistent Repair Loop
+
+Pattern observed:
 
 ```
-datasets/pld_events_demo.jsonl
+continue → drift → repair × N → session_closed
 ```
 
-The purpose is to illustrate:
 
-- Drift frequency and patterns  
-- Repair behavior effectiveness  
-- Reentry success signals  
-- Failover risk signatures  
-- Operational metrics from the PLD cookbook (PRDR, VRL, FR, MRBF)
+- The runtime identified a tool-related drift condition.
+- Repeated soft repair strategies were applied.
+- After multiple attempts, the runtime closed the session.
 
----
+**Interpretation:**  
+This represents a **progressive collapse case** where the model does not
+recover despite repair attempts.
 
-## 1. Dataset Summary
+This pattern is useful for:
 
-| Metric | Value |
-|--------|-------|
-| Total sessions | **4** |
-| Total logged events | **22** |
-| Drift events (`event_type = drift_detected`) | **3** |
-| Repair attempts (`event_type = repair_triggered`) | **10** |
-| Reentry observations | **1** |
-| Failovers | **1** |
-
-> Note: This dataset is intentionally small and designed for schema validation—not benchmarking.
+- Fail condition inspection
+- Analysis of retry effectiveness
+- Measuring repair failure scenarios
 
 ---
 
-## 2. Operational Metrics (Cookbook-Aligned)
+### 2.2 `demo-ok-01` — Successful Single Repair
 
-| Metric | Result | Status |
-|--------|--------|--------|
-| **PRDR — Post-Repair Drift Recurrence** | **50%** | ⚠ Elevated |
-| **VRL — Visible Repair Load** | **12%** | ⚠ Noticeable |
-| **FR — Failover Rate** | **25%** | 🔴 Critical |
-| **MRBF — Mean Repairs Before Failover** | **7.0** | ⚠ High Persistence |
-| **REI — Repair Efficiency Index** | _Not computable_ | (Requires baseline) |
+Observed flow:
 
-📌 Interpretation:
+```
+continue → drift → repair → continue → (optional observability event) → close
+```
 
-> Repairs occur — but do not reliably prevent repeated drift, and escalation continues until failover.
 
----
+Key properties:
 
-## 3. Drift Pattern Analysis
+- Drift was detected early (`D1_instruction`)
+- A single clarification-style repair (`R1_clarify`) resolved ambiguity
+- The model resumed normal execution successfully
 
-| Code | Count | Notes |
-|------|-------|-------|
-| `D4_tool` | 2 | Tool execution failure recurring |
-| `D5_information` | 1 | Interpretation mismatch |
+This demonstrates a **healthy recovery cycle** and is suitable for:
 
-**Observation:**  
-Most drift originates from **tool execution failures**, not user intent ambiguity.
+- Recovery latency tracking  
+- Repair efficiency scoring  
+- Model stability analysis  
 
 ---
 
-## 4. Repair Pipeline Behavior
+### 2.3 `demo-metrics-01` — Post-Repair Drift Recurrence (PRDR)
 
-| Repair Code | Instances | Type | Escalation Outcome |
-|-------------|-----------|------|--------------------|
-| `R2_soft_repair` | 9 | Automated retry-based soft repair | Did not prevent eventual failover |
-| `R1_clarify` | 1 | Visible clarification | Followed by successful reentry |
+Behavior sequence:
 
-Key Finding:
+```
+continue → drift → repair → drift recurrence → derived metric emitted → close
+```
 
-> Visible clarifying repairs (`repair_visible`) correlate with successful reentry, while repeated silent soft repair loops correlate with failover.
 
----
+A derived metric event (`M1_PRDR`) was logged to indicate **post-repair drift
+recurrence**.
 
-## 5. Reentry Stability
+This pattern demonstrates:
 
-| Session | Event | Result |
-|---------|-------|--------|
-| `SESS-OK-01` | `reentry_observed (RE3_auto)` | ✔ Stable continuation |
-
-Takeaway:
-
-> Reentry success appears strongly influenced by **repair transparency + low latency.**
+- How metrics may be emitted as standalone events
+- A case where the repair was partially effective but the system continued
+to deviate
 
 ---
 
-## 6. Failover Signals
+## 3. Observed Metric Signals (Qualitative)
 
-Failover occurred in session: **`SESS-FAIL-01`**  
-Characteristics:
+| Metric Category | Signals Observed |
+|----------------|------------------|
+| Drift rate | Multiple drift events across sessions |
+| Repair depth | 1–5 repair attempts depending on context |
+| Recovery behavior | Full recovery (ok), partial recovery (metrics), no recovery (fail) |
+| Observability | Latency spike recorded in one session |
+| Derived metrics | PRDR captured as standalone event |
 
-- 7 consecutive soft repairs  
-- No reentry attempt  
-- Failover code: `OUT3_abandoned`
-
-**Pattern matches:** _repair loop → no stabilization → abandonment_
-
----
-
-## 7. Recommendations
-
-| Priority | Action |
-|----------|--------|
-| ⭐⭐⭐ Introduce escalation threshold to prevent 7+ repair loops |
-| ⭐⭐ Increase visibility of soft repairs to improve VRL → reentry success |
-| ⭐ Evaluate tool failure detection timing |
+These patterns provide meaningful dimensions for future dashboards or
+automated analysis.
 
 ---
 
-## 8. Next Steps
+## 4. Notes on Interpretation
 
-To operationalize:
+This dataset is intentionally small and handcrafted.
 
-1. Connect logging to live runtime  
-2. Accumulate ≥ **500–1000 real sessions**  
-3. Feed into:  
-   ```
-   dashboards/reentry_success_dashboard.json
-   ```  
-4. Compare variants with PRDR + FR as gating metrics.
+When interpreting logs:
+
+- **Do not treat event ordering as strict causal proof** — it mirrors runtime patterns, not enforced logic.
+- **Derived metrics (M-prefix events) are not ground truth** — they act as informal annotations.
+- **Repair events do not guarantee success** — drift and repair are informational signals, not outcomes.
 
 ---
 
-Report generated using the **PLD Metrics Quickstart Framework (v2025.1.1)**.  
-License: **CC BY 4.0**
+## 5. Suggested Next Steps
 
+To continue exploring metrics:
+
+```bash
+python verify_metrics_local.py
+```
+
+You can then:
+
+- Compare behaviors across sessions
+- Adjust drift conditions or repair strategies
+- Inspect how new logging patterns affect model observability
+
+---
+
+✔ Report generation complete.
