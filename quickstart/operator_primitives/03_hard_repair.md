@@ -1,169 +1,146 @@
-# 03 — Hard Repair  
-*Operator Primitive (Canonical Code Edition — 2025)*  
-
-> **Purpose:** Restore stability when system state becomes structurally corrupted — beyond what Soft Repair (R1–R2) can safely resolve.  
-> Hard Repair is a **controlled reset**, not a failure. It prevents error propagation and restores reliable execution.
+Status: Working Draft
+Audience: Developers exploring PLD runtime behavior
+Feedback: welcome and encouraged
 
 ---
 
-## **1 — When Hard Repair Is Required**
+# Hard Repair — Operator Notes
 
-Hard Repair should only occur when **continuing the current task risks compounding error**.
+This document is part of the ongoing operator exploration series. It does **not** define new PLD semantics or modify existing taxonomy. Instead, it attempts to describe how "hard repair" can be conceptually understood and represented using the current runtime system.
 
-| Trigger Code | Condition | Example |
-|--------------|-----------|---------|
-| **D1_instruction (repeated)** | System repeatedly misinterprets original objective | Wrong task despite clarifications |
-| **D2_context (critical)** | Memory contradiction or corrupted constraint state | User constraints overwritten |
-| **D3_flow** | Agent trapped in procedural/tool loop | Retry loops, broken step order |
-| **D5_information (persistent)** | Facts remain incorrect despite correction | Conflicting factual state |
-
-Operational Target: **Hard Repair < 12–15% of total repair events**  
-If higher → Soft Repair detection or drift classification requires review.
+The framing may evolve as more implementation experience becomes available.
 
 ---
 
-## **2 — PLD Taxonomy Alignment (Updated)**
+## What Hard Repair Refers To
 
-Hard Repair corresponds to a **single canonical code**:
+Hard repair represents a stronger corrective action than soft repair. It may be used when:
 
-| Allowed Hard Repair Code | Meaning | Notes |
-|--------------------------|---------|-------|
-| **R5_hard_reset** | Reset corrupted state and re-establish shared reality | 🚨 replaces all legacy categories (Repair-Reset, Repair-Recontextualize, Repair-Restart, Repair-ContextDrop) |
+* the system has drifted substantially from the intended task
+* repeated soft repair attempts have not resolved misalignment
+* the conversation requires structural reset or reframing
+* the assistant’s internal assumptions are no longer reliable
 
-> ⛔ Legacy labels are deprecated.  
-> Hard Repair must use the single canonical code: **R5_hard_reset**.
-
----
-
-## **3 — Canonical Hard Repair Sequence**
-
-Hard Repair follows a **four-step protocol**:
-
-```
-(1) Acknowledge corruption
-(2) Execute reset (local, thread, or full)
-(3) Reconfirm goal + constraints
-(4) Resume aligned workflow
-```
-
-
-Example user-facing output:
-
-> “Thanks — earlier responses became inconsistent.  
-> I’ll reset context to avoid confusion.  
-> Can you confirm: we're booking a 4-star hotel under $150 in Cambridge?”
+Hard repair is not necessarily a failure state — it can be a recovery strategy.
 
 ---
 
-## **4 — Implementation Templates (Updated)**
+## Examples of Situations That May Lead to Hard Repair
 
-### **A. LangChain — Reset Operator (Schema-Compatible)**
+These patterns are not prescriptive, but may serve as reference points:
+
+* the assistant repeatedly answers a different question than the one asked
+* tool reasoning or state becomes corrupted or contradictory
+* context window references outdated or inconsistent assumptions
+* partial recovery attempts lead to further confusion
+
+Some systems may trigger hard repair proactively; others only after a threshold of uncertainty or repair churn.
+
+---
+
+---
+
+## Notes on Signal Source
+
+In the example earlier in this document, `source="runtime"` is used as a neutral placeholder.
+This is not intended to prescribe a single responsible component.
+
+Depending on implementation architecture, a hard repair signal may come from:
+
+* a monitoring or observer component,
+* a system-level controller or repair manager,
+* the assistant or reasoning engine itself.
+
+The PLD runtime does not define the origin boundaries, and this remains an area where implementations may diverge.
+
+---
+
+## Runtime Intent Mapping (Observed)
+
+Hard repair currently aligns with the following runtime signal:
+
+| SignalKind   | Event Type         | Phase    | Taxonomy Code   |
+| ------------ | ------------------ | -------- | --------------- |
+| `HARD_RESET` | `repair_triggered` | `repair` | `R5_hard_reset` |
+
+As with earlier operators, taxonomy codes are resolved automatically by the PLD runtime via the `RuntimeSignalBridge` mapping table.
+
+---
+
+## Example: Minimal Usage
+
+*Not normative — shown only as a representation pattern.*
 
 ```python
-def hard_repair(memory):
-    memory.clear()  # level depends on severity
+from pld_runtime.runtime_signal_bridge import (
+    RuntimeSignal, RuntimeSignalBridge, EventContext, SignalKind, ValidationMode
+)
+from pld_runtime.logging.structured_logger import StructuredLogger
+from pld_runtime.logging.event_writer import make_stdout_writer
 
-    return {
-        "pld_signal": {
-            "event_type": "repair_triggered",
-            "pld": {
-                "phase": "repair",
-                "code": "R5_hard_reset",
-                "confidence": 1.0
-            }
-        },
-        "response": (
-            "Resetting context to ensure correctness. "
-            "Please restate any key details so we continue aligned."
-        )
-    }
+logger = StructuredLogger(writer=make_stdout_writer())
+bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
+
+signal = RuntimeSignal(kind=SignalKind.HARD_RESET)
+
+context = EventContext(
+    session_id="example-session-3",
+    turn_sequence=8,
+    source="runtime",
+    model="example-model",
+)
+
+event = bridge.build_event(signal=signal, context=context)
+logger.log(event)
 ```
 
 ---
 
-### B. OpenAI Assistants API — Canonical Log Event
-```json
-{
-  "event_type": "repair_triggered",
-  "pld": {
-    "phase": "repair",
-    "code": "R5_hard_reset",
-    "confidence": 1.0
-  },
-  "payload": {
-    "trigger": "state_corruption",
-    "previous_signals": ["D2_context", "D3_flow"]
-  },
-  "timestamp": "2025-01-14T12:22:55Z"
-}
+## How Hard Repair Relates to Soft Repair and Drift
+
+A possible conceptual sequence may look like:
+
+```
+Drift detected → soft repair attempts → persistent misalignment → hard repair
 ```
 
----
+Hard repair is typically a **pivot point**: it represents a structural checkpoint rather than incremental adjustment.
 
-### C. Rasa Policy Rule (Updated Naming)
-```yaml
-rules:
-  - rule: Trigger Hard Repair
-    condition:
-      - slot_was_set:
-          - pld_drift_code: critical
-    steps:
-      - action: utter_hard_repair
-      - action: clear_slots  # reset memory selectively
-```
+However, the runtime does not require this ordering — implementations may emit hard repair signals directly.
 
 ---
 
-## 5 — Reset Levels (Revised)
+---
 
-| Level                                       | Name                                                     | Scope                                               | Typical Drift Source |
-| ------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------- | -------------------- |
-| **L1 — Local Reset**                        | Most recent step only                                    | Minor correction of current turn workflow           | D3_flow             |
-| **L2 — Thread Reset (recommended default)** | Reset task memory but retain user identity & constraints | Misalignment in intent or context across turns      | D1_instruction / D2_context |
-| **L3 — Full Context Reset**                 | All conversation memory cleared                          | Persistent factual contradiction or corrupted state | D5_information      |
-| **L4 — Cold Start**                         | New session identity                                     | User explicitly requests or system forced recovery  | N/A (explicit user trigger) |
+## Future Evolution
 
+At present, the mapping includes a single hard repair taxonomy code.
+This should not be interpreted as final — additional structural repair types may emerge over time.
+If they do, they would likely appear as additional `SignalKind` entries under the existing `repair` phase rather than requiring new lifecycle phases.
 
 ---
 
-## 6 — Anti-Patterns
+## Implementation Boundary
 
-| Anti-Pattern                                  | Why It Fails                    |
-| --------------------------------------------- | ------------------------------- |
-| ❌ Silent resets                               | breaks user trust               |
-| ❌ Using R5 when R1/R2 was sufficient          | instability + overcorrection    |
-| ❌ Hard repair loops                           | indicates architectural fault   |
-| ❌ Resetting due to uncertainty—not corruption | incorrect threshold calibration |
+This document does not define how a system must respond to a hard repair signal.
+Whether the system resets context fully, partially, or chooses another recovery strategy is implementation-dependent.
 
 ---
 
-## 7 — Dependency: Required Reentry Phase
+## Unresolved Questions and Open Exploration
 
-Hard Repair is not complete until the agent performs Reentry Control:
-- restates confirmed goal
-- confirms constraints
-- declares next action
+Some areas may benefit from later clarification or real-world usage patterns:
 
-Example:
-> “Great — thanks for confirming.
-> Starting aligned workflow now.”
+* Should hard repair revert or discard prior conversational context?
+* Is user-visible acknowledgment expected or optional?
+* Are there thresholds or heuristics that determine escalation from soft to hard repair?
+* Should future iterations introduce extended categories or phases for repair severity?
 
----
-
-## 8 — Validation Checklist
-
-| Condition                                      | Must Be True |
-| ---------------------------------------------- | ------------ |
-| Soft Repair attempted unless severity=critical | ✔            |
-| Drift confidence ≥ threshold                   | ✔            |
-| Reset scope intentional                        | ✔            |
-| Schema-level event logged                      | ✔            |
-| Reentry executed before resume                 | ✔            |
-
-If any are missing → Hard Repair was premature.
+No conclusion is assumed at this stage.
 
 ---
 
-Maintainer: **Kiyoshi Sasano**  
-Edition: **PLD Applied 2025**  
-License: **CC-BY 4.0**
+## Feedback Notes
+
+As with the rest of this series, this document is exploratory.
+Feedback and implementation examples may guide future refinement.
