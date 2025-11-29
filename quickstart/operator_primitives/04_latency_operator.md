@@ -1,149 +1,149 @@
-# 04 — Latency Operator  
-*Operator Primitive (Applied-AI Edition v1.1 — Canonical Code Compliant)*  
-
-> **Purpose:** Prevent drift caused by timing mismatch, slow inference, or long-running tool execution.  
-> Latency management is a **pre-emptive stabilization mechanism**, not a repair action.
+Status: Working Draft
+Audience: Developers exploring PLD runtime behavior
+Feedback: welcome and encouraged
 
 ---
 
-## 1 — Why Latency Matters
+# Latency Operator — Observability Notes
 
-Human interaction relies on timing expectations.  
-When an agent responds too slowly without signaling intent, users assume:
+This document is part of the operator exploration series.
+It does **not** define new PLD semantics, phases, or taxonomy values.
+Instead, it explores how latency-related observations may be represented using the PLD runtime.
 
-- confusion  
-- instability  
-- disengagement  
-- task failure  
+Latency is treated here as an **observability signal**, not a lifecycle transition.
 
-Unmanaged latency increases risk of drift, especially during tool calls, indexing, or multi-step reasoning.
+Interpretation and refinement remain ongoing.
 
 ---
 
-## 2 — Drift Risk Model (Updated)
+## What the Latency Operator Represents
 
-Latency does **not define its own drift type**.  
-Instead, it increases the likelihood of existing canonical drift categories:
+The latency operator can be viewed as a way to surface delays or timing irregularities during a multi-turn interaction.
 
-| Latency Effect | Risk Outcome | Canonical Code |
-|---------------|-------------|----------------|
-| Hesitation gap | Loss of rhythm / degraded engagement | **D3_flow** |
-| Silent processing | User expectation diverges from system state | **D1_instruction** |
-| Delayed tool result | User believes previous context is invalid | **D5_information** |
-| Message batching / stacking | Perceived workflow discontinuity | **D3_flow** |
+Examples may include:
 
-> **Rule:** Latency Operators run *before* drift classification to reduce avoidable repair events.
+* slower-than-usual model generation
+* tool execution delays
+* network round-trip variance
+* pauses that feel unexpected or disruptive to the interaction rhythm
 
----
-
-## 3 — Human Timing Thresholds
-
-| Delay Window | User Interpretation | System Action |
-|-------------|--------------------|--------------|
-| **0–700ms** | Feels instant | Normal reply |
-| **0.7–2.5s** | Slight hesitation | Optional micro-acknowledge |
-| **2.5–6s** | Uncertainty forming | **Latency Hold required** |
-| **>6s** | Perceived breakdown | **Expectation Reset** |
+A latency event does **not** imply error, failure, or misalignment.
+It surfaces timing conditions that may be useful for analysis or adaptive system behavior.
 
 ---
 
-## 4 — Operator Types
+## When It May Be Useful
 
-| Operator | Definition | Usage |
-|---------|------------|-------|
-| **Latency Hold (default)** | Short acknowledgment | Predicted delay >2.5s |
-| **Progressive Update** | Multi-step structured status | Long-running tool or inference |
-| **Expectation Reset** | Clarifies duration and control | Slow reasoning / large datasets |
+Latency signals may be relevant when:
 
----
+* the system is monitoring responsiveness quality
+* conversational timing influences user experience
+* an adaptive pacing strategy or interruption handling is being explored
+* recovery or retry logic may be triggered from prolonged inactivity
 
-### Canonical Examples
-
-#### A. Latency Hold
-
-> “One moment — processing that…”
-
-#### B. Progressive Update
-
-> “Still working — now filtering results…”
-
-#### C. Expectation Reset
-
-> “This may take ~10 seconds. I’ll update you as results complete.”
+These uses are exploratory — the runtime does not define expected responses.
 
 ---
 
-## 5 — Implementation Examples
+## Runtime Intent Mapping (Observed)
 
-### Python (Async Pattern)
+Latency observations currently align with the following runtime signal kind:
+
+| SignalKind      | Event Type      | Phase  | Taxonomy Code        |
+| --------------- | --------------- | ------ | -------------------- |
+| `LATENCY_SPIKE` | `latency_spike` | `none` | `INFO_latency_spike` |
+
+The `phase` value `"none"` is a valid lifecycle value in the runtime schema.
+It is used for observability-style signals that are not part of the main drift/repair/reentry/continue/outcome/failover lifecycle.
+
+This mapping reflects existing runtime configuration rather than introducing new semantics.
+Taxonomy codes are resolved automatically through the `RuntimeSignalBridge` mapping tables.
+
+Additional latency-related variants (for example, focusing on specific subsystems) could be introduced in the future as new signal kinds and taxonomy codes under the same `phase="none"` observability space, but this document does not prescribe such extensions.
+
+---
+
+## Example: Minimal Usage
+
+*Not normative — shown only as a representation pattern.*
 
 ```python
-async def run_with_latency_operator(task, notify_at=2.5):
-    result = await task.with_timeout(notify_at)
+from pld_runtime.runtime_signal_bridge import (
+    RuntimeSignal, RuntimeSignalBridge, EventContext, SignalKind, ValidationMode
+)
+from pld_runtime.logging.structured_logger import StructuredLogger
+from pld_runtime.logging.event_writer import make_stdout_writer
 
-    if not result.ready:
-        yield "Working on that — one moment..."
-        result = await task.wait()
+logger = StructuredLogger(writer=make_stdout_writer())
+bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
 
-    return result.output
+signal = RuntimeSignal(kind=SignalKind.LATENCY_SPIKE)
+
+context = EventContext(
+    session_id="example-session-4",
+    turn_sequence=10,
+    source="detector",
+    model="example-model",
+)
+
+event = bridge.build_event(signal=signal, context=context)
+logger.log(event)
 ```
 
 ---
 
-### Rasa Rule
+---
 
-```yaml
-rules:
-  - rule: Latency Hold
-    condition:
-      - slot_was_set: { predicted_delay: high }
-    steps:
-      - action: utter_latency_hold
+## Representing Latency Details
+
+This operator note focuses on how latency-related conditions can be represented as signals.
+It does not require a specific structure for the underlying measurements.
+
+In practice, implementations may choose to record additional details such as:
+
+* measured latency values (for example, in milliseconds),
+* which subsystem or operation experienced the delay (model generation, tool call, network I/O, etc.),
+* contextual metadata helpful for debugging or analysis.
+
+Such information can be carried in:
+
+* the `RuntimeSignal.payload` mapping, and/or
+* extra runtime fields attached when building the event (for example via `extra_runtime_fields`),
+
+but the exact schema is left implementation-dependent.
+
+---
+
+## Relationship to Repair and Drift
+
+Latency is orthogonal to correctness or intent alignment.
+A system may emit latency events while operating normally.
+Conversely, latency may precede drift or repair sequences, particularly in tool-driven or staged reasoning flows.
+
+One framing is:
+
+```
+(no issue) → latency observed → (optional) escalation or adaptive handling
 ```
 
----
-
-## 6 — Logging Format (Schema Aligned)
-```json
-{
-  "event_type": "latency_operator",
-  "pld": {
-    "phase": "alignment_support",
-    "code": "latency_hold",
-    "confidence": 0.98
-  },
-  "payload": {
-    "delay_seconds": 3.14,
-    "strategy": "hold"
-  }
-}
-```
+There is no assumed escalation path — implementations may decide whether latency should trigger additional signals.
 
 ---
 
-## 7 — Anti-Patterns
+## Open Areas for Exploration
 
-| Anti-Pattern                  | Impact                                      |
-| ----------------------------- | ------------------------------------------- |
-| ❌ silent delay                | ↑ risk of **D1_instruction** drift          |
-| ❌ typing indicator spam       | perceptual instability → **D3_flow**        |
-| ❌ abrupt reset without update | perceived failure → triggers repair cascade |
-| ❌ apology stacking            | decreases trust                             |
+Some ongoing questions may shape future revisions:
 
----
+* Should latency thresholds be user-configurable or runtime-defined?
+* Is latency best treated as a passive metric, or as a trigger for pacing or retry logic?
+* Should latency signals ever be visible to the user, or remain internal monitoring artifacts?
+* Are repeated latency spikes meaningful as a higher‑level pattern?
 
-## 8 — Interaction Rules
-
-| Situation                     | Correct Action                                               |
-| ----------------------------- | ------------------------------------------------------------ |
-| Delay before uncertain output | Latency Hold → (optional) R1_clarify                         |
-| Delay after repeated failure  | Expectation Reset → consider escalation to **R5_hard_reset** |
-| Delay during tool execution   | Progressive Update                                           |
-
-Latency handling is complete only when normal pacing and task continuity resume.
+These remain intentionally unresolved.
 
 ---
 
-Maintainer: **Kiyoshi Sasano**  
-Edition: **PLD Applied 2025**  
-License: **CC-BY 4.0**
+## Feedback Notes
+
+As with the rest of this series, this document remains exploratory.
+Feedback and implementation examples may guide future refinement.
