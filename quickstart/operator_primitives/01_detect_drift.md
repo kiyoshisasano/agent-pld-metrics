@@ -1,169 +1,136 @@
-# 01 — Detect Drift  
-*Operator Primitive*
-
-> **Purpose:** Detect when an agent deviates from the intended task state, meaning, constraints, or previously established shared reality — before repair becomes expensive.
-
----
-
-## **1 — Why Drift Detection Exists**
-
-Failure in multi-turn systems rarely occurs because the model is *wrong* —  
-failure happens because the agent silently drifts away from:
-
-- verified facts  
-- user constraints  
-- established memory  
-- task intent or plan  
-
-Early drift detection prevents:
-
-- cascading hallucination  
-- repeated invalid tool calls  
-- unnecessary resets  
-- user distrust and UX collapse  
-
-Drift detection enables proactive **R1 (Clarify)** or **R2 (Soft Repair)** instead of late-stage damage control.
+Status: Working Draft
+Audience: Developers exploring PLD runtime behavior
+Feedback: Welcome and encouraged
 
 ---
 
-## **2 — PLD Canonical Taxonomy Alignment (v2.1)**
+# Detecting Drift — Operator Notes
 
-| Drift Category (Old Name) | Canonical Code | Type | Trigger Example |
-|---------------------------|---------------|------|----------------|
-| Drift-Intent | **D1_instruction** | Instruction Drift | System output no longer answers user goal |
-| Drift-Constraint / Drift-Memory | **D2_context** | Context Drift | Constraint or remembered fact violated |
-| — | D3_reasoning *(reserved)* | Reasoning Drift | (Used in planners/tool-enabled systems) |
-| Drift-Tool | **D4_tool** | Tool State Drift | Output contradicts tool result |
-| Drift-Information | **D5_information** | Information Drift | Evidence contradicts previous verified state |
+This document is an exploratory write-up on how "drift detection" may be understood when working with the PLD runtime. It does not define new semantics or taxonomy. Instead, it attempts to describe how the existing runtime pieces can be used in situations where the assistant or system appears misaligned with expected conversational intent or trajectory.
 
-> ❗ Previous long-form labels remain valid for analysis,  
-> but **canonical codes MUST be logged in new implementations.**
+Interpretation and refinement are ongoing.
 
 ---
 
-## **3 — Detection Signals**
+## Why Drift Detection Exists
 
-Drift detection draws from:
+In multi‑turn interaction, systems occasionally deviate from the intended task or user objective. "Drift" here refers to such divergence. It may present as repetition, confusion, incorrect assumptions, or operating on outdated information.
 
-- local turn semantics  
-- global conversation memory  
-- tool state  
-- constraint store  
-- explicit checkpoints  
+Detecting drift early may support:
 
-| Signal Type | Example | Rule |
-|-------------|---------|------|
-| Semantic contradiction | `"no results"` vs `"found options"` | compare vs verified tool memory |
-| Constraint violation | user: `< $100` → agent: `$400` | constraint store enforcement |
-| Intent loss | agent answers a different question | compare vs stored user goal |
-| Tool disagreement | tool failure but agent infers success | outcome mismatch |
-| State regression | reset without reason | break in plan or checkpoint |
+* smoother recovery
+* improved user experience
+* more stable downstream state
+
+At this stage, drift should be interpreted as a *signal*, not a failure.
 
 ---
 
-## **4 — Implementation Examples (Updated with Canonical Codes)**
+## When This Operator May Be Useful
 
-### A. **LangChain (pseudo-real)**
+Drift detection can be relevant when:
+
+* user intent appears unclear or has shifted
+* responses become repetitive or circular
+* a tool fails or produces unreliable output
+* the assistant begins to respond based on outdated context
+
+These patterns are not deterministic – implementation feedback may refine them.
+
+---
+
+## Runtime Intent Mapping (Observed)
+
+The PLD runtime already provides mapping for drift‑related signals.
+These are **not new definitions** — just a summary of existing values for convenience.
+
+| SignalKind          | Event Type       | Phase   | Taxonomy Code      |
+| ------------------- | ---------------- | ------- | ------------------ |
+| `INSTRUCTION_DRIFT` | `drift_detected` | `drift` | `D1_instruction`   |
+| `CONTEXT_DRIFT`     | `drift_detected` | `drift` | `D2_context`       |
+| `REPEATED_PLAN`     | `drift_detected` | `drift` | `D3_repeated_plan` |
+| `TOOL_ERROR`        | `drift_detected` | `drift` | `D4_tool_error`    |
+
+This table mirrors existing runtime semantics.
+
+---
+
+## Example: Minimal Usage
+
+*Not prescriptive — shown only to illustrate the operator in context.*
 
 ```python
-def detect_drift(turn: str, memory: dict, constraints: dict, last_tool_result: str):
-    drift_codes = []
+from pld_runtime.runtime_signal_bridge import RuntimeSignal, RuntimeSignalBridge, EventContext, SignalKind, ValidationMode
+from pld_runtime.logging.structured_logger import StructuredLogger
+from pld_runtime.logging.event_writer import make_stdout_writer
 
-    if last_tool_result and "no result" in last_tool_result and "found" in turn.lower():
-        drift_codes.append("D5_information")
+# Logger and bridge setup
+logger = StructuredLogger(writer=make_stdout_writer())
+bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
 
-    if constraints and any(str(v).lower() not in turn.lower() for v in constraints.values()):
-        drift_codes.append("D2_context")
+# Example runtime observation indicating drift
+signal = RuntimeSignal(kind=SignalKind.INSTRUCTION_DRIFT)
 
-    if memory.get("goal") and memory["goal"].lower() not in turn.lower():
-        drift_codes.append("D1_instruction")
+context = EventContext(
+    session_id="example-session-1",
+    turn_sequence=3,
+    source="runtime",
+    model="example-model",
+)
 
-    return drift_codes or None
+event = bridge.build_event(signal=signal, context=context)
+logger.log(event)
 ```
 
 ---
 
-### B. Autogen (callback)
-```python
-class DriftMonitor:
-    def after_agent_turn(self, response, state):
-        if response.contradicts(state.tool_memory):
-            return {"code": "D4_tool"}
-        if response.breaks(state.constraints):
-            return {"code": "D2_context"}
-        return None
-```
+## Things Still Under Exploration
+
+Some open questions worth revisiting as experience grows:
+
+* What degree of deviation meaningfully counts as "drift"?
+* Should drift detection sometimes be user‑visible?
+* How frequently does early detection prevent downstream repair complexity?
+* How can detection be distinguished from natural ambiguity or creative reasoning?
+
+These questions are intentionally left open.
 
 ---
 
-### C. OpenAI Assistants (Tools + Memory)
-```python
-drift_code = "D5_information" if contradiction else None
+## Clarifying How Mapping Works
 
-event = {
-  "event_type": "drift_detected",
-  "pld": {
-    "phase": "drift",
-    "code": drift_code
-  },
-  "confidence": score
-}
-```
----
+The taxonomy codes shown in the table above (such as `D1_instruction` or `D2_context`) are **not authored manually** during runtime usage. They are assigned automatically by the runtime through the mapping table defined in the PLD runtime (`RUNTIME_SIGNAL_MAP`).
 
-### 5 — Logging Format (Schema Compliant)
-
-{
-  "event_type": "drift_detected",
-  "turn_id": 7,
-  "pld": {
-    "phase": "drift",
-    "code": "D5_information"
-  },
-  "evidence": {
-    "reason": "Tool said 'no hotels found', response claimed availability.",
-    "source": "tool_output"
-  },
-  "confidence": 0.87,
-  "timestamp": "2025-01-14T12:03:22Z"
-}
+Users typically only provide the `RuntimeSignal(kind=...)` value. The runtime then resolves the appropriate taxonomy code when building the final event via `RuntimeSignalBridge.build_event()`.
 
 ---
 
-### 6 — Expected System Response
+## Where Drift Signals Come From
 
-| Detected Code     | Repair Path                                  |
-| ----------------- | -------------------------------------------- |
-| D1_instruction    | → **R1_clarify**                             |
-| D2_context        | → **R2_soft_repair**                         |
-| D4_tool           | → **R2_soft_repair** + tool retry policy     |
-| D5_information    | → confirm source of truth or escalate        |
-| Severe / repeated | → Hard Repair (reset checkpoint or failover) |
+At this stage, PLD does not prescribe a single mechanism for when or how drift signals should be emitted. They may originate from:
 
----
+* a heuristic observer or monitoring layer
+* the assistant logic itself
+* a tool or external validation component
 
-### 7 — Anti-Patterns
-
-🚫 Treating all drift as equivalent
-🚫 Logging drift without recording type or canonical code
-🚫 Detecting drift but skipping repair confirmation (Reentry)
+This remains flexible by design and may evolve through experimentation.
 
 ---
 
-### 8 — Quick Test
-#### Input:
-> "There are no 4-star hotels available."
-> (But previous tool output returned: 4 matches.)
+## Scope of This Operator
 
-#### Expected Detection Result:
-```csharp
-[D5_information detected]
-```
+This document does **not** define a complete drift detection framework. Instead, it describes how drift, once detected, can be represented using the existing PLD runtime.
+
+The runtime treats all drift-related events under the single lifecycle phase value `"drift"`. Any finer-grained meaning is expressed through taxonomy codes rather than expanding the phase enumeration.
 
 ---
 
-Maintainer: Kiyoshi Sasano
-Edition: PLD Canonical Codes 2025
-License: CC-BY-4.0
+## Feedback and Iteration Notes
 
----
+Future revisions may:
+
+* clarify boundaries between drift and repair phases
+* include additional examples or counterexamples
+* refine or expand usage guidance based on implementation outcomes
+
+Feedback from experimentation or review is welcome.
