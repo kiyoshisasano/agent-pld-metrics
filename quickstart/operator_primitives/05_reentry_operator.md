@@ -1,8 +1,14 @@
-Status: Working Draft
-Audience: Developers exploring PLD runtime behavior
-Feedback: welcome and encouraged
-
----
+<!--
+path: quickstart/operator_primitives/05_reentry_operator.md
+component_id: reentry_operator
+kind: doc
+area: runtime_operators
+status: candidate
+authority_level: 2
+version: 2.0.0
+license: CC-BY-4.0
+purpose: Exploratory framing for stabilization transitions following repair sequences.
+-->
 
 # Reentry Operator — Stabilization Notes
 
