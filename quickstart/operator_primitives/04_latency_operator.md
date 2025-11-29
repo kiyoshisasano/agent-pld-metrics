@@ -1,13 +1,13 @@
 <!--
-path: quickstart/operator_primitives/03_hard_repair.md
-component_id: hard_repair_operator
+path: quickstart/operator_primitives/04_latency_operator.md
+component_id: latency_operator
 kind: doc
-area: runtime_operators
+area: observability
 status: candidate
 authority_level: 2
 version: 2.0.0
 license: CC-BY-4.0
-purpose: Notes defining exploratory framing for structural reset conditions and escalation boundaries.
+purpose: Observability notes describing latency signal handling and non-lifecycle metadata events.
 -->
 
 # Latency Operator — Observability Notes
