@@ -97,5 +97,3 @@ Low risk. No architecture change. Clear measurement.
 - What language felt natural in your organization?
 
 This folder exists to support **real-world adoption conversations**, and will evolve with those learnings.
-
----
