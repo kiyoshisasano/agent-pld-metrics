@@ -1,8 +1,14 @@
-Status: Working Draft
-Audience: Developers exploring PLD runtime behavior
-Feedback: welcome and encouraged
-
----
+<!--
+path: quickstart/operator_primitives/03_hard_repair.md
+component_id: hard_repair_operator
+kind: doc
+area: runtime_operators
+status: candidate
+authority_level: 2
+version: 2.0.0
+license: CC-BY-4.0
+purpose: Notes defining exploratory framing for structural reset conditions and escalation boundaries.
+-->
 
 # Hard Repair — Operator Notes
 
