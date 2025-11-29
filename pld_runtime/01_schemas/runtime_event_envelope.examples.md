@@ -1,4 +1,4 @@
----
+<!--
 path: pld_runtime/01_schemas/runtime_event_envelope.examples.md
 component_id: runtime_event_envelope_examples
 kind: doc
@@ -8,7 +8,7 @@ authority_level: 5
 version: 2.0.0
 license: Apache-2.0
 purpose: Runtime event envelope examples for operational reference.
----
+-->
 
 
 # Metadata
