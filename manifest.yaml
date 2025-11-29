@@ -521,6 +521,52 @@ components:
     authority_level: 2
     purpose: Example dashboard configuration for visualizing reentry-related metrics and session timelines.
 
+  - path: quickstart/operator_primitives/01_detect_drift.md
+ 　 component_id: detect_drift_operator
+  　kind: doc
+  　area: runtime_operators
+ 　 status: candidate
+ 　 authority_level: 2
+ 　 version: 2.0.0
+ 　 purpose: "Exploratory operator notes describing drift detection patterns in PLD runtime contexts."
+　
+　- path: quickstart/operator_primitives/02_soft_repair.md
+　  component_id: soft_repair_operator
+ 　 kind: doc
+  　area: runtime_operators
+  　status: candidate
+  　authority_level: 2
+  　version: 2.0.0
+　  purpose: "Working draft describing soft corrective behavior interpretations for PLD."
+
+　- path: quickstart/operator_primitives/03_hard_repair.md
+  　component_id: hard_repair_operator
+ 　 kind: doc
+  　area: runtime_operators
+  　status: candidate
+  　authority_level: 2
+  　version: 2.0.0
+  　purpose: "Notes defining exploratory framing for structural reset conditions and escalation boundaries."
+
+　- path: quickstart/operator_primitives/04_latency_operator.md
+  　component_id: latency_operator
+  　kind: doc
+  　area: observability
+  　status: candidate
+ 　 authority_level: 2
+ 　 version: 2.0.0
+ 　 purpose: "Observability notes describing latency signal handling and non-lifecycle metadata events."
+
+　- path: quickstart/operator_primitives/05_reentry_operator.md
+  　component_id: reentry_operator
+  　kind: doc
+  　area: runtime_operators
+  　status: candidate
+  　authority_level: 2
+  　version: 2.0.0
+  　purpose: "Exploratory framing for stabilization transitions following repair sequences."
+
+
   # ---------------------------------------------------------
   # 5. Field Collaboration
   # ---------------------------------------------------------
