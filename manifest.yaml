@@ -695,6 +695,22 @@ components:
     authority_level: 2
     purpose: Observer-only bridge from LangGraph state to PLD runtime events.
 
+  - path: examples/reference_traces/generators/generate_forensic_trace.py
+    component_id: forensic_trace_generator
+    kind: code
+    area: examples
+    status: candidate
+    authority_level: 3
+    purpose: Python script to generate high-fidelity production simulation logs with entropy and noise.
+
+  - path: examples/reference_traces/forensic_infra_noise.jsonl
+    component_id: trace_forensic_noise
+    kind: metric
+    area: examples
+    status: candidate
+    authority_level: 3
+    purpose: Reference JSONL dataset demonstrating PLD behavior under infrastructure noise, timeouts, and partial failures.
+  
   # ---------------------------------------------------------
   # Package Initializers & Public API
   # ---------------------------------------------------------
