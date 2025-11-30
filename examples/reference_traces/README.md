@@ -30,7 +30,7 @@ Each line is a JSON object with the following structure:
 ```json
 {
   "timestamp": "ISO8601 timestamp (microseconds)",
-  "trace_id": "Opaque session correlation ID (16-char hex)",
+  "trace_id": "Opaque session correlation ID (16–32 char hex)",
   "span_id": "Operation-level ID within the same trace (16-char hex)",
   "component": "system|user|agent|pld_runtime|tool|...",
   "event_type": "What happened",
