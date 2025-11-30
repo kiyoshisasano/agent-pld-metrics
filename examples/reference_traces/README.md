@@ -1,4 +1,4 @@
-\<\!--  
+<\!--  
 path: examples/reference\_traces/README.md  
 component\_id: reference\_traces\_readme  
 kind: doc  
