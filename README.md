@@ -142,6 +142,8 @@ A micro-scale real-world example showing how PLD governs behavior:
 | Phase | `drift → repair` | `reentry → continue` |
 | User intent alignment | ❌ broken | ✅ restored |
 
+🧩 For more complex or production-scale log patterns, see the `examples/reference_traces` section.  
+
 > This demonstrates the full PLD loop:  
 > **Agent attempt** → **Drift detected** → **Repair** → **Verification** → **Resume**
 
