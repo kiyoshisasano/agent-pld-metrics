@@ -12,9 +12,6 @@ purpose: Governing specification for PLD metadata.
 
 # **Metadata Manifest Specification — v0.9.1**
 
-Status: Candidate Specification  
-SPDX-License-Identifier: CC-BY-4.0
-
 This specification defines the unified metadata format for the **Phase Loop Dynamics (PLD) Repository**.
 
 ## **🎯 Design Philosophy**
