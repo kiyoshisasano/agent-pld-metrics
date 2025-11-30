@@ -1,13 +1,13 @@
-<\!--  
-path: examples/reference\_traces/README.md  
-component\_id: reference\_traces\_readme  
-kind: doc  
-area: examples  
-status: candidate  
-authority\_level: 3  
-license: CC-BY-4.0  
-purpose: Documentation for simulated log traces and generation tools.  
-\--\>
+<!--
+path: examples/reference\_traces/README.md
+component\_id: reference\_traces\_readme
+kind: doc
+area: examples
+status: candidate
+authority\_level: 3
+license: CC-BY-4.0
+purpose: Documentation for simulated log traces and generation tools.
+-->
 
 # **Reference Traces**
 
