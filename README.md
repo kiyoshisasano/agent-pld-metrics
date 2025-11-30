@@ -49,20 +49,20 @@ Instead, it **observes, labels, and stabilizes behavior across the stack — wit
 
 ## 🌱 Community & Support
 
-PLD is still evolving — and much of its future will be shaped by real-world use,
-shared traces, and collaborative refinement.
+PLD is actively evolving, and real-world usage and shared traces play a key role in refinement.
 
-If you're experimenting with multi-turn agents, runtime stability, or evaluation frameworks,
-you’re welcome to participate:
+If you're experimenting with multi-turn agents or runtime stability workflows, you're welcome to participate:
 
-- 📣 Discussions: https://github.com/kiyoshisasano/agent-pld-metrics/discussions  
-  → Ideas, questions, proposals, traces, or implementation feedback  
-- 🐛 Issues: https://github.com/kiyoshisasano/agent-pld-metrics/issues  
-  → Bugs, runtime behavior mismatches, or feature requests  
+- 📣 Discussions:  
+  https://github.com/kiyoshisasano/agent-pld-metrics/discussions  
+- 🐛 Issues:  
+  https://github.com/kiyoshisasano/agent-pld-metrics/issues  
 
-Whether you're here to **learn, test, refine, or build**, the community is open.
+> If PLD sparks something — share it.
 
-> If PLD sparks something — share it. The model evolves through use.
+⭐ Want to contribute?  
+Look for **“good first issue”** labels or start a discussion.  
+Even small contributions (examples, tests, docs, traces) are valuable.
 
 ---
 
