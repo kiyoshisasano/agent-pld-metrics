@@ -70,6 +70,35 @@ Patterns **may**:
 
 ---
 
+### 3.1 Runtime → Pattern Context Contract (I/O Agreement)
+
+Some patterns require additional context supplied by the runtime to operate safely without inference or reconstruction.
+
+#### Baseline Rule
+The Pattern Layer must operate only on the context explicitly present in the prompt.  
+It must **not infer or recreate missing goals, history, tool execution state, or constraints.**
+
+#### Runtime Responsibilities (when applicable):
+- Inject required context when emitting signals that depend on it.
+- Context payload **may include:**
+  - Restated goal
+  - Summary of relevant past interaction
+  - Constraints (policy, formatting, safety)
+  - Tool execution details for `D4_tool_error`
+- Communicate tone preference through system prompt or metadata (e.g., neutral vs UX-optimized).
+
+#### Pattern Layer Responsibilities:
+- Use pattern structures only with the provided context.
+- If required context is missing:
+  - Degrade gracefully to clarification, rather than reconstructing state.
+
+##### Examples:
+- `D4_tool_error` requires tool name, parameters, and output/summary to avoid hallucinated corrections.
+- `R5_hard_reset` requires: goal, summary, constraints.  
+  Without these, the correct fallback behavior is prompting the user for confirmation or missing pieces—not reconstructing.
+
+---
+
 ## 4. Core Alignment Concepts
 
 Patterns rely on existing PLD primitives:
@@ -130,3 +159,4 @@ Once this foundation is confirmed, subsequent files will be created in this orde
 ---
 
 **End of foundations.md
+
