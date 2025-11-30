@@ -145,6 +145,8 @@ A micro-scale real-world example showing how PLD governs behavior:
 > This demonstrates the full PLD loop:  
 > **Agent attempt** → **Drift detected** → **Repair** → **Verification** → **Resume**
 
+---
+
 ## ⚡ Quickstart — Run PLD in Under 10 Seconds
 
 ```bash
