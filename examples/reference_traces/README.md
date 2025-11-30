@@ -67,6 +67,42 @@ PLD logs include two parallel classification layers:
 
 ---
 
+## 📖 Reading the Golden Semantic Repair Trace
+
+*File: `golden_semantic_repair.jsonl`*
+
+This trace demonstrates the canonical PLD loop:
+
+```
+Drift → Repair → Reentry → Continue → Outcome
+```
+
+Example repair sequence (simplified):
+
+```jsonc
+// 1) Agent attempts tool call — parking missing
+{"event_type": "tool_call_attempt", "args": {"amenities": ["wifi"]}}
+
+// 2) PLD flags misalignment
+{"event_type": "drift_detected", "missing": ["parking"]}
+
+// 3) PLD intervenes and blocks action
+{"event_type": "continue_blocked"}
+
+// 4) Corrective repair injected
+{"event_type": "repair_triggered"}
+
+// 5) Agent retries with corrected parameters
+{"event_type": "tool_call_attempt", "args": {"amenities": ["wifi", "parking"]}}
+
+// 6) PLD verifies recovery and allows continuation
+{"event_type": "evaluation_pass"}
+```
+
+This file is recommended as the **first reference** before exploring the higher-entropy forensic trace.
+
+---
+
 ### **PLD Lifecycle Phases (High-Level Behavioral State)**  
 These indicate **where the agent is in the governance loop**:
 
