@@ -1,3 +1,13 @@
+<!--
+component_id: llm_patterns_drift_responses
+kind: doc
+area: quickstart_patterns
+status: draft
+authority_level: 3
+version: 2.0.0
+purpose: Reactive conversational patterns for responding to drift signals once they have been emitted by the runtime.
+-->
+
 # Drift Response Patterns (Reactive LLM Layer)
 
 > **Scope:** These patterns provide conversational guidance for responding **after a Drift-related Runtime Signal has been emitted.** They do not determine drift detection or trigger criteria.
@@ -150,3 +160,4 @@ Example:
 ---
 
 **End of drift_response_patterns.md**
+
