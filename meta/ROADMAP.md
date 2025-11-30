@@ -3,105 +3,133 @@ path: meta/ROADMAP.md
 component_id: roadmap
 kind: doc
 area: meta
-status: draft
+status: working_draft
 authority_level: 3
-version: 2.0.0
+version: 2.1.0
 license: Apache-2.0
-purpose: Roadmap and future development plans for the PLD repository and runtime ecosystem.
+purpose: Define the living evolution path for the PLD model, runtime ecosystem, and community participation.
 -->
 
-## Purpose of This Roadmap
+# PLD Roadmap — A Living Evolution Path
 
-PLD is transitioning from exploratory research toward early standardization and practical application.  
-The goal of this roadmap is to:
+PLD is **not a finished framework** — it is a **runtime reasoning model**
+for stabilizing multi-turn AI systems.
 
-- Provide clarity on direction and intent  
-- Align contributors and early adopters  
-- Support long-term maintainability and ecosystem consistency  
-- Communicate maturity realistically: **stable core, evolving edges**
+This roadmap reflects how PLD is expected to evolve:
 
----
+- through **implementation**
+- through **real-world traces**
+- through **shared refinement**, not unilateral design.
 
-## Phase Overview
-
-| Phase | Status | Focus |
-|-------|--------|--------|
-| **Phase 0 — Exploration** | ✔ Completed | Draft models, prototypes, early terminology |
-| **Phase 1 — Specification Foundation** | ✔ In progress | Schema, event model, lifecycle alignment |
-| **Phase 2 — Tooling & Reference Implementation** | ⏳ Planned | Validator, examples, optional runtime bridges |
-| **Phase 3 — Community Review & Refinement** | ⏳ Planned | Feedback cycles, testing, adjustments |
-| **Phase 4 — Ecosystem Stabilization** | ⏳ Future | Governance, compatibility guidance, sustainability |
-
-> While terminology and structure are stabilizing, best practices and reference tooling are expected to evolve.
+The goal is **evidence-based evolution**, not premature standardization.
 
 ---
 
-## Current Priority Areas (Near-Term Focus)
+## 🧭 Evolution Model
 
-These represent active areas of work, without strict deadlines.
-
-| Priority | Status | Notes |
-|----------|--------|-------|
-| Finalize Working Draft specification language | In progress | Refinement, clarity, consistency |
-| Expand example event set to represent real-world edge cases | Planned | Needed for validation and reference implementations |
-| Begin design of lightweight validation tooling | Under evaluation | Likely to start as scripts before frameworks |
-| Improve onboarding flow through documentation pass | Planned | Align quickstart principles with specification |
-
----
-
-## Mid-Term Direction (Exploratory but Probable)
-
-| Area | Intent |
-|------|--------|
-| Optional reference validator tool | Support interoperability and automated conformance |
-| Runtime integrations | Provide optional, not mandatory, adapters to existing frameworks |
-| Reference patterns and operational heuristics | Build working examples driven by field usage |
-| Drafting early RFC process | Prepare for proposals from implementers and collaborators |
-
----
-
-## Long-Term Possibilities (Speculative and Community-Driven)
-
-| Area | Potential Outcome |
-|------|------------------|
-| Governance | Working group or structured stewardship model |
-| Validation ecosystem | Conformance tooling, badges, or CI checks |
-| Documentation Models | Full specification format (IETF/W3C-like or OpenSpec style) |
-| Ecosystem Adoption | Patterns for applying PLD across agents, tools, and evaluation stacks |
-
-These directions remain intentionally flexible.
-
----
-
-## What Is **Not** Planned at This Stage
-
-To avoid premature standardization, the following are deferred:
-
-- Formal certification programs  
-- Fixed enumerated code taxonomies beyond prefix and structure rules  
-- Locked compatibility guarantees across frameworks  
-- Enterprise governance models  
-
-These may become relevant only if broader community adoption occurs.
-
----
-
-## How Feedback Shapes This Roadmap
-
-Feedback from early adopters, implementers, and researchers is welcome and helps guide priorities.
-
-Planned participation channels:
-
-- GitHub Issues
-- Discussion threads
-- Structured review rounds (future consideration)
-
-Roadmap updates will continue to be recorded in:
+PLD matures through a repeating loop:
 
 ```
-/meta/CHANGELOG.md
+Concept → Prototype → Field Implementation → Evidence → Refinement
 ```
 
+
+Each cycle strengthens:
+
+- the conceptual model
+- the runtime patterns
+- the documentation
+- the shared operational vocabulary
+
+PLD evolves through use — not theory alone.
+
 ---
+
+## 📌 Current Phase (2025)
+
+| Track | Status | Notes |
+|-------|--------|-------|
+| Core Runtime Loop (Drift → Repair → Reentry → Continue → Outcome) | Stable | Expected to remain the foundation |
+| Runtime v2.0 (Python reference) | Working | Observer-mode reference implementation |
+| Schema + Event Envelope | Stable enough | Minor refinements may continue |
+| Metrics + evaluation patterns | Draft | Requires more field data |
+| Community + adoption | Beginning | Next priority |
+
+> PLD is stable enough to trial — and still flexible enough to evolve.
+
+---
+
+## 🎯 Near-Term Focus (Next 3 Months)
+
+| Priority | Output | Purpose |
+|----------|--------|---------|
+| PoC collaborations | Field traces + feedback | Validate runtime behavior in real environments |
+| Refinement of taxonomy & drift/repair patterns | Updated spec notes | Align language with observed patterns |
+| Additional runtime integrations | LangGraph / Assistants API / Rasa / AgentOps | Demonstrate flexibility and neutrality |
+| Community structure | Contributor onboarding, RFC process | Support external participation |
+
+These efforts help shift PLD from **idea → usable practice**.
+
+---
+
+## 🚧 Mid-Term Goals (6–12 Months)
+
+| Area | Direction |
+|------|-----------|
+| Shared evaluation datasets | Anonymized PLD-labeled traces |
+| Metric stabilization | PRDR, VRL, REI, failure modes |
+| Optional validation tooling | “Good enough” conformance checks |
+| Patterns & Playbooks | Integration recipes across frameworks |
+
+These do **not** imply standardization — but enable comparability across implementations.
+
+---
+
+## 🌍 Long-Term Possibilities (Community-Driven)
+
+| Pathway | Trigger Condition |
+|---------|------------------|
+| Standard-like formalization (OpenSpec/W3C-style) | If adoption reaches multiple independent implementers |
+| Governance working group | If >3 independent organizations maintain implementations |
+| Version compatibility guidelines | If multiple runtimes exist and interoperate |
+
+These outcomes are **not goals themselves** — they are **optional consequences** of real adoption.
+
+---
+
+## ❌ What PLD Will Not Prioritize (For Now)
+
+- Certifications or compliance programs  
+- Fixed universal taxonomies  
+- Enforcement-first runtime design  
+- Enterprise "standards before usage" mindset  
+
+PLD grows from reality, not imagined future requirements.
+
+---
+
+## 🤝 How to Influence This Roadmap
+
+PLD evolves based on:
+
+- real implementations  
+- real behavioral evidence  
+- real system constraints  
+- shared reasoning from the community  
+
+Ways to contribute:
+
+- share PoC experience  
+- submit traces or logs  
+- propose improvements  
+- open an RFC in Discussions  
+
+---
+
+## Summary
+
+> **PLD is a shared exploration — not a finished product.  
+It exists to help multi-turn AI systems behave predictably over time.  
+Its future will be shaped by the people who use it.**
 
 Maintainer: **Kiyoshi Sasano**
