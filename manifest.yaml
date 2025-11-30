@@ -645,7 +645,7 @@ components:
     purpose: Observation log for aligning taxonomy against real data.
 
   # ---------------------------------------------------------
-  # 7. Examples: LangGraph Integration
+  # 7. Examples
   # ---------------------------------------------------------
   - path: examples/langgraph_assistants/README.md
     component_id: langgraph_assistants_readme
