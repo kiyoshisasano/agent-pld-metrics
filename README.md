@@ -268,11 +268,22 @@ Feedback and field reports are welcome and help shape the next revision.
 
 ---
 
-
 ## 🌱 Community & Support
 
-📣 Discussions: https://github.com/kiyoshisasano/agent-pld-metrics/discussions  
-🐛 Issues & tracking: https://github.com/kiyoshisasano/agent-pld-metrics/issues
+PLD is still evolving — and much of its future will be shaped by real-world use,
+shared traces, and collaborative refinement.
+
+If you're experimenting with multi-turn agents, runtime stability, or evaluation frameworks,
+you’re welcome to participate:
+
+- 📣 Discussions: https://github.com/kiyoshisasano/agent-pld-metrics/discussions  
+  → Ideas, questions, proposals, traces, or implementation feedback  
+- 🐛 Issues: https://github.com/kiyoshisasano/agent-pld-metrics/issues  
+  → Bugs, runtime behavior mismatches, or feature requests  
+
+Whether you're here to **learn, test, refine, or build**, the community is open.
+
+> If PLD sparks something — share it. The model evolves through use.
 
 ---
 
