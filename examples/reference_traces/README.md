@@ -39,6 +39,15 @@ Each line is a JSON object with the following structure:
   "payload": { /* Event-specific data */ }
 }
 ```
+## Identifier Rules
+
+| Field      | Purpose                                                                   | Format           | Notes                                               |
+| ---------- | ------------------------------------------------------------------------- | ---------------- | --------------------------------------------------- |
+| `trace_id` | Groups all events belonging to a single interaction/session               | `^[0-9a-f]{16}$` | Compact, opaque, unique per session (not UUIDv4)    |
+| `span_id`  | Represents an individual sub-operation (agent reasoning, tool call, etc.) | `^[0-9a-f]{16}$` | Hierarchical or parallel spans under the same trace |
+
+> These identifiers are intentionally short for readability and scanning,
+> while remaining compatible with distributed tracing systems (e.g., OTel, LangGraph spans, AgentOps).
 
 ## **🧩 Components**
 
