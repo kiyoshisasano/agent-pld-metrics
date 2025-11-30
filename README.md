@@ -135,7 +135,7 @@ A micro-scale real-world example showing how PLD governs behavior:
 {"event_type": "continue_allowed", "phase": "continue", "pld_event": true,
  "payload": {"approved_call_id": "call_2a3b4c5d"}}
 ```
-> This demonstrates the full PLD loop:
+> This demonstrates the full PLD loop:  
 > **Agent attempt** → **Drift detected** → **Repair** → **Verification** → **Resume**
 
 ## ⚡ Quickstart — Run PLD in Under 10 Seconds
