@@ -27,15 +27,18 @@ This directory contains simulated log traces that demonstrate how the **Phase Lo
 
 Each line is a JSON object with the following structure:
 
+```json
 {
-"timestamp": "ISO8601 timestamp (microseconds)",
-"trace_id": "Request correlation ID (UUIDv4)",
-"span_id": "Individual operation ID (Hex)",
-"component": "system|user|agent|pld_runtime|tool|...",
-"event_type": "What happened",
-"phase": "Lifecycle stage",
-"payload": { /* Event-specific data */ }
+  "timestamp": "ISO8601 timestamp (microseconds)",
+  "trace_id": "Opaque session correlation ID (16-char hex)",
+  "span_id": "Operation-level ID within the same trace (16-char hex)",
+  "component": "system|user|agent|pld_runtime|tool|...",
+  "event_type": "What happened",
+  "phase": "PLD lifecycle phase",
+  "execution_stage": "Operational execution stage",
+  "payload": { /* Event-specific data */ }
 }
+```
 
 ## **🧩 Components**
 
@@ -49,61 +52,50 @@ Each line is a JSON object with the following structure:
 | monitor              | System health warnings (e.g., connection pool)                    |
 | debug                | Internal checkpoints                                              |
 
-## **🔄 Phases**
+## 🔄 PLD Runtime Phases vs Execution Stages
 
-* **init**: Session startup
-* **input**: User message received
-* **monitoring**: PLD analyzing agent behavior
-* **processing**: Agent reasoning
-* **execution**: Agent attempting tool calls
-* **drift**: Drift detection checkpoint
-* **repair**: Governance intervention
-* **reentry**: Post-repair verification
-* **external**: External service communication
-* **outcome**: Final results
-* **output**: Agent response to user
-* **complete**: Session summary
+PLD logs include two parallel classification layers:
 
-## **📖 Reading the Golden Semantic Repair Trace**
+---
 
-*File: golden_semantic_repair.jsonl*
+### **PLD Lifecycle Phases (High-Level Behavioral State)**  
+These indicate **where the agent is in the governance loop**:
 
-This trace demonstrates the core PLD value proposition:
+| Phase | Meaning |
+|-------|---------|
+| **drift** | A misalignment is detected or evaluated |
+| **repair** | A corrective intervention is initiated |
+| **reentry** | The system verifies alignment after repair |
+| **continue** | Normal execution (no intervention required or intervention completed) |
+| **outcome** | Final evaluation at the end of a turn or session |
 
-[1] User Request
-└── "Find me a cheap hotel with parking and WiFi"
+These phases represent the **PLD reasoning contract**, not the agent workflow.
 
-[2] Constraint Extraction (PLD)
-└── Identifies: location, wifi, parking (mandatory), price
+---
 
-[3] Agent Reasoning ⚠️
-└── "Let me relax constraints to get more results..."
+### **Execution Stages (Fine-Grained Runtime Context)**  
+These describe **what the system is doing operationally**:
 
-[4] Risk Assessment (PLD)
-└── Detects: "intentional constraint relaxation"
+| Stage | Description |
+|--------|------------|
+| `init` | Session or runtime initialization |
+| `input` | User message received or processed |
+| `monitoring` | PLD observing agent reasoning or tool attempts |
+| `processing` | LLM reasoning / chain-of-thought / planning |
+| `execution` | A tool call or equivalent external action is attempted |
+| `recovery` | Agent or runtime attempting correction after intervention |
+| `external` | HTTP/API/tool execution outside the model |
+| `output` | Model response being generated or finalized |
+| `complete` | Session ended, final summary emitted |
 
-[5] Tool Call Attempt ❌
-└── Agent calls API with wifi only (parking omitted!)
+---
 
-[6] Drift Check (PLD) 🚨
-└── VIOLATION: "parking" is mandatory but missing
+> **Lifecycle Phases = WHY behavior is happening**  
+> **Execution Stages = WHAT the system is currently doing**
 
-[7] Execution Blocked (PLD)
-└── Tool call intercepted before execution
+Both appear in the JSON traces and are designed to be complementary—not redundant.
 
-[8] Corrective Injection (PLD)
-└── Feedback injected into agent context
-
-[9] Agent Recovery ✓
-└── "I understand. Retrying with all constraints."
-
-[10] Verified Retry ✓
-└── All constraints present → PASS → Execute
-
-[11] Success
-└── User gets results matching ALL requirements
-
-**Key Insight:** Without PLD governance, the agent would have returned hotels without parking, violating the user's explicit request.
+---
 
 ## **🔍 Reading the Forensic Infra Noise Trace**
 
