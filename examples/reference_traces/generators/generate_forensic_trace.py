@@ -1,3 +1,11 @@
+# component_id: forensic_trace_generator
+# kind: code
+# area: examples
+# status: candidate
+# authority_level: 3
+# license: Apache-2.0
+# purpose: Generates high-fidelity simulated production logs with infrastructure noise and entropy for forensic validation.
+
 """
 Realistic Production Log Data Generator (Revised)
 
