@@ -101,6 +101,43 @@ Visual summary:
 
 ---
 
+### 🧪 Minimal Example: The Repair Loop in Action
+
+A micro-scale real-world example showing how PLD governs behavior:
+
+```jsonc
+// 1️⃣ Agent attempts API call — "parking" is missing
+{"event_type": "info", "log_class": "tool_call_attempt", "pld_event": false,
+ "payload": {"args": {"amenities": ["wifi"]}}}  // ⚠️ parking omitted
+
+// 2️⃣ PLD detects violation (drift)
+{"event_type": "drift_detected", "phase": "drift", "pld_event": true,
+ "payload": {"status": "VIOLATION", "missing_constraints": ["parking"]}}
+
+// 3️⃣ PLD blocks continuation (paired with continue_allowed later)
+{"event_type": "continue_blocked", "phase": "continue", "pld_event": true,
+ "payload": {"block_reason_code": "MANDATORY_CONSTRAINT_OMISSION"}}
+
+// 4️⃣ PLD triggers repair (soft repair pattern)
+{"event_type": "repair_triggered", "phase": "repair", "pld_event": true,
+ "payload": {"repair_code": "soft_repair_triggered",
+             "repair_context": {"missing_constraint": "parking"}}}
+
+// 5️⃣ Agent retries with fix
+{"event_type": "info", "log_class": "tool_call_attempt", "pld_event": false,
+ "payload": {"args": {"amenities": ["wifi", "parking"]}}}  // ✅ Fixed
+
+// 6️⃣ PLD evaluates and passes (reentry check)
+{"event_type": "evaluation_pass", "phase": "outcome", "pld_event": true,
+ "payload": {"check_kind": "drift_check", "status": "PASS"}}
+
+// 7️⃣ PLD allows continuation (completion of repair loop)
+{"event_type": "continue_allowed", "phase": "continue", "pld_event": true,
+ "payload": {"approved_call_id": "call_2a3b4c5d"}}
+```
+> This demonstrates the full PLD loop:
+> **Agent attempt** → **Drift detected** → **Repair** → **Verification** → **Resume**
+
 ## ⚡ Quickstart — Run PLD in Under 10 Seconds
 
 ```bash
