@@ -1,3 +1,13 @@
+<!--
+component_id: llm_patterns_reentry_alignment
+kind: doc
+area: quickstart_patterns
+status: draft
+authority_level: 3
+version: 2.0.0
+purpose: Conversational patterns guiding the transition from repair resolution back into standard execution after runtime-confirmed alignment.
+-->
+
 # Reentry Alignment Patterns (Reactive LLM Layer)
 
 > **Scope:** These patterns guide the LLM in returning to normal task execution **after a successful repair phase** and runtime confirmation.
