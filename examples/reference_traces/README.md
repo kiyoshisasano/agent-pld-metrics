@@ -187,6 +187,15 @@ These traces have been validated for:
 * [x] **Cryptographic plausibility:** Hashes and UUIDs follow standard formats
 * [x] **Latency realism:** All durations within expected ranges for their operation types
 
-## **📜 License**
+## 📜 License
 
-These example traces are provided under the same license as the parent repository.
+The traces in this directory follow the repository’s hybrid licensing model:
+
+- **Generated scripts and tooling** (under `generators/`) are licensed under **Apache-2.0**
+- **Example trace files** (`*.jsonl`) are licensed under **CC-BY-4.0**
+
+These files inherit the same attribution and usage rules defined in  
+`/LICENSES/LICENSES.md`.
+
+> Redistribution of the example traces requires attribution (per CC-BY-4.0).
+
