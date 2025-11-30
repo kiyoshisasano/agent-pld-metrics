@@ -710,6 +710,22 @@ components:
     status: candidate
     authority_level: 3
     purpose: Reference JSONL dataset demonstrating PLD behavior under infrastructure noise, timeouts, and partial failures.
+
+　- path: examples/reference_traces/golden_semantic_repair.jsonl
+    component_id: trace_golden_semantic
+    kind: metric
+    area: examples
+    status: candidate
+    authority_level: 3
+    purpose: Story-focused reference trace demonstrating drift detection and repair (Happy Path).
+
+  - path: examples/reference_traces/README.md
+    component_id: reference_traces_readme
+    kind: doc
+    area: examples
+    status: candidate
+    authority_level: 3
+    purpose: Documentation for simulated log traces and generation tools.
   
   # ---------------------------------------------------------
   # Package Initializers & Public API
