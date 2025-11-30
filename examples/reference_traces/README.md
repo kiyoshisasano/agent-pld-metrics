@@ -36,9 +36,11 @@ Each line is a JSON object with the following structure:
   "event_type": "What happened",
   "phase": "PLD lifecycle phase",
   "execution_stage": "Operational execution stage",
-  "payload": { /* Event-specific data */ }
+  "payload": { }
 }
 ```
+> `payload` contains event-specific fields (e.g., tool arguments, detection results, metrics).
+
 ## Identifier Rules
 
 | Field      | Purpose                                                                   | Format           | Notes                                               |
