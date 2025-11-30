@@ -566,6 +566,61 @@ components:
   　version: 2.0.0
   　purpose: "Exploratory framing for stabilization transitions following repair sequences."
 
+- path: quickstart/patterns/01_llm/foundations.md
+  component_id: llm_patterns_foundations
+  kind: doc
+  area: quickstart_patterns
+  status: draft
+  authority_level: 3
+  version: 2.0.0
+  purpose: Foundational conventions and boundaries for LLM pattern files in patterns/01_llm.
+
+- path: quickstart/patterns/01_llm/state_transition_examples.md
+  component_id: llm_patterns_state_transitions
+  kind: doc
+  area: quickstart_patterns
+  status: draft
+  authority_level: 3
+  version: 2.0.0
+  purpose: Illustrative examples of PLD lifecycle transitions for LLM-reactive behavior.
+
+- path: quickstart/patterns/01_llm/drift_response_patterns.md
+  component_id: llm_patterns_drift_responses
+  kind: doc
+  area: quickstart_patterns
+  status: draft
+  authority_level: 3
+  version: 2.0.0
+  purpose: Reactive conversational patterns for handling drift signals after runtime detection.
+
+- path: quickstart/patterns/01_llm/repair_templates.md
+  component_id: llm_patterns_repair_templates
+  kind: doc
+  area: quickstart_patterns
+  status: draft
+  authority_level: 3
+  version: 2.0.0
+  purpose: Templates for alignment repair responses once a repair signal (R1–R5) has been emitted.
+
+- path: quickstart/patterns/01_llm/reentry_alignment_patterns.md
+  component_id: llm_patterns_reentry_alignment
+  kind: doc
+  area: quickstart_patterns
+  status: draft
+  authority_level: 3
+  version: 2.0.0
+  purpose: Patterns for transitioning from repair back to normal task execution after reentry signals.
+
+- path: quickstart/patterns/01_llm/tool_response_rules.md
+  component_id: llm_patterns_tool_response_rules
+  kind: doc
+  area: quickstart_patterns
+  status: draft
+  authority_level: 3
+  version: 2.0.0
+  purpose: Reactive rules for how LLMs present and frame tool outputs provided by the runtime.
+
+
 
   # ---------------------------------------------------------
   # 5. Field Collaboration
