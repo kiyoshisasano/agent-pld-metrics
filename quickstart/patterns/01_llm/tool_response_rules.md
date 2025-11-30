@@ -1,3 +1,13 @@
+<!--
+component_id: llm_patterns_tool_response_rules
+kind: doc
+area: quickstart_patterns
+status: draft
+authority_level: 3
+version: 2.0.0
+purpose: Rules governing how LLMs respond to tool results already executed by the runtime, without inference or decision-making.
+-->
+
 # Tool Response Rules (Reactive LLM Layer)
 
 > **Scope:** These rules describe how the LLM should respond **after a tool has already been executed by the runtime** and the tool result has been passed into the prompt.
