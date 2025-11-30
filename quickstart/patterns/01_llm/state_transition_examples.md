@@ -1,254 +1,102 @@
----
-title: "State Transition Examples — PLD LLM Patterns"
-version: 2025.1
-maintainer: "Kiyoshi Sasano"
-status: stable
-category: "patterns/llm"
-tags:
-  - PLD
-  - drift repair cycle
-  - applied AI
-  - state machine
-  - runtime alignment
----
+# State Transition Examples (LLM Reactive Layer)
 
-# State Transition Examples  
-_Concrete patterns demonstrating drift → repair → reentry stabilization_
-
-This reference provides **canonical examples** of how an LLM should behave across the core PLD loop:
-
-```
-Normal → Drift → Detection → Repair (Soft/Hard) → Reentry → Continue → Complete
-```
-
-These examples are aligned with:
-
-- `pld_event.schema.json`  
-- `tool_response_rules.md`  
-- `drift_response_patterns.md`  
-
-Each scenario includes:
-
-- 🧩 **State Summary**  
-- 🧠 **Expected Model Behavior**  
-- 💬 **Example Turn Transcript**  
-- 📈 **Logged Event Snapshot**  
+> **Purpose:** This file provides high-level conversational examples of how responses may shift across lifecycle phases once a Runtime Signal has already been emitted. It does **not** determine when transitions occur — those decisions belong to the Level 5 Runtime.
 
 ---
 
-## 📍 Example 1 — Information Drift → Soft Repair → Reentry
+## 1. Overview
 
-### 🧩 Transition Map
-
-```
-NORMAL → DRIFT_DETECTED → SOFT_REPAIR → REENTRY_OBSERVED → CONTINUE
-```
-
-### 🧠 Behavior Intent
-
-- Detect misunderstanding early  
-- Ask for clarification **once**
-- Resume task once intent is confirmed  
-
-### 💬 Transcript
+These examples illustrate how an LLM may **react** to runtime signals as the system progresses through the PLD lifecycle:
 
 ```
-User: "Book a flight to Paris next Thursday."
-Assistant: "Paris has many museums. Would you like a recommendation?"
+Drift → Repair → Reentry → Continue → Outcome
 ```
 
-➡ drift detected (topic deviation)
-
-**Soft Repair Response:**
-
-```
-To make sure I understand correctly:
-
-✈ Do you want me to book a flight,
-or were you asking about travel tips?
-
-Please choose:
-
-1) Book a flight
-2) Just information
-```
-
-**Reentry after user confirms:**
-
-```
-Got it — booking a flight.
-
-Next question: morning or afternoon departure?
-```
-
-### 📈 Log Snapshot (compressed)
-
-```json
-{
-  "event_type": "drift_detected",
-  "pld": { "code": "D5_information", "phase": "drift" }
-}
-{
-  "event_type": "repair_triggered",
-  "pld": { "code": "R1_clarify", "phase": "repair" }
-}
-{
-  "event_type": "reentry_observed",
-  "pld": { "code": "RE1_intent", "phase": "reentry" }
-}
-```
+Transitions shown here are conceptual communication paths — not enforcement rules.
 
 ---
 
-## 🔧 Example 2 — Tool Failure → Retry → Visible Repair → Failover Avoided
+## 2. Transition: Drift → Repair
 
-### 🧩 Transition Map
+**Trigger:** Runtime emits a drift-related signal (example: `INSTRUCTION_DRIFT`, `CONTEXT_DRIFT`).
 
-```
-NORMAL → TOOL_ERROR → RETRY → VISIBLE_REPAIR → REENTRY → CONTINUE
-```
+| Aspect           | Example Behavior                                                                                                      |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Goal             | Acknowledge misalignment and move toward clarification or adjustment                                                  |
+| Tone             | Neutral, factual, non-defensive                                                                                       |
+| Example Response | "It looks like my previous response may not have aligned with your request. To help resolve this, could you clarify…" |
 
-### 💬 Transcript
-
-```
-Assistant: "Searching hotel availability…"
-→ TOOL_REQUEST(hotels.search)
-
-Tool: ❌ timeout
-```
-
-**Retry (silent):**
-
-```
-→ TOOL_RETRY
-```
-
-Tool fails again.
-
-**Visible Repair Response:**
-
-```
-The booking system didn't return results yet.
-Before I retry — want to narrow it down?
-
-1) Budget-friendly options  
-2) 4-star and above  
-3) Flexible dates  
-```
-
-→ User selects option.
-
-**Reentry:**
-
-```
-Thanks — retrying with updated filters.
-```
+**Notes:** No apology requirement. No assumption on cause. Avoid prescriptive action beyond clarification.
 
 ---
 
-## 🚨 Example 3 — Escalating Loop → Hard Repair → Failover
+## 3. Transition: Repair → Reentry
 
-### 🧩 Transition Map
+**Trigger:** Runtime reaches confidence that alignment has been restored.
 
-```
-NORMAL → DRIFT_LOOPS → MULTIPLE_SOFT_REPAIRS → HARD_REPAIR → FAILOVER_TRIGGERED
-```
+| Aspect           | Example Behavior                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Goal             | Confirm shared understanding and re-establish task direction                                                                          |
+| Tone             | Concise and stabilizing                                                                                                               |
+| Example Response | "Thanks — based on your clarification, here's the updated approach I'm following… Does this match what you expect before I continue?" |
 
-### Behavior Rule:
-
-> If ≥3 repair attempts fail to stabilize alignment AND user intent remains ambiguous → **failover**.
-
-### 💬 Transcript
-
-```
-User: "Help me set up a tax report."
-Assistant: "What region?"
-User: "US."
-Assistant: "Which year?"
-User: "Current."
-Assistant: "Okay— generating document..."
-→ Tool returns error: invalid schema
-Assistant retry… fails…
-Assistant: "Please confirm: personal or business tax?"
-User: "Same as I said."
-```
-
-➡ drift persists → escalate
-
-**Hard Repair Response:**
-
-```
-It looks like we’re stuck.
-
-I’ll restart with a clearer structure.
-```
-
-➡ If still unstable:
-
-```
-I cannot complete this flow confidently — handing off for review.
-```
+**Notes:** Encourage confirmation when meaningful, but avoid loops.
 
 ---
 
-## 🎯 Example 4 — Latency-Induced Drift → Pacing → Recovery
+## 4. Transition: Reentry → Continue
 
-### 🧩 Transition Map
+**Trigger:** System judges the session stable and normal task execution may resume.
 
-```
-NORMAL → LATENCY_SPIKE → PACING_REPAIR → CONTINUE
-```
+| Aspect           | Example Behavior                                                     |
+| ---------------- | -------------------------------------------------------------------- |
+| Goal             | Proceed with the task without signaling remediation                  |
+| Tone             | Normal operational tone                                              |
+| Example Response | "Great — continuing with the requested task. Here is the next step…" |
 
-### 💬 Transcript
-
-```
-User: "Summarize this document."
-(5 seconds silence)
-Assistant pacing:
-"Still working — almost done."
-```
-
-→ Finish normally.
-
-No clarification or escalation needed.
+**Notes:** Avoid referencing prior drift or repair unless context demands it.
 
 ---
 
-## 🎓 Example 5 — Successful Workflow Completion
+## 5. Transition: Continue → Outcome
 
-### 🧩 Transition Map
+**Trigger:** System determines completion or closure behavior (example: `SESSION_CLOSED`).
 
-```
-CONTINUE → COMPLETE
-```
-
-Example:
-
-```
-Your reservation is confirmed 🎉
-Would you like a receipt emailed?
-```
-
-→ Log event_type: `outcome`, `pld.phase: complete`
+| Aspect           | Example Behavior                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| Goal             | Provide final result, summary, or closure depending on task type                                   |
+| Tone             | Stable, explicit, non-ambiguous                                                                    |
+| Example Response | "This completes the requested work. If you'd like to continue or explore variations, let me know." |
 
 ---
 
-## Final Reference Checklist
+## 6. Observability-Only Signals (Non-Lifecycle)
 
-```
-☑ Every transition has a detectable reason
-☑ Repair type matches severity (soft → hard → failover)
-☑ Reentry always includes explicit stabilization phrase
-☑ Normal continuation never hides repair history
-☑ Logs emitted at every transition boundary
-```
+Some signals (example: `latency_spike`, `pause_detected`, `INFO_generic`) do not change lifecycle phase.
 
----
+In these cases, no structural transition occurs.
+The response pattern may instead focus on pacing, user reassurance, or silence depending on context.
 
-### Maintainer  
-**Kiyoshi Sasano — Applied Runtime Interaction Design**
+| Signal           | Expected Behavior                                                |
+| ---------------- | ---------------------------------------------------------------- |
+| `latency_spike`  | Optional acknowledgment of delay if user-facing                  |
+| `pause_detected` | Optional check-in if user-facing                                 |
+| `info`           | Purely internal trace; usually no conversational output required |
 
 ---
 
-> “A stable agent isn’t one that avoids drift —  
-> it’s one that **detects, repairs, and continues smoothly.**”
+## 7. Important Boundaries
+
+* Transitions shown here are **illustrative**, not enforceable
+* Runtime governs:
+
+  * Transition logic
+  * Signal emission
+  * Validation
+* LLM patterns govern:
+
+  * **How to phrase a response once a transition has been externally triggered**
+
+---
+
+**End of state_transition_examples.md**
