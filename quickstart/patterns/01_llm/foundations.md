@@ -1,167 +1,132 @@
----
-title: "PLD-Aware LLM Foundations"
-version: 2025.1
-status: stable
-category: "patterns/llm"
-maintainer: "Kiyoshi Sasano"
-tags:
-  - PLD
-  - LLM prompting
-  - drift prevention
-  - repair behavior
-  - reentry patterns
----
+# PLD LLM Pattern Foundations
 
-# 🧠 PLD-Aware LLM Foundations
-
-This document establishes the **core behavioral rules** for Large Language Models operating within the PLD (Phase Loop Dynamics) runtime.  
-It defines how the model should **detect**, **respond to**, and **stabilize** drift — prior to prompting templates and tactical repair patterns.
-
-The purpose is to ensure the model:
-
-- Produces **predictable and self-consistent output**
-- Handles **drift signals proactively**
-- Uses **structured behaviors for repair and reentry**
-- Maintains **alignment across multi-turn interactions**
-
-PLD is not a scripting system — it is a **behavioral contract** for stable interaction.
+> **Scope:** This document defines the foundational conventions for the `patterns/01_llm` directory. It clarifies purpose, boundaries, and allowed pattern structures.
+> **Status:** Draft — non-authoritative.
 
 ---
 
-## 📌 1 — The PLD Loop Model for LLMs
+## 1. Purpose
 
-A PLD-aware model operates under a **repeatable loop**:
+> **Reactive Scope Guarantee:** Patterns in this directory are **reactive only** — they respond to runtime signals but never determine when a signal should be emitted or which phase is active. Runtime decision‑making remains fully owned by Level 5 (SignalBridge + controller logic).
 
-| Phase | Model Responsibility | Triggered by |
-|-------|----------------------|-------------|
-| **Drift** | Detect misalignment, uncertainty, contradiction, or ambiguity | Missing context, uncertain grounding, inconsistent instructions |
-| **Repair** | Produce a correction request or factual adjustment | Detected drift or runtime-reported risk |
-| **Reentry** | Return to task flow with confidence, clarity, and constraints | Repair confirmed or context restored |
-| **Continue** | Execute the request normally | Alignment stable |
-| **Failover (optional)** | Escalate when the conversation cannot be stabilized | Repeated drift or policy/architecture failure |
+This directory provides **LLM-side interaction patterns** that assist runtime behavior aligned with PLD Runtime signals and phases.
 
-The loop operates **per turn**, never assuming stability from previous steps.
+Patterns here are:
 
----
+* **Usage guidance**, not schema or semantic expansion
+* **Consumer layer only**, above Level 4 runtime examples
+* **Non‑normative**, unless later promoted to spec
 
-## ⚠️ 2 — LLM Fallibility Assumptions
+These files help an LLM remain aligned when processing runtime signals such as:
 
-PLD assumes the model is:
-
-- **Probabilistic, not deterministic**
-- **Susceptible to hallucination**
-- **Capable of confident but incorrect responses**
-- **Influenced by conversational recency, tone, and structure**
-
-Because of this, the model must adopt **explicit operational safeguards:**
-
-| Risk Category | Mitigation |
-|--------------|------------|
-| Ambiguity → hallucination | Ask clarifying questions |
-| Missing context → incorrect assumption | Surface uncertainty explicitly |
-| Contradiction detection | Compare new info against working memory |
-| Latency perception → UX instability | Use pacing language when needed |
+* Drift detection
+* Repair phases
+* User clarification sequences
+* Reentry alignment
 
 ---
 
-## 🧩 3 — Behavioral Principles (Core Ruleset)
+## 2. Position Within the PLD Layer Model
 
-| Principle | Description | Example |
-|----------|-------------|---------|
-| **Stability over fluency** | Do not prioritize smooth text if correctness is uncertain | Prefer: “I need to clarify…” vs. guessing |
-| **Explicit uncertainty allowed** | Declaring unknowns reduces drift likelihood | “I am not sure yet — may I confirm…?” |
-| **Minimal correction surface area** | Repairs should adjust only what is wrong, not restart context | Don’t reset unless escalation is required |
-| **Ground responses in provided context** | Always prefer user or runtime context over general knowledge | Use “Based on what you provided…” |
+> **Consumer Definition:** "Consumer Layer" refers to the layer where application logic or LLM prompts make use of runtime signals and respond conversationally. The LLM consumes these patterns as guidance for output; the runtime consumes the resulting output. The Pattern Layer does **not** modify system logic, enforcement, or schema-level behavior.
 
----
-
-## 🧪 4 — Internal Reasoning Rules (Hidden Model Behaviors)
-
-These rules influence generation patterns but are not spoken unless prompted.
-
-### Processing Stack
-
-1. **Check for drift indicators**
-2. **Match drift type to response strategy**
-3. **Decide: continue, request clarification, or propose repair**
-4. **Evaluate confidence and constraints**
-5. **Generate structured output conforming to phase**
-
-### Internal checks:
-
-```
-IF (confidence < threshold) → shift to Repair pattern
-IF (context conflict detected) → choose clarification pattern
-IF (successful alignment detected) → transition to Reentry
-```
-
-Thresholds may later be controlled by runtime policy.
+| Layer                          | Description                                               | Allowed in Patterns       | Notes                                  |
+| ------------------------------ | --------------------------------------------------------- | ------------------------- | -------------------------------------- |
+| Level 1                        | Schema                                                    | ❌ No modifications        | Reference only                         |
+| Level 2                        | Semantic Rules + Event Matrix                             | ❌ No modifications        | Used for reasoning consistency         |
+| Level 3                        | Metrics + Runtime Contracts                               | ❌ No modifications        | Patterns may reference terminology     |
+| Level 4                        | Quickstart Runtime Examples                               | ✔ Reference + reuse style | Do not alter logic                     |
+| Level 5                        | Runtime Implementation (Signal Bridge, Structured Logger) | ✔ Reference context       | DO NOT override behavior               |
+| Pattern Layer (this directory) | Conversational guidance & response patterns               | ✔ Create and refine       | Must NOT create new taxonomy or phases |
 
 ---
 
-## 🛠 5 — Phase-Aligned Response Styles
+## 3. Constraints
 
-| Phase | Language Style | Length | Tone | Example Behavior |
-|------|----------------|--------|------|------------------|
-| **Drift** | Observational | Short | Neutral | “There may be missing details.” |
-| **Repair (Soft)** | Collaborative | Short–Medium | Supportive | “Before continuing, can you confirm…” |
-| **Repair (Hard)** | Directive | Short | Firm but polite | “We need to restart part of this request.” |
-| **Reentry** | Confident | Medium | Steady | “Thanks — here’s the corrected path forward.” |
-| **Continue** | Natural task flow | Normal | Consistent | Executes instructions |
+Patterns operate under the following rules of responsibility separation:
 
----
+* Runtime (Level 5) owns:
 
-## 🔄 6 — Repair + Reentry Validity Check (Simple Rule)
+  * Signal detection
+  * Phase determination
+  * Enforcement, validation, and lifecycle control
+* Pattern Layer owns:
 
-A repair is valid **only if**:
+  * How the LLM should phrase a response **once a signal has already been emitted**
 
-> ✔ It reduces uncertainty  
-> ✔ It does not introduce new drift  
-> ✔ It returns the conversation toward the objective  
+Patterns **must NOT**:
 
-If not, the model should produce another repair, not continue.
+* Invent or redefine lifecycle phases
+* Introduce new event types or taxonomy codes
+* Modify runtime validation or enforcement logic
+* Act as controllers, detectors, or system logic
 
----
+Patterns **may**:
 
-## 🧩 7 — Example: Same Turn, Three Correct Outputs
-
-| Phase | Model Output Example |
-|-------|----------------------|
-| Drift | “It seems we may be missing a required parameter.” |
-| Repair | “Before continuing, can you confirm which hotel category you want: budget, mid-range, or premium?” |
-| Reentry | “Great — using the premium category, here are the next available options.” |
-
-This pattern forms the **canonical stabilization sequence.**
+* Provide examples of aligned LLM responses per runtime signal
+* Suggest safe recovery dialogue structures
+* Support repair, drift handling, or reentry flow
+* Include reusable templates or phrasing guidelines
 
 ---
 
-## 🎯 8 — What This Enables
+## 4. Core Alignment Concepts
 
-Once the foundations are installed, templates in:
+Patterns rely on existing PLD primitives:
 
-```
-drift_response_patterns.md
-repair_templates.md
-reentry_stabilization.md
-evaluation_examples.md
-```
+| Concept      | Definition Summary                                   |
+| ------------ | ---------------------------------------------------- |
+| **Drift**    | Output deviates from expected intent or task framing |
+| **Repair**   | Guided correction process to restore alignment       |
+| **Reentry**  | Transition back to normal task execution             |
+| **Continue** | User/system confirm stability and proceed            |
 
-can operate systematically — not heuristically.
-
----
-
-## 📎 Appendix: Do / Avoid Table
-
-| Do | Avoid |
-|----|-------|
-| Clarify uncertainty | Guess when unsure |
-| Use structured phased reasoning | Blend repair + task execution |
-| Surface context dependencies | Assume hidden meaning |
-| Keep repairs minimal | Restart unnecessarily |
-| Maintain consistent tone | Apologize repeatedly or over-hedge |
+These concepts are applied conversationally — patterns must not assign new semantic behavior.
 
 ---
 
-### Maintainer
-**Kiyoshi Sasano — Applied LLM Interaction Systems, 2025**  
-License: CC-BY-4.0
+## 5. Pattern Structure Guidelines
+
+Patterns describe **conversational structures and phrasing guidance only.**
+They do **not** define schemas, machine‑readable response formats, or new structural output protocols.
+
+Each pattern document (drift, repair, reentry, tool usage) should follow this layout:
+
+1. **Context / When Applicable**
+2. **Goals**
+3. **Recommended LLM Response Formula**
+4. **Examples**
+5. **Notes / Cautions**
+
+This ensures patterns are consistent and comparable.
+
+---
+
+## 6. Versioning Philosophy
+
+* Major changes require confirmation that the update does **not conflict with Level 1–3 rules**.
+* Incremental additions are allowed if they do not introduce control behavior.
+
+Proposed maturity scale:
+
+| Status  | Meaning                                     |
+| ------- | ------------------------------------------- |
+| Draft   | Early exploration, may change               |
+| Stable  | Reviewed and compatible with runtime rules  |
+| Adopted | Used consistently in multiple pattern files |
+
+---
+
+## 7. Next Steps
+
+Once this foundation is confirmed, subsequent files will be created in this order:
+
+1. `state_transition_examples.md`
+2. `drift_response_patterns.md`
+3. `repair_templates.md`
+4. `reentry_alignment_patterns.md`
+5. `tool_response_rules.md`
+
+---
+
+**End of foundations.md
