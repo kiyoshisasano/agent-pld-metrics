@@ -1,196 +1,152 @@
----
-title: "Drift Response Patterns — PLD Prompting Edition"
-version: 2025.1
-maintainer: "Kiyoshi Sasano"
-status: stable
-category: "patterns/llm"
-tags:
-  - PLD
-  - prompting
-  - drift response
-  - alignment
-  - runtime behavior
----
+# Drift Response Patterns (Reactive LLM Layer)
 
-# Drift Response Patterns  
-_Phase-aware response strategies for LLM execution environments_
-
-> **Purpose:**  
-This document defines standard response scaffolds the model must follow when detecting conversational drift.  
-Patterns are aligned with the PLD runtime phases: **Drift → Repair → Reentry → Continue.**
-
-These templates ensure:
-- Predictable semantic behavior  
-- Minimal user friction  
-- Transparent repair signaling (when needed)  
-- Compatibility with downstream metrics and dashboards  
+> **Scope:** These patterns provide conversational guidance for responding **after a Drift-related Runtime Signal has been emitted.** They do not determine drift detection or trigger criteria.
+> **Status:** Draft — reactive use only.
 
 ---
 
-## 1. Behavioral Philosophy
+## 1. Purpose
 
-Drift responses follow three principles:
+Drift occurs when the model's previous response deviates from the expected task, intent, or domain context.
+Once the **Runtime has emitted a Drift signal**, the LLM should respond in a way that:
 
-| Principle | Meaning |
-|----------|---------|
-| 🧭 Maintain task trajectory | Avoid rewriting or restarting unless necessary |
-| 🎯 Be specific, not generic | Reference the user’s last valid goal or constraint |
-| 🪶 Soft first, hard only if needed | Escalate repair strength based on drift severity |
+* Helps restore alignment
+* Reduces uncertainty
+* Maintains a neutral and stabilizing tone
+* Avoids assumptions about the cause of drift
 
-> These response patterns are **behavioral contracts**, not UI copy.
-
----
-
-## 2. Drift Types and Response Strategies
-
-Each drift category requires a specific corrective action.
-
-| Drift Class | Code Prefix | Typical Cause | First Action |
-|------------|-------------|---------------|--------------|
-| Information Drift | `D1` | Incorrect assumption or fact | Clarify or correct softly |
-| Context Drift | `D2` | Lost variables, constraints, or memory | Restate grounded context |
-| Intent Drift | `D3` | Misinterpreted user goal | Mirror back intended objective |
-| Tool / Workflow Drift | `D4` | Execution mismatch or tool misuse | Acknowledge failure and adjust plan |
-| Latency-Induced Drift | `D5` | Response pacing or asynchronous mismatch | Confirm continuity |
+This file provides reusable phrasing frameworks, not logic or enforcement rules.
 
 ---
 
-## 3. Soft Repair Templates (Default)
+## 2. Applicable Runtime Signals
 
-Soft repairs are used when drift is correctable without restarting flow.
+These patterns apply only when Runtime has emitted one of the following:
 
-> **Goal:** Maintain continuity while correcting direction.
+| Runtime Signal      | Mapping Code       | Meaning (high-level)                                             |
+| ------------------- | ------------------ | ---------------------------------------------------------------- |
+| `INSTRUCTION_DRIFT` | `D1_instruction`   | Response diverged from explicit instructions                     |
+| `CONTEXT_DRIFT`     | `D2_context`       | Response does not reflect conversation context                   |
+| `REPEATED_PLAN`     | `D3_repeated_plan` | The model is looping or repeating a step rather than progressing |
+| `TOOL_ERROR`        | `D4_tool_error`    | Tool invocation response was misaligned or misinterpreted        |
 
-### Example Template
+*Patterns below do not replace Runtime logic or alter mapping behavior.*
+
+---
+
+## 3. Shared Response Principles
+
+| Principle           | Description                                                                |
+| ------------------- | -------------------------------------------------------------------------- |
+| Neutrality          | Avoid blame language ("my mistake") unless explicitly designed for UX tone |
+| Brevity             | Keep responses concise to avoid compounding drift                          |
+| Clarification-first | Prioritize request clarification before advancing content                  |
+| No hidden inference | Avoid guessing user intent unless explicitly requested                     |
+| Stability           | Maintain consistent formatting and structure                               |
+
+### Runtime Context & Fallback Handling
+
+If required context (such as user goal, constraints, or prior-turn reference) is missing from the prompt, the model must not guess or reconstruct it. Instead, the model should fall back to a minimal clarification response such as:
+
+> "Before continuing, I need a brief clarification to ensure accuracy: {single focused question}."
+
+### Runtime / LLM Responsibility Boundary
+
+- **Runtime owns:** drift detection, signal emission, severity classification, and any structured context injection.
+- **LLM owns:** applying the drift response pattern using only the context explicitly provided, without inference or hidden reconstruction.
+
+---
+
+## 4. Base Drift Response Template
 
 ```
-Thanks — I need to adjust based on your last instruction.
-
-✔ Intended goal: {restated_intent_or_constraint}   
-🔧 Updated step: {corrected_action_or_information}
-
-Continuing now…
+Acknowledgment (brief)
+↓
+Clarifying question or reorientation
+↓
+Optional next-step framing
 ```
 
-#### Variants
+Example phrasing:
 
-| Scenario | Template Variant |
-|---------|-----------------|
-| Misread constraint | `"Let me correct that — the right value is {X}, not {Y}."` |
-| Missing definition | `"Before I continue, I need one detail: {required_field}?"` |
-| Wrong workflow step | `"You're right — the next step should be {X}, not {Y}."` |
+> "It seems my last response may not have aligned with your request. To proceed accurately, could you confirm which of the following you intended: A) … B) … or C)…?"
 
 ---
 
-## 4. Hard Repair Templates (Escalation)
+## 5. Pattern Variants by Drift Type
 
-Use only when:  
-- 3+ soft repair attempts fail,  
-- conflicting constraints persist, or  
-- the task state becomes ambiguous.
+### 5.1 Instruction Drift Pattern
 
-### Standard Hard Repair Copy
+**When:** Response ignored part of a request or reframed the task incorrectly.
 
-```
-I need to pause and realign to ensure accuracy.
+**Response Example:**
 
-Before continuing, please confirm:
-
-📌 Goal: {restated_goal}
-📌 Key constraints: {bullet_list}
-
-Reply: **“Confirmed”** or update the details.
-```
-
-This ensures measurable stabilization for metrics such as **MRBF, VRL, and FR.**
+> "It appears my previous response missed part of your instruction. Before I continue, could you clarify which format you'd prefer: summary, full explanation, or step-by-step output?"
 
 ---
 
-## 5. Reentry Confirmation Patterns
+### 5.2 Context Drift Pattern
 
-After a repair, the model must **signal alignment** and transition back to execution.
+**When:** Response disconnects from the prior interaction or loses conversation thread.
 
-```
-Alignment confirmed — I’m continuing the task.
+**Response Example:**
 
-Next step: {next_action}
-```
-
-Optional micro-variants based on confidence:
-
-| Confidence Level | Pattern |
-|------------------|---------|
-| 1.0 | `"All set — continuing."` |
-| 0.6–0.9 | `"Proceeding, but let me know if this step needs adjustment."` |
-| <0.6 | `"I’m continuing, but before finalizing I'll reconfirm."` |
+> "To realign with the context, I want to confirm the current focus. Are we continuing from the last topic or switching to a new direction?"
 
 ---
 
-## 6. Optional UX Microcopy Layer
+### 5.3 Repeated Plan Pattern
 
-These short transitions reduce perceived interruption fatigue:
+**When:** The response repeats content already given or loops over previous steps.
 
-| Tone | Example |
-|------|--------|
-| Neutral | `"Let me adjust that."` |
-| Polite | `"Thanks — updating now."` |
-| Expert | `"Correction applied — continuing."` |
-| Safety-focused | `"To avoid an error, I’m confirming the constraint first."` |
+**Response Example:**
+
+> "It looks like I repeated earlier content. To continue effectively, which next step should I prioritize?"
 
 ---
 
-## 7. Implementation Notes
+### 5.4 Tool Error Pattern
 
-| Requirement | Reason |
-|------------|--------|
-| Copy must be consistent across models | Enables metric comparability |
-| Patterns must map to PLD `phase` values | Required for runtime instrumentation |
-| Visible repairs (`repair_visible`) must remain detectable | Required for VRL monitoring |
-| Minimal verbosity when stable | Avoid UI fatigue |
+**When:** The mismatch involves tool invocation, tool output interpretation, or tool execution context.
+
+**Response Example:**
+
+> "There may have been a mismatch between the tool result and your expected output. Would you like me to retry, adjust parameters, or provide an interpreted summary instead?"
 
 ---
 
-## 8. When NOT to Repair
+## 6. Optional Soft Recovery Add‑Ons
 
-Avoid a repair message when:
+These are **not required**, but may improve user clarity:
 
-- The correction is **internal and silent**, and
-- The update does not affect the user’s mental model.
+* Offer structured options (A / B / C)
+* Restate task parameters in bullet form
+* Briefly repeat user goal before action
+* Confirm whether the user expects automation or manual reasoning
 
 Example:
 
-```
-(No visible message — silent repair)
-```
-
-This logs as `repair_triggered`, not `repair_visible`.
+> "To confirm, your goal is: *{restated objective}*. Should I proceed with Option 1, Option 2, or revise the approach first?"
 
 ---
 
-## 9. Summary
+## 7. Anti‑Patterns
 
-| Phase | Required Behavior |
-|-------|------------------|
-| Drift Detected | Acknowledge + contextual alignment |
-| Soft Repair | Correct gently while continuing workflow |
-| Hard Repair (Escalation) | Structured confirmation request |
-| Reentry | Signal alignment + resume execution |
-| Continue | Operate silently unless new drift emerges |
+🚫 The following should be avoided as they may reinforce drift:
 
----
-
-### Maintainer
-**Kiyoshi Sasano — Applied Runtime Systems**
+* Excessive apology loops
+* Introducing new task scopes unprompted
+* Speculating on intent without user confirmation
+* Continuing execution without checking alignment after drift
 
 ---
 
-> _“Repair is not interruption —  
-it is alignment maintenance.”_
+## 8. Boundary Reminder
 
+* Drift patterns are **reactive templates only**
+* Runtime owns detection, emission, and lifecycle management
+* The LLM should only apply these patterns **after signal receipt**, not based on self-judgment
 
 ---
 
-Maintainer: **Kiyoshi Sasano**  
-
-Edition: **PLD Applied 2025**
-
+**End of drift_response_patterns.md**
