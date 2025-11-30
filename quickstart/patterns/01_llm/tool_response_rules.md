@@ -1,244 +1,166 @@
----
-title: "Tool Response Rules — PLD Runtime Edition"
-version: 2025.1
-maintainer: "Kiyoshi Sasano"
-status: stable
-category: "patterns/llm"
-tags:
-  - PLD
-  - tool use
-  - orchestration
-  - repair
-  - RAG
----
+# Tool Response Rules (Reactive LLM Layer)
 
-# Tool Response Rules  
-_Stable execution when interacting with external systems_
-
-Tool interaction is one of the **highest drift-trigger sources** in PLD environments.  
-Execution failures, retrieval ambiguity, and latency can destabilize alignment unless responses follow a controlled structure.
-
-This document defines **canonical response patterns** for tools and LLMs during:
-
-- tool request generation  
-- tool result interpretation  
-- tool failure handling  
-- retry and escalation paths  
-- reentry after tool-based repair  
+> **Scope:** These rules describe how the LLM should respond **after a tool has already been executed by the runtime** and the tool result has been passed into the prompt.
+> These rules do **not** determine when tools are invoked, which tool is selected, or whether a retry occurs.
+>
+> **Status:** Draft — reactive only.
 
 ---
 
-## 1. When Tools Should Be Used
+## 1. Purpose
 
-A model must avoid speculative or unnecessary tool calls.
+Tool response rules ensure that tool outputs are conveyed clearly, safely, and consistently to the user without introducing inference, scope expansion, or unintended assumptions.
 
-**Use tools only if ALL conditions are true:**
+These rules exist to:
 
-```
-☑ The user intent requires external state, execution, or retrieval
-☑ The system lacks sufficient information in context
-☑ A relevant tool with compatible capability exists
-```
+* Present tool results in a readable format
+* Confirm understanding before continuing
+* Avoid misinterpretation or hallucinated explanation of the tool's output
+* Maintain alignment with the user's goal
 
-If these conditions are not met, respond directly — not with a tool.
+These guidelines only apply **after** the runtime has completed tool execution and delivered the results.
 
 ---
 
-## 2. Tool Request Format
+## 2. Applicable Runtime Signals (Tool Result Family)
 
-Tool requests must:
+These patterns activate only after tool execution and receipt of a tool result.
 
-| Requirement | Example |
-|------------|---------|
-| Declare purpose | `"Searching customer record"` |
-| Specify parameters explicitly | `"query: 'electric SUV under $60k'"` |
-| Avoid natural-language ambiguity | `"priority: eco_score > 85"` |
+| Runtime SignalKind           | Canonical Code          | Meaning (LLM view)                                                              |
+| ---------------------------- | ----------------------- | ------------------------------------------------------------------------------- |
+| `TOOL_RESULT`                | `T1_result_available`   | Tool output is available and ready for interpretation                           |
+| `USER_CONFIRMATION_REQUIRED` | `T2_needs_confirmation` | Runtime requires the user to approve or decide next action based on tool output |
 
-#### Canonical request template
+> The Pattern Layer does **not** decide when these signals occur.
 
-```
-→ TOOL_REQUEST
-purpose: {goal}
-tool: {tool_name}
-parameters: {structured_parameters}
-```
+---
+
+## 3. Shared Tool Response Principles
+
+| Principle                 | Description                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------- |
+| No hidden inference       | Do **not** explain or reinterpret results unless context in the prompt explicitly allows it |
+| Preserve tool authority   | The tool’s output is the source of truth and must not be altered                            |
+| Minimal framing           | Add only enough structure for readability and alignment — no extra meaning                  |
+| Confirm before continuing | Where appropriate, validate user intent before proceeding                                   |
+| Maintain scope boundaries | Do not introduce new tasks, goals, formats, or assumptions                                  |
+
+---
+
+### Runtime Context & Fallback Handling
+
+If tool output is provided **without supporting context** (goal, requested operation, or input reference), the LLM must:
+
+* Not infer missing meaning
+* Avoid speculative interpretation
+* Respond with a clarification request instead, such as:
+
+> "I have the tool results, but I need one detail to continue accurately: {focused clarification question}."
+
+### Runtime / LLM Responsibility Boundary
+
+* **Runtime owns:** tool selection, execution, retry policy, tone metadata, and structured result payload.
+* **LLM owns:** presenting the result conversationally, without inferring missing context or altering meaning.
+
+---
+
+## 4. Response Modes
+
+The LLM may use one of the following conversational framing modes, depending on the prompt and signal.
+
+### 4.1 Readback Mode (Default)
+
+> "Here is the tool result:
+> {raw or formatted result}
+> Should I continue, summarize, or apply the result?"
+
+Used when the runtime has not specified the next action.
+
+---
+
+### 4.2 Structured Summary Mode
+
+> "The tool returned the following key points:
+>
+> * {item}
+> * {item}
+> * {item}
+>
+> Let me know if you'd like a rewrite, deeper explanation, or next step."
+
+Used when summarization is requested in the prompt.
+
+---
+
+### 4.3 Interpretation Mode (Conditional)
+
+> "Based on your request, here's the tool output interpreted in context:
+> {interpretation}
+>
+> Would you like to proceed with this direction?"
+
+Only used when the runtime explicitly authorizes interpretation.
+
+---
+
+### 4.4 Confirmation-Required Mode
+
+> "Before continuing, I need your confirmation:
+>
+> * Next step A: {description}
+> * Next step B: {description}
+> * Next step C: {description}
+>
+> Which option would you like to proceed with?"
+
+The model should **not invent new options.**
+
+---
+
+## 5. Error-Aware Variants
+
+These modes may apply when paired with `D4_tool_error` or repair signals.
+
+Example neutral phrasing:
+
+> "It looks like the tool result didn't match the expected format. Should I: revise inputs, retry, or ask for clarification?"
+
+Error handling must remain reactive — the Runtime owns retry or failover logic.
+
+---
+
+## 6. Tone and Formatting Variants
+
+* Neutral tone is the default.
+* UX-optimized variants may use lighter acknowledgment if policy allows.
 
 Example:
 
-```
-→ TOOL_REQUEST
-purpose: retrieve updated booking availability
-tool: hotels.search
-parameters:
-  city: "Osaka"
-  check_in: "2025-03-18"
-  guests: 2
-```
+> "Thanks — here's what the tool returned."
+
+Tone selection is runtime-controlled, **not inferred**.
 
 ---
 
-## 3. Response Classification Logic
+## 7. Anti-Patterns
 
-When a tool returns data, classify before generating a user-facing message:
+The LLM must avoid:
 
-| Tool Return Condition | Class |
-|----------------------|--------|
-| Data clearly fulfills request | ✔ Stable |
-| Data incomplete or conflicting | ⚠ Ambiguous |
-| Tool error, timeout, or no result | ❌ Failure |
-
-This classification determines whether **repair**, **reentry**, or **continue** is appropriate.
+* Explaining tool results not understood from the prompt
+* Suggesting actions the runtime did not authorize
+* Rewriting or "fixing" tool output
+* Inventing missing context, options, or interpretations
+* Treating tool output as incorrect unless signaled
 
 ---
 
-## 4. Handling Tool Output
+## 8. Boundary Reminder
 
-### ✔ Case A — Stable Result
-
-```
-Alignment confirmed — continuing with results.
-
-📍 {summary}
-
-(If needed) Would you like option A or B?
-```
-
-No apology or uncertainty is needed — treat it as normal execution.
+* These rules apply **only after** tool output is provided.
+* The Pattern Layer does **not** determine tool usage strategy, retry policies, or execution control.
+* No schema, taxonomy, or lifecycle modification is allowed.
 
 ---
 
-### ⚠ Case B — Ambiguous Result
+**End of tool_response_rules.md**
 
-If results are partial, conflicting, or require context clarification:
-
-```
-There's more than one possible match.
-
-Before continuing — which fits your request?
-
-1) {option A}
-2) {option B}
-```
-
-This counts as a **soft repair + clarification**, not normal continuation.
-
----
-
-### ❌ Case C — Tool Failure (Retryable)
-
-```
-The tool didn’t return valid results.
-
-Attempting recovery…
-```
-
-> This triggers a repair action.
-
-If retry limit is reached:
-
-```
-Tool retry limit reached — switching strategy.
-```
-
-This may escalate to **fallback mode** or **failover_triggered** event.
-
----
-
-## 5. Retry Rules (R2 Soft Repair → R4 Hard Reset)
-
-```
-Attempts:     1 → Retry quietly  
-Attempts:     2 → Visible clarification  
-Attempts: ≥3  → Escalate (hard repair or failover)
-```
-
-These attempts must be tracked per **session + workflow node**, not globally.
-
----
-
-## 6. Latency-Driven Repair Rules
-
-A delayed tool response may trigger drift even if logically correct.
-
-| Latency Condition | Required Response |
-|------------------|------------------|
-| < 1500ms | silent, normal |
-| 1500–4000ms | pacing message allowed |
-| >4000ms + drift detected | trigger pacing repair |
-
-Example pacing:
-
-```
-One moment — processing…
-```
-
----
-
-## 7. Tool Results → Reentry
-
-Once recovery succeeds:
-
-```
-Alignment restored — applying tool results.
-
-📌 {short summary}
-
-Continuing.
-```
-
-This message must be logged as **reentry_observed**.
-
----
-
-## 8. Anti-Patterns (Avoid)
-
-| Anti-pattern | Why it causes drift |
-|--------------|---------------------|
-| Asking tool results as open-ended NLQ | Tool hallucinations or ambiguity |
-| Streaming tool results before classification | User confusion |
-| Repeating tool use without confirmation | Invisible drift loops |
-| Apologizing repeatedly | Perceived instability + user frustration |
-
----
-
-## 9. Minimal Machine-Detectable Output Signatures
-
-The LLM output must include deterministic markers for orchestration parsing:
-
-| Action Type | Required Token |
-|-------------|----------------|
-| request | `→ TOOL_REQUEST` |
-| result applied | `→ TOOL_APPLIED` |
-| retry | `→ TOOL_RETRY` |
-| failover | `→ TOOL_ABORT` |
-| reentry | `→ REENTRY` |
-
-Example:
-
-```
-→ TOOL_APPLIED
-Result: 12 available matches
-Continuing.
-```
-
----
-
-## 10. Final Checklist
-
-```
-☑ Tool request justified and explicit
-☑ Natural-language ambiguity avoided
-☑ Tool result classified before response
-☑ Soft/hard repair logic enforced
-☑ Reentry phrase emitted when returning to normal operation
-```
-
----
-
-### Maintainer  
-**Kiyoshi Sasano — Applied Tooling and Runtime Behavior Systems**
-
----
-
-> “Tool orchestration is not execution —  
-> it is alignment, verification, and recovery flow.”
