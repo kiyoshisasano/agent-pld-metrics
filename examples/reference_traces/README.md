@@ -152,5 +152,4 @@ These traces have been validated for:
 
 ## **📜 License**
 
-CC-BY-4.0
-
+These example traces are provided under the same license as the parent repository.
