@@ -1,3 +1,13 @@
+<!--
+component_id: llm_patterns_foundations
+kind: doc
+area: quickstart_patterns
+status: draft
+authority_level: 3
+version: 2.0.0
+purpose: Foundational conventions and layer boundaries for all pattern files in the LLM Pattern family.
+-->
+
 # PLD LLM Pattern Foundations
 
 > **Scope:** This document defines the foundational conventions for the `patterns/01_llm` directory. It clarifies purpose, boundaries, and allowed pattern structures.
@@ -159,4 +169,5 @@ Once this foundation is confirmed, subsequent files will be created in this orde
 ---
 
 **End of foundations.md
+
 
