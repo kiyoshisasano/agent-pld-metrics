@@ -1,3 +1,13 @@
+<!--
+component_id: llm_patterns_state_transitions
+kind: doc
+area: quickstart_patterns
+status: draft
+authority_level: 3
+version: 2.0.0
+purpose: Illustrative examples defining expected lifecycle transitions between drift, repair, reentry, and normal execution.
+-->
+
 # State Transition Examples (LLM Reactive Layer)
 
 > **Purpose:** This file provides high-level conversational examples of how responses may shift across lifecycle phases once a Runtime Signal has already been emitted. It does **not** determine when transitions occur — those decisions belong to the Level 5 Runtime.
