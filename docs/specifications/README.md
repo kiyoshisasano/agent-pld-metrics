@@ -1,6 +1,6 @@
 # PLD Specifications (Levels 1–3)
 
-Status: Working Draft / Candidate Specification
+Status: Working Draft (Candidate Normative Specification)  
 
 This document represents the current understanding of PLD normative specifications.
 While certain terminology and rules are expressed normatively (MUST/SHOULD/MAY),
@@ -32,6 +32,7 @@ Files in this hierarchy represent the authoritative "Constitution" of the PLD fr
 | **Level 3** | **Standards** | Operational metrics definitions and taxonomy. | ⚠️ Versioned |
 
 > For operational guides, cookbooks, or implementation patterns, see `../metrics/` or `../patterns/`.
+
 
 
 
