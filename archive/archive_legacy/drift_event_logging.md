@@ -1,14 +1,3 @@
-<!--
-path: quickstart/metrics/guides/drift_event_logging.md
-component_id: drift_event_logging_guide
-kind: doc
-area: metrics
-status: draft
-authority_level: 2
-version: 2.0.0
-license: Apache-2.0
-purpose: Explanatory guide on how drift, repair, and continuation events appear in PLD logs.
--->
 
 
 # Drift Event Logging — Quickstart Guide
