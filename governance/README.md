@@ -50,9 +50,9 @@ local prototype → shared PoC → field deployment
 
 | File | Purpose |
 |------|---------|
-| `pld_minimal_collaboration_protocol.md` | Lightweight shared PoC protocol |
-| `pld_onboarding_and_diagnostics.md` | First-week diagnostics and alignment |
-| `pld_trace_examples.md` | Annotated examples to align interpretation |
+| `poc_protocol.md` | Lightweight shared PoC protocol |
+| `onboarding.md` | First-week diagnostics and alignment |
+| `examples/trace_examples.md` | Annotated examples to align interpretation |
 
 ---
 
@@ -67,10 +67,10 @@ local prototype → shared PoC → field deployment
 
 ---
 
-## `field/pld_minimal_collaboration_protocol.md`
+## `governance/poc_protocol.md`
 
 ```markdown
-# PLD Minimal Collaboration Protocol
+# poc_protocol
 A practical, lightweight protocol for joint evaluation and PoC testing.
 
 It answers:
@@ -194,6 +194,7 @@ Minimal protocol → minimal friction → high alignment.
 ---
 
 Maintainer: **Kiyoshi Sasano**  
+
 
 
 
