@@ -1,14 +1,3 @@
-<!--
-path: quickstart/metrics/reports/pld_events_demo_report.md
-component_id: pld_events_demo_report
-kind: doc
-area: metrics
-status: draft
-authority_level: 2
-version: 2.0.0
-license: Apache-2.0
-purpose: Narrative report interpreting the demo PLD dataset from a metrics and behavior perspective.
--->
 
 # PLD Event Report — Demo Dataset
 
