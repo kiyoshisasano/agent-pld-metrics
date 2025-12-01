@@ -386,7 +386,7 @@ See: `CONTRIBUTING.md`
 | Runtime & code | Apache 2.0 |
 | Documentation & methodology | CC BY‑4.0 |
 
-Full details: `LICENSES/LICENSES.md` 
+Full details: `LICENSE.md` 
 
 ---
 
