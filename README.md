@@ -1,6 +1,9 @@
 # Phase Loop Dynamics™ (PLD)
 
-![License: Apache-2.0 | CC-BY-4.0](https://img.shields.io/badge/license-Apache%202.0%20%7C%20CC--BY--4.0-blue)
+Phase Loop Dynamics™ (PLD)
+
+[![License: Apache-2.0 | CC-BY-4.0](https://img.shields.io/badge/license-Apache%202.0%20%7C%20CC--BY--4.0-blue)](LICENSE)
+[![SPDX-License](https://img.shields.io/badge/SPDX-Apache--2.0_AND_CC--BY--4.0-blue)](LICENSE)
 ![Status: Active](https://img.shields.io/badge/status-active-brightgreen)
 
 *A Runtime Phase Model for Stable Multi-Turn LLM Systems*
