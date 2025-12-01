@@ -1,10 +1,15 @@
-# PLD v2 Traceability Map
+# traceability_matrix.md
 
 **Document Role:** Alignment and validation reference across Metrics, Taxonomy, and Event Matrix.
 **Authority Level:** Level 3 — Derived Specification (subordinate to Level 1 + Level 2).
 **Status:** Normative for metrics and observability.
 
 ---
+
+🔒 Canonical Alignment Document  
+This file exists to ensure PLD remains internally consistent across versions.  
+Modify only when Level-1 or Level-2 foundations change.
+
 
 ## 1. Purpose
 
