@@ -1,5 +1,5 @@
 <!--
-path: quickstart/operator_primitives/02_soft_repair.md
+path: docs/operator_primitives/02_soft_repair.md
 component_id: soft_repair_operator
 kind: doc
 area: runtime_operators
