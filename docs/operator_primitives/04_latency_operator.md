@@ -1,5 +1,5 @@
 <!--
-path: quickstart/operator_primitives/04_latency_operator.md
+path: docs/operator_primitives/04_latency_operator.md
 component_id: latency_operator
 kind: doc
 area: observability
