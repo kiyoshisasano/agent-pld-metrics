@@ -517,13 +517,13 @@ class RealisticLogGenerator:
         """Generate complete log sequence"""
         
         constraints = [
-            {"key": "location", "val": "cambridge_center", "src_idx": [0, 12]},
+            {"key": "location", "val": "demo_city_center", "src_idx": [0, 12]},
             {"key": "wifi", "req": True, "src_idx": [24, 30]},
             {"key": "parking", "req": True, "src_idx": [15, 20]},
             {"key": "price", "val": "cheap", "src_idx": [35, 37]}
         ]
         
-        tool_args = {"location": "cambridge_center", "amenities": ["wifi"]}
+        tool_args = {"location": "demo_city_center", "amenities": ["wifi"]}
         
         # 1. Session initialization
         self.generate_session_init()
@@ -592,7 +592,7 @@ class RealisticLogGenerator:
 # =============================================================================
 
 def main():
-    user_content = "Find me a cheap hotel in central Cambridge with parking and free WiFi"
+    user_content = "Find me a cheap hotel in the city center with parking and free WiFi"
     
     generator = RealisticLogGenerator()
     logs = generator.generate(user_content)
