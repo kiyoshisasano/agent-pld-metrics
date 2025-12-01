@@ -30,8 +30,10 @@ Instead, this pack demonstrates how a developer can:
 
 ## 🚀 TL;DR — Run in 30 Seconds
 
+```sh
 cd quickstart/metrics_quickcheck  
 python verify_metrics_local.py  
+```
 
 This prints a small summary of drift and repair patterns using the demo dataset.
 
@@ -375,4 +377,5 @@ If you extend this module, consider:
 ---
 
 ✔ Metrics quickcheck pack ready for exploration.
+
 
