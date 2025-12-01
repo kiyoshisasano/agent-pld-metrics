@@ -1,5 +1,5 @@
 ---
-title: "PLD Event Matrix Specification"
+title: "event_matrix_human.md"
 version: "2.0"
 status: "Candidate"
 authority: "Hard Invariant (Semantic Layer)"
