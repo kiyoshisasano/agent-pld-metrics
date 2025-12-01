@@ -34,11 +34,11 @@ Contributions and field reports are welcome.
 
 ## 🔗 Quick Links
 
-- 📄 Core Specifications → `/docs/`
+- 📄 Core Specifications → `/docs/specifications/`
 - ⚙️ Runtime Implementation → `/pld_runtime/`
 - 🚀 Quickstart → `/quickstart/`
 - 🎨 Adoption & Communication → `/pitch/`
-- 📊 Metrics & Observability → `/analytics/`
+- 🤝 Governance & Roles → `/governance/`
 
 > 💡 **PLD is not a framework — it is a behavioral stabilizer for multi-turn AI systems.**
 
@@ -164,21 +164,21 @@ Next steps → `quickstart/README_quickstart.md`
 
 | Level | Meaning | Folder |
 |-------|---------|--------|
-| **1 — Structure** | Canonical schema | `/docs/schemas/` |
-| **2 — Semantics** | Event meaning, prefix-phase rules | `/docs/PLD_Event_Semantic_Spec_v2.0.md` |
-| **3 — Operational Standards** | Metrics & taxonomy | `/docs/taxonomy/`, `/docs/metrics/` |
-| **4 — Consumer Layer** | Examples & adoption | `/quickstart/` |
-| **5 — Runtime Implementation** | Optional runtime engine | `/pld_runtime/` |
+| **1 — Structure** | Canonical schema (Hard Invariants) | `/docs/specifications/level_1_schema/` |
+| **2 — Semantics** | Event meaning & matrix rules | `/docs/specifications/level_2_semantics/` |
+| **3 — Standards** | Operational metrics & taxonomy | `/docs/specifications/level_3_standards/` |
+| **4 — Implementation** | Runtime design & Patterns | `/docs/architecture/` & `/docs/patterns/` |
+| **5 — Runtime** | Reference Python Engine | `/pld_runtime/` |
 
 ---
 
 ## 📂 Repository Guide
 ```
-quickstart/     → start here
-pld_runtime/    → runtime implementation
-docs/           → specifications & conceptual core
-analytics/      → datasets, evaluation, metrics
-field/          → adoption and operational patterns
+quickstart/     → start here(code & demos)
+pld_runtime/    → runtime reference implementation
+docs/           → specifications (L1-3) & architecture (L4-5)
+analytics/      → evaluation datasets & reports
+governance/          → collaboration, roles, and PoC protocols
 ```
 Full structure → `SUMMARY.md`
 
@@ -194,7 +194,7 @@ Once structured events flow, the system becomes measurable:
 - **MRBF — Mean Repairs Before Failover**
 - **FR — Failover Rate**
 
-Metrics cookbook → `docs/07_pld_operational_metrics_cookbook.md`
+Metrics cookbook → `docs/metrics/cookbook.md`
 
 ---
 
