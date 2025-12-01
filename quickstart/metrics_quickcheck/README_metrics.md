@@ -5,7 +5,7 @@ kind: doc
 area: metrics
 status: draft
 authority_level: 2
-version: 0.2.0
+version: 2.0.0
 license: Apache-2.0
 purpose: Entry-point README for the metrics_quickcheck module, combining dataset, guide, and report into a single quickstart.
 -->
@@ -25,6 +25,41 @@ Instead, this pack demonstrates how a developer can:
 - Understand drift / repair / recovery patterns in context  
 - Use a simple dashboard configuration to visualize behavior  
 
+
+---
+
+## 🚀 TL;DR — Run in 30 Seconds
+
+cd quickstart/metrics_quickcheck  
+python verify_metrics_local.py  
+
+This prints a small summary of drift and repair patterns using the demo dataset.
+
+If you'd like deeper interpretation, continue reading — the rest of this document explains how to understand the observed behavior.
+
+---
+
+### Quick Session Pattern Reference
+
+| Session ID | Outcome | Repair Count | PRDR Present? | Pattern Classification |
+|-----------|---------|--------------|---------------|------------------------|
+| demo-ok-01 | ✅ Success | 1 | No | Healthy recovery |
+| demo-fail-01 | ❌ Failed | 3+ | No | Progressive collapse |
+| demo-metrics-01 | ⚠️ Mixed | 1 | Yes | Recurrence after repair |
+
+This table is a quick visual orientation reference — the narrative sections below provide additional details and interpretation.
+
+---
+
+### ⛔ Scope Boundary
+
+This pack is **not**:
+
+- A metrics standard  
+- A benchmarking suite  
+- A runtime validation contract  
+
+It is a **learning scaffold** for experimenting with drift, repair, reentry, and recurrence behaviors using real PLD-style event logs.
 
 ---
 
@@ -340,3 +375,4 @@ If you extend this module, consider:
 ---
 
 ✔ Metrics quickcheck pack ready for exploration.
+
