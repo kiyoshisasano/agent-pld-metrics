@@ -31,7 +31,7 @@ Use `governance/` when:
 Typically, this becomes relevant **after**:
 
 1. You have a local PLD prototype (`quickstart/`)
-2. You are logging PLD events (`quickstart/metrics/`)
+2. You are logging PLD events (`quickstart/metrics_quickcheck/`)
 3. (Optional) You’ve explored reference examples  
    → `quickstart/patterns/04_integration_recipes/`
 4. You have several real interaction traces (`analytics/`-style logs)
@@ -194,6 +194,7 @@ Minimal protocol → minimal friction → high alignment.
 ---
 
 Maintainer: **Kiyoshi Sasano**  
+
 
 
 
