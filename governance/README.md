@@ -8,7 +8,7 @@ While the rest of the repository focuses on:
 - implementing operators and patterns  
 - logging and evaluating behavior  
 
-`field/` focuses on:
+`governance/` focuses on:
 
 - how to **run a shared PoC**
 - how to **align interpretation of drift / repair / reentry**
@@ -194,6 +194,7 @@ Minimal protocol → minimal friction → high alignment.
 ---
 
 Maintainer: **Kiyoshi Sasano**  
+
 
 
 
