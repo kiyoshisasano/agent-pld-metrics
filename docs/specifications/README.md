@@ -13,7 +13,9 @@ These specifications are governed under the PLD documentation hierarchy and MUST
 This directory contains the **Normative Specifications** of Phase Loop Dynamics (PLD).  
 Files in this hierarchy represent the authoritative "Constitution" of the PLD framework.
 
-## 🏛️ Structure
+---
+
+## 🏛️ Specification Structure
 
 | Level | Layer | Description | Mutable? |
 |-------|-------|-------------|----------|
@@ -21,6 +23,6 @@ Files in this hierarchy represent the authoritative "Constitution" of the PLD fr
 | **Level 2** | **Semantics** | Meaning of events, phases, and matrix rules. | 🔒 Review Req |
 | **Level 3** | **Standards** | Operational metrics definitions and taxonomy. | ⚠️ Versioned |
 
----
+> For operational guides, cookbooks, or implementation patterns, see `../metrics/` or `../patterns/`.
 
-> **Note:** For operational guides, cookbooks, or implementation patterns, see `../metrics/` or `../patterns/`.
+
