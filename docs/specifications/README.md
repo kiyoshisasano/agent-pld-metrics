@@ -1,5 +1,13 @@
 # PLD Specifications (Levels 1–3)
 
+Status: Working Draft / Candidate Specification
+
+This document represents the current understanding of PLD normative specifications.
+While certain terminology and rules are expressed normatively (MUST/SHOULD/MAY),
+the overall framework remains under evaluation and may evolve based on governance review
+and implementation feedback.
+
+
 > **Change Control Guidelines**
 
 These specifications are governed under the PLD documentation hierarchy and MUST follow the rules below:
@@ -24,5 +32,6 @@ Files in this hierarchy represent the authoritative "Constitution" of the PLD fr
 | **Level 3** | **Standards** | Operational metrics definitions and taxonomy. | ⚠️ Versioned |
 
 > For operational guides, cookbooks, or implementation patterns, see `../metrics/` or `../patterns/`.
+
 
 
