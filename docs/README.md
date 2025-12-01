@@ -90,9 +90,21 @@ If you're integrating PLD into a tracing or observability pipeline, start there.
 
 If you are building or instrumenting an agent runtime:
 
-```
+```text
+quickstart/
+ ├── README_quickstart.md
+ ├── pld_events_demo.jsonl
+ ├── reentry_success_dashboard.json
+ └── verify_metrics_local.py
+
+quickstart/metrics_quickcheck/
+ ├── README_metrics.md
+ ├── pld_events_demo.jsonl
+ ├── reentry_success_dashboard.json
+ └── verify_metrics_local.py
+
 docs/
- ├── operator_primitives/
+ ├── concepts/operator_primitives/
  ├── patterns/
  └── metrics/
 ```
@@ -135,4 +147,5 @@ Details: `/LICENSES/LICENSES.md`
 ---
 
 Maintainer: **Kiyoshi Sasano**
+
 
