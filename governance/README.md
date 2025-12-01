@@ -1,4 +1,4 @@
-# PLD Field Collaboration & PoC Guide
+# PLD Governance & Collaboration Guide
 
 This folder exists for **collaborating with other teams or organizations** using PLD.
 
@@ -194,4 +194,5 @@ Minimal protocol → minimal friction → high alignment.
 ---
 
 Maintainer: **Kiyoshi Sasano**  
+
 
