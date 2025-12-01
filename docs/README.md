@@ -10,15 +10,15 @@ This README provides an entry point into the documentation stack.
 
 ## 📚 Recommended Reading Flow
 
-If you're new to PLD, the following reading order helps build intuition before implementation:
+If you're new to PLD, the following sequence builds understanding layer by layer—from core concepts to implementation and evaluation.
 
-| Stage | Folder / File                                                         | Goal                                                              |
-| ----- | --------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **1** | `/docs/concepts/01_introduction.md`                                   | Understand the core motivation and principles behind PLD.         |
-| **2** | `/docs/concepts/02_drift_repair_model.md`                             | Learn the Drift → Repair → Reentry → Continue lifecycle.          |
-| **3** | `/docs/specifications/level_2_semantics/overview_event_spec.md`       | Understand the semantic event model and logging contract.         |
-| **4** | `/docs/specifications/level_3_standards/PLD_Runtime_Standard_v2.0.md` | Runtime enforcement model, policy layering, and lifecycle states. |
-| **5** | `/docs/metrics/07_pld_operational_metrics_cookbook.md`                | Learn how to evaluate agent stability using PLD metrics.          |
+| Stage | Level Classification | File | Purpose |
+|-------|----------------------|-------|---------|
+| **1** | **Level 0 — Concepts** | `/docs/concepts/01_introduction.md` | Understand the motivation, problem framing, and foundational mindset behind PLD. |
+| **2** | **Level 0 → Level 1 Bridge** | `/docs/concepts/02_drift_repair_model.md` | Learn the Drift → Repair → Reentry → Continue lifecycle and how PLD differs from one-shot prompting and static alignment. |
+| **3** | **Level 1 — Semantic Contract** | `/docs/specifications/level_2_semantics/overview_event_spec.md` | Understand the behavioral logging model and the event semantics that make drift observable. |
+| **4** | **Level 2 — Runtime Behavioral Standard** | `/docs/specifications/level_3_standards/PLD_Runtime_Standard_v2.0.md` | Learn the enforcement states, policy roles, and runtime governance mechanics. |
+| **5** | **Level 3 — Evaluation Layer** | `/docs/metrics/07_pld_operational_metrics_cookbook.md` | Learn how to measure runtime behavior drift, repair effectiveness, and stability using PLD metrics. |
 
 Optional but useful:
 
@@ -147,5 +147,6 @@ Details: `/LICENSES/LICENSES.md`
 ---
 
 Maintainer: **Kiyoshi Sasano**
+
 
 
