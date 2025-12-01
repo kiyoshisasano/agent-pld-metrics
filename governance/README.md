@@ -22,7 +22,7 @@ It is a **lightweight operational playbook** for applied collaboration.
 
 ## When to Use This Folder
 
-Use `field/` when:
+Use `governance/` when:
 
 - you are involving **another team or organization** in a PLD experiment  
 - you want to share **traces, metrics, and configurations**  
@@ -194,5 +194,6 @@ Minimal protocol → minimal friction → high alignment.
 ---
 
 Maintainer: **Kiyoshi Sasano**  
+
 
 
