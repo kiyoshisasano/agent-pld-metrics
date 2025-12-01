@@ -1,5 +1,5 @@
 <!--
-path: quickstart/operator_primitives/01_detect_drift.md
+path: docs/operator_primitives/01_detect_drift.md
 component_id: detect_drift_operator
 kind: doc
 area: runtime_operators
