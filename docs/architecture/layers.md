@@ -70,7 +70,7 @@ This file serves as a **reference architecture**, not a runtime specification.
 
 | Reference | Purpose |
 |----------|---------|
-| `/docs/model_diagram.md` | Runtime phase transitions (Drift → Repair → Reentry → Continue) |
+| `/docs/architecture/model_diagram.md` | Runtime phase transitions (Drift → Repair → Reentry → Continue) |
 | `/pld_runtime/` | Reference implementation components (optional for adoption) |
 | `/field/` | Collaboration protocol, shared terminology enforcement |
 | `/analytics/` | Evaluation traces and benchmarking methodology |
