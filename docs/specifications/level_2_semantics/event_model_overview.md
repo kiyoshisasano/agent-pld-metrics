@@ -6,6 +6,12 @@
 
 ---
 
+> **Document Role:** Orientation Aid (Non-Normative)
+> **Relationship to Standards:** This file is NOT part of the runtime specification.
+> It exists only to help readers understand the event structure before reading
+> the Level-2 semantic rules.
+
+
 ## 1. Purpose
 
 This document defines the **normative specification** for PLD Runtime Events, based exclusively on:
@@ -328,6 +334,7 @@ Feedback, usage reports, and improvement proposals may be submitted via:
 ---
 
 ### End of Specification
+
 
 
 
