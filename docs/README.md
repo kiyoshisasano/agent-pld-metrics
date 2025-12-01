@@ -91,7 +91,7 @@ If you're integrating PLD into a tracing or observability pipeline, start there.
 If you are building or instrumenting an agent runtime:
 
 ```
-quickstart/
+docs/
  ├── operator_primitives/
  ├── patterns/
  └── metrics/
@@ -135,3 +135,4 @@ Details: `/LICENSES/LICENSES.md`
 ---
 
 Maintainer: **Kiyoshi Sasano**
+
