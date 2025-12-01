@@ -9,6 +9,11 @@ updated: "2025-11-17"
 visibility: "Public"
 ---
 
+
+> 🧪 This document is part of PLD Labs.
+> It represents an exploratory direction, not a normative part of Phase Loop Dynamics.
+> It MAY become part of a future specification pending governance review.
+
 # ⚠️ READ FIRST — Experimental Extension (NOT PLD 1.0)
 
 This document introduces a proposed extension to PLD.  
