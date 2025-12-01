@@ -103,3 +103,18 @@ docs/
 Maintainer: **Kiyoshi Sasano**
 
 
+
+# Documentation Map
+
+PLD documentation is structured by **Stability Levels**:
+
+## 📚 For Readers & Learners
+* **[`/concepts`](./concepts/)**: Start here. The "Why" and "What" of Drift & Repair.
+* **[`/patterns`](./patterns/)**: Practical patterns for LLM prompts, UX, and System integration.
+
+## 🏛️ For Architects (The Specs)
+* **[`/specifications`](./specifications/)**: **Level 1–3**. The authoritative schema, semantics, and metrics definitions.
+
+## 🛠️ For Contributors (The Implementation)
+* **[`/architecture`](./architecture/)**: **Level 4–5**. Runtime design principles and internals.
+* **[`/metrics`](./metrics/)**: Operational cookbooks and case studies.
