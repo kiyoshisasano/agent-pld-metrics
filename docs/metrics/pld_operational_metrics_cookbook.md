@@ -1,4 +1,4 @@
-# 📄 07 — PLD Operational Metrics Cookbook
+# PLD Operational Metrics Cookbook
 
 Version: 2.0.0  
 *Status*: Candidate — Stabilizing based on implementation feedback
