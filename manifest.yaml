@@ -560,7 +560,7 @@ components:
     authority_level: 1
     purpose: Minimal engine loop that processes a sequence of RuntimeSignals into PLD v2-compliant events via RuntimeSignalBridge and emits them through the Level 5 structured logging pipeline.
 
-  - path: quickstart/examples/minimal_pld_demo.py
+  - path: quickstart/minimal_pld_demo.py
     component_id: minimal_pld_demo
     kind: example
     area: quickstart
@@ -568,11 +568,7 @@ components:
     authority_level: 1
     purpose: End-to-end quickstart demonstration showing a scripted flow converted to PLD runtime events and logged through StructuredLogger for inspection.
 
-    version: 0.9.1
-default_license: Apache-2.0
-
-components:
-  - path: quickstart/metrics/README_metrics.md
+  - path: quickstart/metrics_quickcheck/README.md
     component_id: quickstart_metrics_readme
     kind: doc
     area: metrics
@@ -580,7 +576,7 @@ components:
     authority_level: 2
     purpose: Entry-point README for the metrics quickstart module, describing structure and usage.
 
-  - path: quickstart/metrics/verify_metrics_local.py
+  - path: quickstart/metrics_quickcheck/verify_metrics_local.py
     component_id: verify_metrics_local
     kind: example
     area: metrics
@@ -588,29 +584,13 @@ components:
     authority_level: 2
     purpose: Local inspection script that loads demo PLD events and computes lightweight drift/repair metrics.
 
-  - path: quickstart/metrics/datasets/pld_events_demo.jsonl
+  - path: quickstart/metrics_quickcheck/pld_events_demo.jsonl
     component_id: pld_events_demo_dataset
     kind: metric
     area: metrics
     status: draft
     authority_level: 2
     purpose: Handcrafted demo PLD event dataset for exploring drift, repair, and recovery patterns.
-
-  - path: quickstart/metrics/guides/drift_event_logging.md
-    component_id: drift_event_logging_guide
-    kind: doc
-    area: metrics
-    status: draft
-    authority_level: 2
-    purpose: Explanatory guide on how drift, repair, and continuation events appear in PLD logs.
-
-  - path: quickstart/metrics/reports/pld_events_demo_report.md
-    component_id: pld_events_demo_report
-    kind: doc
-    area: metrics
-    status: draft
-    authority_level: 2
-    purpose: Narrative report interpreting the demo PLD dataset from a metrics and behavior perspective.
 
   - path: quickstart/metrics/dashboards/reentry_success_dashboard.json
     component_id: reentry_success_dashboard
