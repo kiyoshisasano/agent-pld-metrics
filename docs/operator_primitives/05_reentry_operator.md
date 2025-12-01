@@ -1,5 +1,5 @@
 <!--
-path: quickstart/operator_primitives/05_reentry_operator.md
+path: docs/operator_primitives/05_reentry_operator.md
 component_id: reentry_operator
 kind: doc
 area: runtime_operators
