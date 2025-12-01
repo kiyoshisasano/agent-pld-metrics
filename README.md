@@ -23,12 +23,45 @@ This repository contains **specifications, runtime components, examples, adoptio
 
 ---
 
-## ⚠️ Repository Status
+## ⚠️ Repository Maturity & Governance Model
 
-> **Status: Candidate — actively evolving.**  
-Behavioral patterns, taxonomy, and runtime conventions may continue to evolve based on implementation feedback.
+> **Status: Candidate — actively evolving.  
+> Behavioral patterns, taxonomy, and runtime conventions may continue to evolve based on implementation feedback.**
 
-Contributions and field reports are welcome.
+Community feedback and field reports are encouraged.
+
+---
+
+## 🛑 Scope of This Repository
+
+PLD follows a **Standard-First** philosophy, similar to protocols such as OpenTelemetry, OAuth, or Matrix.
+
+### This Repository **IS:**
+
+- **A Governance Standard:** Defining the logic and lifecycle of Drift → Repair → Reentry (Levels 1–3).
+- **A Reference Implementation:** Minimal runtime (`pld_runtime/`) to validate the specification.
+- **A Behavioral Contract:** Ensuring alignment across agents, frameworks, and evaluation pipelines.
+
+### This Repository **IS NOT:**
+
+- ❌ A production SDK or turnkey agent framework  
+- ❌ A batteries-included AI runtime with ecosystem integrations  
+- ❌ A replacement for LangChain, LangGraph, Semantic Kernel, or AgentOps  
+
+Such layers belong in **Level 4+ ecosystem extensions** — not inside the core repository.
+
+---
+
+### Maintainer Role & Change Boundary
+
+The maintainer functions primarily as:
+
+1. **Semantic Steward** — preserving the conceptual integrity of Drift/Repair semantics  
+2. **Schema Governor** — maintaining Levels 1–3 as stable, versioned specification assets  
+
+> **Contributors Welcome:**  
+Community contributions are encouraged — especially **Level-4 adapters**  
+(e.g., LangGraph nodes, RAG controllers, Semantic Kernel plug-ins, tracing exporters).
 
 ---
 
