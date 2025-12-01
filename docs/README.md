@@ -1,120 +1,137 @@
-# PLD Documentation Index (Applied-AI)
-> Metrics support decision-making — they are not permanent KPIs.
+# Phase Loop Dynamics (PLD) — Documentation Index
 
-This folder contains the core documentation required to understand, label, evaluate, and integrate **Phase Loop Dynamics (PLD)** into applied LLM systems, tool-based agents, and multi-turn orchestration workflows.
+> This documentation set exists to support **design, implementation, evaluation, and governance** of multi-turn AI agents using the Phase Loop Dynamics model.
 
-These documents serve as a **reference set**.  
-They can be read in sequence or selectively depending on your goals—whether you're labeling transcripts, implementing runtime policies, or evaluating an agent's stability.
+PLD is not just a prompt technique — it is a **runtime behavior model** designed to ensure that agents remain aligned across turns, recover from drift, and maintain stable reasoning and tool use under uncertainty.
 
----
-
-## 📘 How to Use This Folder
-
-If you are new to PLD or implementing it for the first time, the following reading sequence may help:
-
-| Step | File | Purpose |
-|------|------|---------|
-| **1** | `01_pld_for_agent_engineers.md` | Starting point — what PLD solves and how it applies to real systems. |
-| **2** | `02_pld_drift_repair_reference.md` | Source of truth: Drift, Repair, Reentry codes used in runtime and analysis. |
-| **3** | `06_pld_concept_reference_map.md` | High-level taxonomy relationships and conceptual overview. |
-| **4** | `07_pld_operational_metrics_cookbook.md` | How to measure runtime behavior: PRDR, REI, VRL, and evaluation strategy. |
-| **5** | `04_pld_labeling_prompt_llm.md` | Official prompt for machine-assisted labeling of transcripts and logs. |
-
-> You may move between these documents based on your role—  
-> engineering, research, UX, or evaluation.
+This README provides an entry point into the documentation stack.
 
 ---
 
-## 🔄 After Core Reading: Where to Continue
+## 📚 Recommended Reading Flow
 
-| Category | Destination | Purpose |
-|----------|------------|---------|
-| Runtime integration | `/quickstart/operator_primitives/` | Add drift detection, repair, and reentry logic into a control loop. |
-| Reference examples | `/quickstart/patterns/04_integration_recipes/` | See PLD applied to RAG, tools, memory, and orchestration. |
-| Logging and evaluation | `/quickstart/metrics/` | Map runtime behavior into telemetry and dashboards. |
-| Operational metrics | `/docs/07_pld_operational_metrics_cookbook.md` | Operational signals for release decisions, regression monitoring, and repair strategy evaluation. |
-| Applied examples | `/analytics/multiwoz_2.4_n200/` | Explore annotated dialogues and pattern recognition. |
+If you're new to PLD, the following reading order helps build intuition before implementation:
 
-Optional but helpful:
+| Stage | Folder / File                                                         | Goal                                                              |
+| ----- | --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **1** | `/docs/concepts/01_introduction.md`                                   | Understand the core motivation and principles behind PLD.         |
+| **2** | `/docs/concepts/02_drift_repair_model.md`                             | Learn the Drift → Repair → Reentry → Continue lifecycle.          |
+| **3** | `/docs/specifications/level_2_semantics/overview_event_spec.md`       | Understand the semantic event model and logging contract.         |
+| **4** | `/docs/specifications/level_3_standards/PLD_Runtime_Standard_v2.0.md` | Runtime enforcement model, policy layering, and lifecycle states. |
+| **5** | `/docs/metrics/07_pld_operational_metrics_cookbook.md`                | Learn how to evaluate agent stability using PLD metrics.          |
 
-📄 `architecture_layers.md` —  
-A conceptual view of PLD as a layered runtime governance model.
+Optional but useful:
 
----
-
-## 📄 File Overview
-
-| File | Status | Role |
-|------|--------|------|
-| `01_pld_for_agent_engineers.md` | Core | Conceptual + practical introduction. |
-| `02_pld_drift_repair_reference.md` | Core | Source of truth for PLD event codes. |
-| `06_pld_concept_reference_map.md` | Reference | Taxonomy relationships and model overview. |
-| `07_pld_operational_metrics_cookbook.md` | Reference | Metrics framework (PRDR, VRL, REI). |
-| `04_pld_labeling_prompt_llm.md` | Core | Machine-usable labeling template. |
-| `architecture_layers.md` | Reference | Conceptual runtime architecture. |
-| `model_diagram.md` | Reference | Visual model of runtime phases. |
+* `/analytics/multiwoz_2.4_n200/` — annotated corpus for drift identification.
 
 ---
 
-## 📐 Documentation Principles
+## 🧩 Documentation Structure
 
-Core documents in this directory follow these principles:
+PLD documentation is organized by stability and purpose:
 
-- **Stable terminology** — values align with the official taxonomy file.  
-- **No hidden synonyms** — code values remain single source of truth.  
-- **Reverse compatibility** — deprecations are explicit, never silent.  
-- **Consistent footer** — each file ends with:
+### 🔹 1. Concepts (`/docs/concepts/`)
+
+The "Why" and "What" of PLD — foundational mental models.
+
+* Drift vs. Shift
+* Repair patterns
+* Taxonomy reference map
+
+### 🔹 2. Specifications (`/docs/specifications/`)
+
+The authoritative schema and behavioral contract.
+
+* Level 1: JSON schema
+* Level 2: Semantics and event matrices
+* Level 3: Runtime and metric standards
+
+### 🔹 3. Architecture (`/docs/architecture/`)
+
+Implementation design, runtime layering, and control-flow rules.
+
+* Principles
+* Implementation guardrails
+* Layer dependency model
+
+### 🔹 4. Metrics (`/docs/metrics/`)
+
+Operational analytics, dashboards, and evaluation methodology.
+
+* PRDR (Precision of Repair-Driven Recovery)
+* REI (Runtime Entropy Index)
+* VRL (Violation-Recovery Loop score)
+
+### 🔹 5. Patterns (`/docs/patterns/`)
+
+Reusable design and behavioral correction patterns.
+
+* Drift response patterns
+* Tool response rules
+* Repair templates
+
+---
+
+## 🧪 Reference Traces
+
+A dedicated folder provides **realistic synthetic run logs** demonstrating PLD behavior:
+
+📂 `examples/reference_traces/`
+
+* Golden semantic repair trace
+* High-entropy forensic trace
+* Trace generator
+
+If you're integrating PLD into a tracing or observability pipeline, start there.
+
+---
+
+## ⚙️ Implementation Entry Points
+
+If you are building or instrumenting an agent runtime:
 
 ```
-Maintainer: Kiyoshi Sasano
+quickstart/
+ ├── operator_primitives/
+ ├── patterns/
+ └── metrics/
 ```
+
+These contain:
+
+* enforcement and observer modes
+* control-loop primitives
+* telemetry mapping
 
 ---
 
-## 🧩 Contribution Notes
+## 🧭 Design Principles
 
-Before adding or modifying documentation, consider:
+PLD documents follow these rules:
 
-| Question | Action |
-|---------|--------|
-| Does it change a code value or definition? | Update `02_pld_drift_repair_reference.md`. |
-| Does it describe applied usage or implementation? | Check consistency with `01_pld_for_agent_engineers.md`. |
-| Is it about labeling or automation? | Place near `04_pld_labeling_prompt_llm.md`. |
-| Is it experimental or research-focused? | Place under `/research/` rather than core docs. |
+* 📌 **Stable terminology** — no silent renaming or synonym drift
+* 🧱 **Composable primitives** — reusable across frameworks (LangGraph, Assistants API, Swarm, RAG-based agents)
+* 🔍 **Observable over assumptive** — runtime must expose reasoning state transitions
+* 🧪 **Behavior before performance** — correctness precedes optimization
 
 ---
 
-## 📁 Directory Layout
+## 📝 Status and Roadmap
 
-```
-docs/
-  ├── README_docs.md        ← (this file)
-  ├── 01_pld_for_agent_engineers.md
-  ├── 02_pld_drift_repair_reference.md
-  ├── 04_pld_labeling_prompt_llm.md
-  ├── 06_pld_concept_reference_map.md
-  ├── 07_pld_operational_metrics_cookbook.md
-  ├── architecture_layers.md
-  └── model_diagram.md
-```
+* Stage 1 — Concepts and standards (complete)
+* Stage 2 — Trace examples and reference tooling (complete)
+* Stage 3 — Notebook metrics and visualization demos (in progress)
+* Stage 4 — Framework integration guides (planned)
+
+---
+
+## 📜 Licensing Model
+
+Documentation is licensed under **CC-BY-4.0**.
+Runtime code, generation scripts, and examples are licensed under **Apache-2.0**.
+
+Details: `/LICENSES/LICENSES.md`
 
 ---
 
 Maintainer: **Kiyoshi Sasano**
-
-
-
-# Documentation Map
-
-PLD documentation is structured by **Stability Levels**:
-
-## 📚 For Readers & Learners
-* **[`/concepts`](./concepts/)**: Start here. The "Why" and "What" of Drift & Repair.
-* **[`/patterns`](./patterns/)**: Practical patterns for LLM prompts, UX, and System integration.
-
-## 🏛️ For Architects (The Specs)
-* **[`/specifications`](./specifications/)**: **Level 1–3**. The authoritative schema, semantics, and metrics definitions.
-
-## 🛠️ For Contributors (The Implementation)
-* **[`/architecture`](./architecture/)**: **Level 4–5**. Runtime design principles and internals.
-* **[`/metrics`](./metrics/)**: Operational cookbooks and case studies.
