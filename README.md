@@ -67,11 +67,11 @@ Community contributions are encouraged — especially **Level-4 adapters**
 
 ## 🔗 Quick Links
 
-- 📄 Core Specifications → `/docs/specifications/`
-- ⚙️ Runtime Implementation → `/pld_runtime/`
-- 🚀 Quickstart → `/quickstart/`
-- 🎨 Adoption & Communication → `/pitch/`
-- 🤝 Governance & Roles → `/governance/`
+- 📄 [Core Specifications](/docs/specifications/)
+- ⚙️ [Runtime Implementation](/pld_runtime/)
+- 🚀 [Quickstart](/quickstart/)
+- 🎨 [Adoption & Communication](/pitch/)
+- 🤝 [Governance & Roles](/governance/)
 
 > 💡 **PLD is not a framework — it is a behavioral stabilizer for multi-turn AI systems.**
 
