@@ -74,8 +74,6 @@ Community contributions are encouraged — especially **Level-4 adapters**
 - 🎨 [Adoption & Communication](/pitch/)
 - 🤝 [Governance & Roles](/governance/)
 
-> 💡 **PLD is not a framework — it is a behavioral stabilizer for multi-turn AI systems.**
-
 PLD does not replace architectures like LangGraph, Assistants API, or custom orchestration.  
 Instead, it **observes, labels, and stabilizes behavior across the stack — without requiring workflow redesign.**
 
