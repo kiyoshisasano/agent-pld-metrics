@@ -57,9 +57,9 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 - metrics quickcheck (`/quickstart/metrics_quickcheck/`)
 
 ### 3.2 Integration Recipes
-- LangGraph Integration
-- Assistants API Integration
-- Rasa Template
+- LangGraph Integration (`/docs/patterns/03_system/implementation_guides/langgraph_integration.md`)
+- Assistants API Integration (`/docs/patterns/03_system/implementation_guides/assistants_api_integration.md`)
+- Rasa Template (`/docs/patterns/03_system/implementation_guides/rasa_action_templates.md`)
 - Observer Mode Example (`/examples/langgraph_assistants/`)
 
 ---
@@ -85,3 +85,4 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 - Trace Examples
 - Operational Onboarding
 - Alignment Protocols
+
