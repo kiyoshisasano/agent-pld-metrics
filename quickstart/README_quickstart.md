@@ -56,6 +56,38 @@ These examples are intentionally lightweight and **consumer-only**, meaning they
 
 ---
 
+## 🔍 Built-In Drift Detection (New in Runtime v2.0)
+
+The Quickstart now includes **runtime detectors** that demonstrate how PLD identifies
+drift and emits `drift_detected` PLD events — without requiring you to write custom logic.
+
+Included detectors (`pld_runtime/detection/builtin_detectors.py`):
+
+| Detector | Purpose | Example Trigger |
+|---------|---------|----------------|
+| `SchemaComplianceDetector` | Ensures required keys exist in structured input | Missing `"parking"` field |
+| `SimpleKeywordDetector` | Detects prohibited / unsafe or mismatched instruction patterns | Contains disallowed keyword |
+
+These detectors operate **at Level 5** and do **not modify Level 1–3 semantics** —  
+they simply observe and produce PLD-compliant events.
+
+The `hello_pld_runtime.py` example demonstrates this by intentionally triggering a drift:
+
+```
+payload = {"address": "Tokyo"} # Missing "parking"
+```
+
+
+→ results in an emitted event:
+
+```jsonc
+{"event_type": "drift_detected", "taxonomy": "D2_context", ...}
+```
+
+This serves as a **hands-on demonstration of the PLD Drift → Repair → Continue loop**.
+
+---
+
 ## 3. How to Run
 
 Run any demo script with Python:
