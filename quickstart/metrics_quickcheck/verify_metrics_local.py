@@ -38,7 +38,7 @@ from collections import defaultdict
 # ------------------------------------------------------------
 # Configuration
 # ------------------------------------------------------------
-DATASET_PATH = Path(__file__).parent / "datasets" / "pld_events_demo.jsonl"
+DATASET_PATH = Path(__file__).parent / "pld_events_demo.jsonl"
 
 
 # ------------------------------------------------------------
