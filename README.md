@@ -26,7 +26,7 @@ This repository contains **specifications, runtime components, examples, adoptio
 
 ## ⚠️ Repository Maturity & Governance Model
 
-> **Status: Candidate — actively evolving.
+> **Status: Candidate — actively evolving.  
 > Behavioral patterns, taxonomy, and runtime conventions may continue to evolve based on implementation feedback.**
 
 Community feedback and field reports are encouraged.
