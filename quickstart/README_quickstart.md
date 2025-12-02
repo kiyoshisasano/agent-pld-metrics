@@ -1,211 +1,146 @@
+# PLD Runtime Quickstart Guide
+
+This document provides a **practical introduction** to using the PLD runtime. It is designed for both:
+
+* **Hands-on users running the examples immediately**, and
+* **Developers who want to understand the reasoning, structure, and constraints of PLD-compliant event logging.**
+
+The Quickstart scripts in this folder demonstrate how to:
+
+```
+RuntimeSignal → RuntimeSignalBridge → PLD Event → StructuredLogger → Output
+```
+
+## No manual event construction is required — **the runtime builds canonical PLD events for you.**
+
+## 1. Requirements
+
+### Python Version
+
+* Python **3.10 or higher** recommended.
+
+### Dependencies
+
+Install required modules (if applicable):
+
+```bash
+pip install pld_runtime
+```
+
+> The Quickstart examples rely only on standard runtime APIs and do not require additional configuration.
+
 ---
-title: "PLD Applied Quickstart Kit"
-version: "2025.2"
-status: stable
-maintainer: "Kiyoshi Sasano"
-tags:
-  - PLD
-  - LLM Agents
-  - Drift Control
-  - Runtime Repair
-  - Telemetry-Driven AI
----
 
-# 🚀 PLD Applied Quickstart Kit  
-**For LLM Agents, Orchestrators, and Conversational Systems (2025 Edition)**  
+## 2. Files in This Quickstart
 
-> PLD is best understood **through runtime experience — not theory alone.**
+| File                    | Purpose                                                               |
+| ----------------------- | --------------------------------------------------------------------- |
+| `hello_pld_runtime.py`  | Smallest "Hello World" example — one signal, one event, stdout output |
+| `minimal_pld_demo.py`   | Slightly larger example using the same runtime flow                   |
+| `run_minimal_engine.py` | Demonstrates a loop processing multiple signals in order              |
+| `metrics_quickcheck/`   | Optional: validates example output metrics and includes a dashboard   |
 
-This kit provides everything needed to implement **Phase Loop Dynamics (PLD)** in a live AI agent:
-
-- Drift detection and classification  
-- Repair selection (soft → hard)
-- Reentry confirmation and stabilization  
-- Failover rules and bounded execution  
-- Metrics, dashboards, and runtime governance  
-
-PLD is not a prompting trick.  
-It is a **runtime interaction control model** for applied AI systems.
+These examples are intentionally lightweight and **consumer-only**, meaning they *use* the runtime but do not modify schema or enforcement logic.
 
 ---
 
-## 🏁 Start Here — Run the Minimal Runtime
+## 3. How to Run
 
-`hello_pld_runtime.py` is the simplest runnable demonstration of the full PLD loop.
+Run any demo script with Python:
 
 ```bash
 python hello_pld_runtime.py
 ```
 
-Try custom input:
-
-```bash
-python hello_pld_runtime.py "Can we switch topics and talk about cooking?"
-```
-
-Run all example scenarios:
-
-```bash
-python hello_pld_runtime.py --examples
-```
-
-💡 This establishes intuition for the runtime lifecycle:
-```bash
-Drift → Repair → Reentry → Continue
-```
-
----
-
-🔧 Next: Run the Real Engine
-
-Once you understand the runtime feel, activate the full controller:
-
-```bash
-python run_minimal_engine.py
-```
-
-✔ Uses the real PLD policies
-✔ Logs events using the canonical schema
-✔ Produces a trace of decisions and alignment events
-
-This is the first verification checkpoint that your environment is correctly wired.
-
----
-
-## 1 — Why PLD Exists
-
-LLMs rarely fail because they lack knowledge —  
-they fail because they lose **task alignment across turns.**
-
-| Failure Mode | Result |
-|--------------|--------|
-| Loss of grounding | User distrust |
-| Incorrect propagation of prior context | Cascading errors |
-| Tool/API mismatch without acknowledgement | Workflow stalls |
-| Full resets | Lost session state & user confidence |
-
-PLD formalizes the lifecycle to prevent collapse:
-
-> **The goal is not correctness — the goal is recoverable alignment**.
-
----
-
-## 2 — How to Use This Folder
-
-| Step  | Location               | What You Learn                                 |
-| ----- | ---------------------- | ---------------------------------------------- |
-| **1** | `overview/`            | High-level mental model                        |
-| **2** | `hello_pld_runtime.py` | First hands-on runtime experience              |
-| **3** | `operator_primitives/` | Drift → Repair → Reentry linguistic operators  |
-| **4** | `patterns/`            | Best-practice runtime behavior and UX phrasing |
-| **5** | `integration_recipes/` | LangGraph / Rasa / OpenAI Assistants wiring    |
-| **6** | `metrics/`             | Telemetry, dashboards, and stability analysis  |
-
-➡️ For framework bindings:
-`quickstart/patterns/04_integration_recipes/`
-
----
-
-## 3 — Core Runtime Lifecycle
-
-PLD operates as a deterministic runtime loop:
-```python
-User Turn
-   ↓
-Drift Detected? ── No ──▶ Continue
-         │
-        Yes
-         ↓
-Select Repair → Apply → Reentry Check → Continue / Escalate / Failover
-```
-Each step produces structured telemetry aligned with:
-```pgsql
-quickstart/metrics/schemas/pld_event.schema.json
-```
-
----
-
-## 4 — Example Logged Event
+You should see output similar to:
 
 ```json
-{
-  "session_id": "MWZ-001",
-  "turn_id": 4,
-  "event_type": "drift_detected",
-  "pld": {
-    "phase": "drift",
-    "code": "D2_context",
-    "confidence": 0.92
-  },
-  "runtime": {
-    "latency_ms": 3120,
-    "source": "assistant"
-  }
-}
+{"schema_version": "2.0", "event_type": "continue_allowed", ... }
 ```
 
-Compatible with:
-- LangGraph state stores
-- OpenAI Assistants streaming telemetry
-- Tool traces + RAG observability systems
-- OpenTelemetry spans
+Each run produces:
+
+* A unique event ID
+* A timestamp (UTC, ISO-8601 format)
+* PLD taxonomy code based on the provided `RuntimeSignal`
 
 ---
 
-## 5 — What Gets Measured
+## 4. How PLD Events Are Built
 
-| Metric                    | Meaning                               |
-| ------------------------- | ------------------------------------- |
-| Drift Frequency           | Stability baseline                    |
-| Soft vs Hard Repair Ratio | Efficiency vs escalation pressure     |
-| Reentry Success Rate      | Ability to stabilize after correction |
-| Failover Trigger Rate     | Safety boundary activation            |
-| Latency-Induced Drift     | UX-performance dependency             |
-| Outcome Distribution      | Completion vs abandonment             |
+PLD event generation in Quickstart follows this flow:
 
-These power:
+| Stage | Component                        | Responsibility                                                       |
+| ----- | -------------------------------- | -------------------------------------------------------------------- |
+| 1     | `RuntimeSignal`                  | Describe the system’s internal event (e.g., drift, continue, repair) |
+| 2     | `EventContext`                   | Describe session, turn index, source, model, etc.                    |
+| 3     | `RuntimeSignalBridge`            | Apply semantic mapping + schema rules to build a canonical PLD event |
+| 4     | `StructuredLogger + EventWriter` | Output the final PLD event (stdout, file, transport, etc.)           |
 
-- model comparisons
-- policy tuning
-- architecture iteration
-- UX alignment studies
-- Behavior is only real when measurable.
+> Once created by the bridge, an event is considered **immutable**. Quickstart code must not alter structure, taxonomy, or schema fields.
 
 ---
 
-## 6 — Evaluation Dataset (Optional But Useful)
+## 5. Runtime Rules and Constraints (Important)
 
-The dataset at:
+Quickstart code **must NOT**:
+
+* Manually craft PLD dictionary structures
+* Change taxonomy codes (`C0_*`, `D1_*`, etc.)
+* Add or modify fields that contradict Level 1–3 specs
+* Introduce new event types or phases
+
+Quickstart must remain a **consumer layer**, not an implementation of runtime logic.
+
+---
+
+## 6. Example Usage Pattern
+
+All valid Quickstart examples follow this structure:
+
+```python
+signal = RuntimeSignal(kind=SignalKind.CONTINUE_SYSTEM_TURN)
+context = EventContext(session_id="demo", turn_sequence=1, source="runtime")
+bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
+event = bridge.build_event(signal, context)
+logger.log(event)
+```
+
+This ensures:
+
+* Schema compliance
+* Taxonomy correctness
+* Runtime translation consistency
+
+---
+
+## 7. Next Steps
+
+After running the examples, you can:
+
+🔹 Explore the event outputs in `stdout` or as `.jsonl` logs
+🔹 Run the optional metric validator:
+
 ```bash
-analytics/multiwoz_2.4_n200/
+python metrics_quickcheck/verify_metrics_local.py
 ```
 
-allows you to:
-- benchmark models
-- test pattern changes
-- measure policy improvements
-
-This supports the cycle:
-```perl
-prototype → evaluate → tune → redeploy
-```
+🔹 Modify Quickstart logic **only** via signals and context — not event structure
 
 ---
 
-## 🔁 The PLD Feedback Loop
+## Summary
 
-Once everything is wired:
-```pgsql
-Runtime → Logging → Metrics → Dashboard → Adjust Policy → Update Patterns → Rerun
-```
-This enables **governable agent behavior**.
+* PLD Runtime ensures **repeatable, semantically aligned event generation**.
+* Quickstart demonstrates the **minimum responsibilities** needed to operate the runtime.
+* You interact only with **signals + context**, never raw event construction.
 
 ---
 
-### License & Attribution
+If you're ready, proceed to modify and run: `hello_pld_runtime.py`.
 
-Creative Commons **BY-NC 4.0**  
-Maintainer: **Kiyoshi Sasano**
+👍 You now have a working environment for PLD-compliant event generation.
+
 
 ---
 
