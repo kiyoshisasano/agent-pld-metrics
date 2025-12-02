@@ -215,7 +215,7 @@ Next steps → `quickstart/README_quickstart.md`
 ---
 
 <details>
-<summary>
+<summary style="font-size:1.3em; font-weight:bold;">
 🧪 Built-In Runtime Detectors (Experimental)<br>
 A working drift detection demo powered by the built-in runtime detectors is included.
 </summary>
