@@ -386,7 +386,7 @@ Status: **Experimental — seeking evaluation feedback**.
 
 ### 📌 Current Phase
 
-This repository is currently in an **Exploratory / Candidate Stage**.
+This repository is currently in an **Exploratory / Candidate Stage**.  
 Components may evolve based on evaluation, implementation feedback, and research findings.
 
 Feedback and field reports are welcome and help shape the next revision.
