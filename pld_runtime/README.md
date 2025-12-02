@@ -98,15 +98,12 @@ Failover is invoked only when standard policy resolution and control logic canno
 Beginning with **Runtime v2.0**, the package now exposes a **stable, intentionally minimal integration API** from the top-level namespace:
 
 ```python
-from pld_runtime import (
+from .detection.runtime_signal_bridge import (
     RuntimeSignalBridge,
     RuntimeSignal,
     SignalKind,
     EventContext,
     ValidationMode,
-    RuntimeLoggingPipeline,
-    JsonlExporter,
-)
 ```
 
 This surface defines the **official Level-5 boundary** for PLD runtime integrations.
@@ -307,6 +304,7 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
 
