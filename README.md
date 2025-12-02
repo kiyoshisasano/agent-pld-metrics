@@ -215,8 +215,8 @@ Next steps → `quickstart/README_quickstart.md`
 ---
 
 <details>
-<summary>### 🧪 Built-In Runtime Detectors (Experimental)</summary>
-<p>A working drift detection demo powered by the built-in runtime detectors is included in the Quickstart.</p>
+<summary>### 🧪 Built-In Runtime Detectors (Experimental)
+<p>A working drift detection demo powered by the built-in runtime detectors is included in the Quickstart.</p></summary>
 
 PLD Runtime includes **Level-5 built-in detectors**, allowing you to experience drift detection in Quickstart without writing custom detection logic.
 
