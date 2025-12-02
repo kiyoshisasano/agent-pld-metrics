@@ -289,8 +289,8 @@ components:
     authority_level: 5
     purpose: Entry-point documentation for the PLD runtime directory.
 
-  # --- 01_schemas ---
-  - path: pld_runtime/01_schemas/runtime_event_envelope.json
+  # --- schemas ---
+  - path: pld_runtime/schemas/runtime_event_envelope.json
     component_id: runtime_event_envelope_json
     kind: schema
     area: runtime_schema
@@ -298,7 +298,7 @@ components:
     authority_level: 5
     purpose: JSON schema definition for the PLD Event Envelope.
 
-  - path: pld_runtime/01_schemas/runtime_event_envelope.ops.md
+  - path: pld_runtime/schemas/runtime_event_envelope.ops.md
     component_id: runtime_event_envelope_ops
     kind: doc
     area: schema
@@ -307,7 +307,7 @@ components:
     version: 2.0.0
     purpose: Operational guidance for emitting, validating, transporting, and observing PLD runtime events.
 
-  - path: pld_runtime/01_schemas/runtime_event_envelope.examples.md
+  - path: pld_runtime/schemas/runtime_event_envelope.examples.md
     component_id: runtime_event_envelope_examples
     kind: doc
     area: schema
@@ -316,7 +316,7 @@ components:
     version: 2.0.0
     purpose: Runtime event envelope examples for operational reference.
 
-  - path: pld_runtime/01_schemas/runtime_event_envelope.notes.md
+  - path: pld_runtime/schemas/runtime_event_envelope.notes.md
     component_id: runtime_event_envelope_notes
     kind: doc
     area: schema
@@ -326,8 +326,8 @@ components:
     purpose: Operational companion reference for the PLD runtime event envelope, including behavioral rules and deployment guidance.
 
 
-  # --- 02_ingestion ---
-  - path: pld_runtime/02_ingestion/ingestion_config.py
+  # --- ingestion ---
+  - path: pld_runtime/ingestion/ingestion_config.py
     component_id: ingestion_config
     kind: config
     area: ingestion
@@ -335,7 +335,7 @@ components:
     authority_level: 3
     purpose: Configuration for data ingestion pipelines.
 
-  - path: pld_runtime/02_ingestion/multiwoz_loader.py
+  - path: pld_runtime/ingestion/multiwoz_loader.py
     component_id: multiwoz_loader
     kind: runtime_module
     area: ingestion
@@ -343,7 +343,7 @@ components:
     authority_level: 2
     purpose: Loader for MultiWOZ dataset adaptation.
 
-  - path: pld_runtime/02_ingestion/normalization.py
+  - path: pld_runtime/ingestion/normalization.py
     component_id: normalization
     kind: runtime_module
     area: ingestion
@@ -351,8 +351,8 @@ components:
     authority_level: 4
     purpose: Normalizes input signals into PLD format.
 
-  # --- 03_detection ---
-  - path: pld_runtime/03_detection/drift_detector.py
+  # --- detection ---
+  - path: pld_runtime/detection/drift_detector.py
     component_id: drift_detector
     kind: runtime_module
     area: detection
@@ -360,7 +360,7 @@ components:
     authority_level: 5
     purpose: Core logic for detecting conversation drift.
 
-  - path: pld_runtime/03_detection/repair_detector.py
+  - path: pld_runtime/detection/repair_detector.py
     component_id: repair_detector
     kind: runtime_module
     area: detection
@@ -368,7 +368,7 @@ components:
     authority_level: 5
     purpose: Identifies repair sequences.
 
-  - path: pld_runtime/03_detection/pattern_classifier.py
+  - path: pld_runtime/detection/pattern_classifier.py
     component_id: pattern_classifier
     kind: runtime_module
     area: detection
@@ -376,7 +376,7 @@ components:
     authority_level: 4
     purpose: Classifies detected patterns against the taxonomy.
 
-  - path: pld_runtime/03_detection/runtime_signal_bridge.py
+  - path: pld_runtime/detection/runtime_signal_bridge.py
     component_id: runtime_signal_bridge
     kind: runtime_module
     area: detection
@@ -384,8 +384,8 @@ components:
     authority_level: 5
     purpose: Bridges raw signals to runtime events.
 
-  # --- 04_enforcement ---
-  - path: pld_runtime/04_enforcement/response_policy.py
+  # --- enforcement ---
+  - path: pld_runtime/enforcement/response_policy.py
     component_id: response_policy
     kind: runtime_module
     area: enforcement
@@ -393,7 +393,7 @@ components:
     authority_level: 5
     purpose: Map PLD runtime events to advisory response policy.
 
-  - path: pld_runtime/04_enforcement/schema_validator.py
+  - path: pld_runtime/enforcement/schema_validator.py
     component_id: schema_validator
     kind: runtime_module
     area: enforcement
@@ -401,7 +401,7 @@ components:
     authority_level: 5
     purpose: Validate PLD runtime events against Level 1 schema.
 
-  - path: pld_runtime/04_enforcement/sequence_rules.py
+  - path: pld_runtime/enforcement/sequence_rules.py
     component_id: sequence_rules
     kind: runtime_module
     area: enforcement
@@ -409,7 +409,7 @@ components:
     authority_level: 5
     purpose: Evaluate ordering constraints in runtime event sequences.
 
-  - path: pld_runtime/04_enforcement/thresholds.py
+  - path: pld_runtime/enforcement/thresholds.py
     component_id: enforcement_thresholds
     kind: runtime_module
     area: enforcement
@@ -417,8 +417,8 @@ components:
     authority_level: 5
     purpose: Threshold templates for runtime enforcement.
 
-  # --- 05_controllers ---
-  - path: pld_runtime/05_controllers/pld_controller.py
+  # --- controllers ---
+  - path: pld_runtime/controllers/pld_controller.py
     component_id: pld_controller
     kind: runtime_module
     area: controller
@@ -426,7 +426,7 @@ components:
     authority_level: 4
     purpose: Main runtime loop controller.
 
-  - path: pld_runtime/05_controllers/action_router.py
+  - path: pld_runtime/controllers/action_router.py
     component_id: action_router
     kind: runtime_module
     area: controller
@@ -434,7 +434,7 @@ components:
     authority_level: 4
     purpose: Routes controller decisions to execution modules.
 
-  - path: pld_runtime/05_controllers/controller_config.py
+  - path: pld_runtime/controllers/controller_config.py
     component_id: controller_config
     kind: config
     area: controller
@@ -442,7 +442,7 @@ components:
     authority_level: 3
     purpose: Configuration for the runtime controller.
 
-  - path: pld_runtime/05_controllers/state_machine.py
+  - path: pld_runtime/controllers/state_machine.py
     component_id: state_machine
     kind: runtime_module
     area: controller
@@ -450,8 +450,8 @@ components:
     authority_level: 5
     purpose: Manages state transitions (Drift -> Repair -> Reentry).
 
-  # --- 06_logging ---
-  - path: pld_runtime/06_logging/runtime_logging_pipeline.py
+  # --- logging ---
+  - path: pld_runtime/logging/runtime_logging_pipeline.py
     component_id: logging_pipeline
     kind: runtime_module
     area: logging
@@ -459,7 +459,7 @@ components:
     authority_level: 3
     purpose: Structured logging pipeline.
 
-  - path: pld_runtime/06_logging/event_writer.py
+  - path: pld_runtime/logging/event_writer.py
     component_id: event_writer
     kind: runtime_module
     area: logging
@@ -467,7 +467,7 @@ components:
     authority_level: 3
     purpose: Writes validated events to storage.
 
-  - path: pld_runtime/06_logging/logging_config.py
+  - path: pld_runtime/logging/logging_config.py
     component_id: logging_config
     kind: config
     area: logging
@@ -475,7 +475,7 @@ components:
     authority_level: 3
     purpose: Configuration for logging levels and outputs.
 
-  - path: pld_runtime/06_logging/session_trace_buffer.py
+  - path: pld_runtime/logging/session_trace_buffer.py
     component_id: session_trace_buffer
     kind: runtime_module
     area: logging
@@ -483,7 +483,7 @@ components:
     authority_level: 4
     purpose: Buffers session events for trace assembly.
 
-  - path: pld_runtime/06_logging/structured_logger.py
+  - path: pld_runtime/logging/structured_logger.py
     component_id: structured_logger
     kind: runtime_module
     area: logging
@@ -491,7 +491,7 @@ components:
     authority_level: 3
     purpose: Core logger implementation.
 
-  - path: pld_runtime/06_logging/exporters/exporter_jsonl.py
+  - path: pld_runtime/logging/exporters/exporter_jsonl.py
     component_id: exporter_jsonl
     kind: runtime_module
     area: logging
@@ -499,7 +499,7 @@ components:
     authority_level: 3
     purpose: Exports logs to JSONL format.
 
-  - path: pld_runtime/06_logging/exporters/exporter_open_telemetry.py
+  - path: pld_runtime/logging/exporters/exporter_open_telemetry.py
     component_id: exporter_open_telemetry
     kind: runtime_module
     area: logging
@@ -507,8 +507,8 @@ components:
     authority_level: 3
     purpose: Exports logs via OpenTelemetry.
 
-  # --- 07_failover ---
-  - path: pld_runtime/07_failover/runtime_failover.py
+  # --- failover ---
+  - path: pld_runtime/failover/runtime_failover.py
     component_id: runtime_failover
     kind: runtime_module
     area: failover
@@ -516,7 +516,7 @@ components:
     authority_level: 5
     purpose: Manages failover logic when runtime errors occur.
 
-  - path: pld_runtime/07_failover/backoff_policies.py
+  - path: pld_runtime/failover/backoff_policies.py
     component_id: backoff_policies
     kind: runtime_module
     area: failover
@@ -524,7 +524,7 @@ components:
     authority_level: 4
     purpose: Defines retry and backoff strategies.
 
-  - path: pld_runtime/07_failover/reconciliation.py
+  - path: pld_runtime/failover/reconciliation.py
     component_id: reconciliation
     kind: runtime_module
     area: failover
@@ -532,7 +532,7 @@ components:
     authority_level: 5
     purpose: Reconciles state after failover.
 
-  - path: pld_runtime/07_failover/strategy_registry.py
+  - path: pld_runtime/failover/strategy_registry.py
     component_id: strategy_registry
     kind: runtime_module
     area: failover
@@ -717,7 +717,7 @@ components:
     purpose: Public API surface for PLD Runtime v2.0.
 
   # --- Internal Package Markers (Optional but good for completeness) ---
-  - path: pld_runtime/01_schemas/__init__.py
+  - path: pld_runtime/schemas/__init__.py
     component_id: schemas_pkg_init
     kind: code
     area: schema
@@ -725,7 +725,7 @@ components:
     authority_level: 5
     purpose: Package initialization for schemas.
 
-  - path: pld_runtime/02_ingestion/__init__.py
+  - path: pld_runtime/ingestion/__init__.py
     component_id: ingestion_pkg_init
     kind: code
     area: ingestion
@@ -733,7 +733,7 @@ components:
     authority_level: 5
     purpose: Package initialization for ingestion.
 
-  - path: pld_runtime/03_detection/__init__.py
+  - path: pld_runtime/detection/__init__.py
     component_id: detection_pkg_init
     kind: code
     area: detection
@@ -741,7 +741,7 @@ components:
     authority_level: 5
     purpose: Package initialization for detection.
 
-  - path: pld_runtime/04_enforcement/__init__.py
+  - path: pld_runtime/enforcement/__init__.py
     component_id: enforcement_pkg_init
     kind: code
     area: enforcement
@@ -749,7 +749,7 @@ components:
     authority_level: 5
     purpose: Package initialization for enforcement.
 
-  - path: pld_runtime/05_controllers/__init__.py
+  - path: pld_runtime/controllers/__init__.py
     component_id: controllers_pkg_init
     kind: code
     area: controller
@@ -757,7 +757,7 @@ components:
     authority_level: 5
     purpose: Package initialization for controllers.
 
-  - path: pld_runtime/06_logging/__init__.py
+  - path: pld_runtime/logging/__init__.py
     component_id: logging_pkg_init
     kind: code
     area: logging
@@ -765,7 +765,7 @@ components:
     authority_level: 5
     purpose: Package initialization for logging.
 
-  - path: pld_runtime/06_logging/exporters/__init__.py
+  - path: pld_runtime/logging/exporters/__init__.py
     component_id: exporters_pkg_init
     kind: code
     area: logging
@@ -773,7 +773,7 @@ components:
     authority_level: 5
     purpose: Package initialization for logging exporters.
 
-  - path: pld_runtime/07_failover/__init__.py
+  - path: pld_runtime/failover/__init__.py
     component_id: failover_pkg_init
     kind: code
     area: failover
