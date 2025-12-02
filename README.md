@@ -214,7 +214,8 @@ Next steps → `quickstart/README_quickstart.md`
 
 ---
 
-## 🧪 Built-In Runtime Detectors (Experimental)
+<details>
+<summary>🧪 Built-In Runtime Detectors (Experimental)</summary>
 
 PLD Runtime includes **Level-5 built-in detectors**, allowing you to experience drift detection in Quickstart without writing custom detection logic.
 
@@ -238,6 +239,8 @@ The updated `quickstart/hello_pld_runtime.py` uses `SchemaComplianceDetector` to
 * Result: a `drift_detected` event with metadata indicating the missing key.
 
 This provides a concrete code-level counterpart to the earlier **repair loop example**, making it easier to map JSON traces back to the runtime implementation.
+
+</details>
 
 ---
 
