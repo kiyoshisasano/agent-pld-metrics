@@ -10,122 +10,78 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 
 # SUMMARY
 
-## 0 — Overview
+## 0 — Overview & Orientation
 - What is PLD?
-- Version & Scope
-- Level Model Overview (`/docs/architecture_layers.md`)
-- Change Log (`/meta/CHANGELOG.md`)
-- Versioning Policy (`/meta/VERSIONING_POLICY.md`)
-- **For Product & Decision Makers — PLD in under 30 seconds (`/pitch/`)**
+- Level Model (`/docs/architecture/layers.md`)
+- Roadmap (`/meta/ROADMAP.md`)
+- Licensing & Policy (`/LICENSES/OVERVIEW.md`)
+- Internal Pitch Kit (`/pitch/`)
 
 ---
 
 ## 1 — Core Specifications (Levels 1–3)
 
-### 1.1 Level 1 — Structural Schema
-- PLD Event Schema (`/docs/schemas/pld_event.schema.json`)
-- Event Matrix (`/docs/schemas/event_matrix.yaml`)
-- Metrics Schema (`/docs/schemas/metrics_schema.yaml`)
-- Schema Examples (`/pld_runtime/01_schemas/runtime_event_envelope.examples.md`)
+### 1.1 Structure — Level 1
+- PLD Event Schema (`/docs/specifications/level_1_schema/pld_event.schema.json`)
+- Envelope Examples (`/pld_runtime/schemas/runtime_event_envelope.examples.md`)
 
-### 1.2 Level 2 — Semantic Specification
-- PLD Event Semantic Spec v2.0 (`/docs/PLD_Event_Semantic_Spec_v2.0.md`)
-- Event Matrix Reference (`/docs/event_matrix.md`)
-- Phase and Prefix Rules
-- Taxonomy Diagram (`/docs/taxonomy/PLD_taxonomy_v2.0_diagram.svg`)
+### 1.2 Semantics — Level 2
+- Semantic Specification (`/docs/specifications/level_2_semantics/PLD_Event_Semantic_Spec_v2.0.md`)
+- Event Matrix (`/docs/specifications/level_2_semantics/event_matrix.yaml`)
+- Taxonomy Diagram (`/docs/specifications/level_3_standards/reference/PLD_taxonomy_v2.0_diagram.svg`)
 
-### 1.3 Level 3 — Operational Standards
-- PLD Runtime Standard v2.0 (`/docs/PLD_Runtime_Standard_v2.0.md`)
-- Metrics Specification (`/docs/metrics/PLD_metrics_spec.md`)
-- Taxonomy v2.0 (`/docs/taxonomy/PLD_taxonomy_v2.0.md`)
-- Validation Traceability Map (`/docs/validation/PLD_v2_Traceability_Map.md`)
+### 1.3 Operational Standards — Level 3
+- Runtime Standard (`/docs/specifications/level_3_standards/PLD_Runtime_Standard_v2.0.md`)
+- Metrics Specification (`/docs/specifications/level_3_standards/PLD_metrics_spec.md`)
+- Traceability Matrix (`/docs/specifications/validation/traceability_matrix.md`)
 
 ---
 
 ## 2 — Runtime Implementation (Level 5)
 
-### 2.1 Runtime Core
-- Runtime Event Envelope (`/pld_runtime/schemas/runtime_event_envelope.json`)
-- RuntimeSignalBridge (`/pld_runtime/detection/runtime_signal_bridge.py`)
-- Drift Detector Template (`/pld_runtime/detection/drift_detector.py`)
-- Built-In Detectors (`/pld_runtime/detection/builtin_detectors.py`)
-- Enforcement Rules (`/pld_runtime/enforcement/`)
-- Controller Logic (`/pld_runtime/controllers/`)
-
-### 2.2 Logging & Telemetry
-- Structured Logger (`/pld_runtime/logging/structured_logger.py`)
-- Event Writers (`/pld_runtime/logging/event_writer.py`)
-- Runtime Logging Pipeline (`/pld_runtime/logging/runtime_logging_pipeline.py`)
-- Session Trace Buffer
-
-### 2.3 Ingestion & Normalization
-- Ingestion Config (`/pld_runtime/02_ingestion/ingestion_config.py`)
-- MultiWOZ Loader
-- Normalization Logic
-
-### 2.4 Failover & Recovery
-- Failover Strategies (`/pld_runtime/07_failover/`)
-- Backoff Policies
-- Strategy Registry
+- Runtime Core (`/pld_runtime/`)
+- Detection Components (`/pld_runtime/detection/`)
+- Enforcement (`/pld_runtime/enforcement/`)
+- Logging & Telemetry (`/pld_runtime/logging/`)
+- Controllers (`/pld_runtime/controllers/`)
+- Ingestion (`/pld_runtime/ingestion/`)
+- Failover & Recovery (`/pld_runtime/failover/`)
 
 ---
 
-## 3 — Level 4: Quickstart (Consumer Layer)
+## 3 — Quickstart & Recipes (Level 4)
 
-### 3.1 Getting Started
-- hello_pld_runtime.py (Events + Built-In Drift Detection)
+### 3.1 Quickstart
+- hello_pld_runtime.py
 - run_minimal_engine.py
-- Minimal Demo (`/quickstart/examples/minimal_pld_demo.py`)
+- metrics quickcheck (`/quickstart/metrics_quickcheck/`)
 
-### 3.2 Operator Primitives
-- Drift Detection (powered by built-in detectors)
-- Soft Repair
-- Hard Repair
-- Latency Control
-- Reentry Operators
-
-### 3.3 Patterns & Recipes
-- Runtime Patterns (/quickstart/patterns/)
-- Integration Recipes (/quickstart/patterns/04_integration_recipes/)
-- Tooling Patterns
-- RAG / LangGraph / Rasa Integration
-- **LangGraph + OpenAI Assistants API + PLD Runtime v2.0 (Observer-Mode Example)**
-  (/examples/langgraph_assistants/)
-  → Minimal example demonstrating how to attach PLD Runtime as an **observer-only telemetry layer**  
-     without influencing LangGraph behavior. Emits `continue`, `drift`, and `outcome` events to JSONL.
-
-### 3.4 Metrics Quickstart
-- Verification Scripts (`/quickstart/metrics/verify_metrics_local.py`)
-- Dashboards (`/quickstart/metrics/dashboards/`)
-- Example Logs (`/quickstart/metrics/datasets/pld_events_demo.jsonl`)
-- Reporting Examples
+### 3.2 Integration Recipes
+- LangGraph Integration
+- Assistants API Integration
+- Rasa Template
+- Observer Mode Example (`/examples/langgraph_assistants/`)
 
 ---
 
-## 4 — Analytics & Evaluation
-
-- PRDR Framework (`/analytics/PRDR_framework.md`)
-- VRL Framework (`/analytics/VRL_framework.md`)
-- Clustering & Observability Studies
-- Benchmarks & Datasets (MultiWOZ 2.4)
-- Case Studies
+## 4 — Patterns, Concepts & Practices
+- Operator Primitives (`/docs/concepts/operator_primitives/`)
+- System Patterns (`/docs/patterns/03_system/`)
+- UX Patterns (`/docs/patterns/02_ux/`)
+- Repair Strategies & Drift Model (`/docs/concepts/`)
 
 ---
 
-## 5 — Field Adoption Playbooks
+## 5 — Analytics & Evaluation
 
-- Trace Examples
+- Metrics Frameworks (`/analytics/metrics_frameworks/`)
+- Benchmarks (`/analytics/multiwoz_2.4_n200/`)
+- Case Studies (`/analytics/case_study_end_to_end.md`)
+
+---
+
+## 6 — Field Adoption Playbooks
 - Anti-Patterns
-- Role Alignment Guide
+- Trace Examples
 - Operational Onboarding
-- Conversation Protocols
-
----
-
-## 6 — Meta & Governance
-
-- ROADMAP (`/meta/ROADMAP.md`)
-- Manifest Spec (`/meta/METADATA_MANIFEST_SPEC.md`)
-- Contribution Guidelines (`/docs/contributing/PLD_Runtime_Implementation_Rules.md`)
-- Licenses & Trademark Policy (`/LICENSES/`)
-- Citation (`/LICENSES/citation.bib`)
+- Alignment Protocols
