@@ -45,15 +45,17 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 ## 2 — Runtime Implementation (Level 5)
 
 ### 2.1 Runtime Core
-- Runtime Event Envelope (`/pld_runtime/01_schemas/runtime_event_envelope.json`)
-- RuntimeSignalBridge (`/pld_runtime/03_detection/runtime_signal_bridge.py`)
-- Enforcement Rules (`/pld_runtime/04_enforcement/`)
-- Controller Logic (`/pld_runtime/05_controllers/`)
+- Runtime Event Envelope (`/pld_runtime/schemas/runtime_event_envelope.json`)
+- RuntimeSignalBridge (`/pld_runtime/detection/runtime_signal_bridge.py`)
+- Drift Detector Template (`/pld_runtime/detection/drift_detector.py`)
+- Built-In Detectors (`/pld_runtime/detection/builtin_detectors.py`)
+- Enforcement Rules (`/pld_runtime/enforcement/`)
+- Controller Logic (`/pld_runtime/controllers/`)
 
 ### 2.2 Logging & Telemetry
-- Structured Logger (`/pld_runtime/06_logging/structured_logger.py`)
-- Event Writers (`/pld_runtime/06_logging/event_writer.py`)
-- Runtime Logging Pipeline (`/pld_runtime/06_logging/runtime_logging_pipeline.py`)
+- Structured Logger (`/pld_runtime/logging/structured_logger.py`)
+- Event Writers (`/pld_runtime/logging/event_writer.py`)
+- Runtime Logging Pipeline (`/pld_runtime/logging/runtime_logging_pipeline.py`)
 - Session Trace Buffer
 
 ### 2.3 Ingestion & Normalization
@@ -71,12 +73,12 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 ## 3 — Level 4: Quickstart (Consumer Layer)
 
 ### 3.1 Getting Started
-- hello_pld_runtime.py
+- hello_pld_runtime.py (Events + Built-In Drift Detection)
 - run_minimal_engine.py
 - Minimal Demo (`/quickstart/examples/minimal_pld_demo.py`)
 
 ### 3.2 Operator Primitives
-- Drift Detection
+- Drift Detection (powered by built-in detectors)
 - Soft Repair
 - Hard Repair
 - Latency Control
