@@ -129,8 +129,7 @@ def make_console_logger(
         stream = sys.stdout
 
     def _writer(rec: Dict[str, Any]) -> None:
-        stream.write(json.dumps(rec, ensure_ascii=False) + "
-")
+        stream.write(json.dumps(rec, ensure_ascii=False) + "\n")
         if hasattr(stream, "flush"):
             stream.flush()
 
