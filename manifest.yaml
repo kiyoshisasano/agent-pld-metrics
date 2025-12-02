@@ -553,6 +553,15 @@ components:
 # 4. Quickstart & Examples
 # ---------------------------------------------------------
 
+  - path: quickstart/README_quickstart.md
+    component_id: quickstart_readme
+    kind: doc
+    area: quickstart
+    status: experimental
+    authority_level: 1
+    purpose: Quickstart guide for PLD runtime usage examples.
+
+
   - path: quickstart/hello_pld_runtime.py
     component_id: hello_pld_runtime
     kind: example
