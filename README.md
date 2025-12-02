@@ -179,7 +179,7 @@ A micro-scale real-world example showing how PLD governs behavior:
 
 see `examples/reference_traces`
 
-> This demonstrates the full PLD loop:
+> This demonstrates the full PLD loop:  
 > **Agent attempt** → **Drift detected** → **Repair** → **Verification** → **Resume**
 
 ---
