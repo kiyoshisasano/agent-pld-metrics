@@ -104,6 +104,7 @@ from .detection.runtime_signal_bridge import (
     SignalKind,
     EventContext,
     ValidationMode,
+)
 ```
 
 This surface defines the **official Level-5 boundary** for PLD runtime integrations.
@@ -304,6 +305,7 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
 
