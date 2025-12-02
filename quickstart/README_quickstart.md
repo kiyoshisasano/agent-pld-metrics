@@ -1,3 +1,15 @@
+<!--
+path: quickstart/README_quickstart.md
+component_id: quickstart_readme
+kind: doc
+area: quickstart
+status: experimental
+authority_level: 1
+version: 2.0.0
+license: Apache-2.0
+purpose: Quickstart guide for PLD runtime usage examples.
+-->
+
 # PLD Runtime Quickstart Guide
 
 This document provides a **practical introduction** to using the PLD runtime. It is designed for both:
