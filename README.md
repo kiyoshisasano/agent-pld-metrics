@@ -418,7 +418,7 @@ Full details: `LICENSES/OVERVIEW.md`
 
 ## 🏷 Trademark Statement
 
-“Phase Loop Dynamics” and “PLD” are names and identifiers associated with the work of **Kiyoshi Sasano** and are treated as common-law trademarks.
+“Phase Loop Dynamics” and “PLD” are names and identifiers associated with the work of **Kiyoshi Sasano** and are treated as common-law trademarks. 
 Please follow the trademark policy when referring to or using these names:  
 ➡ `LICENSES/TRADEMARK_POLICY.md`
 
