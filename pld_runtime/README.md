@@ -177,7 +177,7 @@ By defining a **stable API boundary**, the system preserves:
 
 ---
 
-## Submodule Index (01–07)
+## Submodule Index
 
 Each directory corresponds to a lifecycle stage.
 Descriptions reflect current intent, not a locked standard.
@@ -191,6 +191,24 @@ Descriptions reflect current intent, not a locked standard.
 | **controllers/** | Runtime governance logic                             | MAY route actions; MUST NOT mutate events |
 | **logging/**     | Structured session traces, replay-supporting formats | MUST preserve event ordering              |
 | **failover/**    | Recovery, retry, and mitigation logic                | SHOULD treat recovery conservatively      |
+
+---
+
+#### Built-in Drift Detection (Runtime v2.0)
+
+The `detection/` module includes a small set of **experimental, Level-5 detectors**
+intended for demonstration and evaluation purposes.
+
+Current implementations:
+
+- `SchemaComplianceDetector` — detects missing required fields in structured payloads
+- `SimpleKeywordDetector` — detects prohibited or conflicting patterns in text input
+
+These detectors do not alter Level 1–3 semantics.  
+They simply observe runtime signals and emit PLD-compliant `drift_detected` events.
+
+They are optional: systems may use them as-is, extend them, or replace them entirely.
+
 
 ---
 
@@ -291,6 +309,7 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
 
