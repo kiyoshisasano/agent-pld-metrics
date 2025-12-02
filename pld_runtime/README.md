@@ -263,14 +263,12 @@ Developers SHOULD treat this runtime as a test harness for exploring PLD-aligned
 
 ## Minimal Integration Example
 
-from pld_runtime import (
+from .detection.runtime_signal_bridge import (
     RuntimeSignalBridge,
     RuntimeSignal,
     SignalKind,
     EventContext,
     ValidationMode,
-    RuntimeLoggingPipeline,
-    JsonlExporter,
 )
 
 # Initialize the runtime bridge
@@ -309,6 +307,7 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
 
