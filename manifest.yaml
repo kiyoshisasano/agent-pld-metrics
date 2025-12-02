@@ -384,6 +384,15 @@ components:
     authority_level: 5
     purpose: Bridges raw signals to runtime events.
 
+   - path: pld_runtime/detection/builtin_detectors.py 
+     component_id: builtin_detectors 
+     kind: runtime_module 
+     area: detection 
+     status: experimental 
+     authority_level: 5 
+     purpose: Built-in detectors for keyword- and schema-based drift
+ 
+
   # --- enforcement ---
   - path: pld_runtime/enforcement/response_policy.py
     component_id: response_policy
