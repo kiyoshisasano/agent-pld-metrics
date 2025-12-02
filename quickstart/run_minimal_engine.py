@@ -7,7 +7,7 @@
 # license: Apache-2.0
 # purpose: Minimal engine loop that processes a small sequence of RuntimeSignals into PLD v2-compliant events and emits them through the Level 5 logging stack.
 
-from pld_runtime.runtime_signal_bridge import (
+from pld_runtime.detection.runtime_signal_bridge import (
     RuntimeSignalBridge,
     RuntimeSignal,
     EventContext,
