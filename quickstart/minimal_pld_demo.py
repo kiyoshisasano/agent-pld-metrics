@@ -24,7 +24,7 @@ This example remains **consumer-only**:
 The goal is to provide a clean, runnable introduction.
 """
 
-from pld_runtime.runtime_signal_bridge import (
+from pld_runtime.detection.runtime_signal_bridge import (
     RuntimeSignalBridge,
     RuntimeSignal,
     EventContext,
