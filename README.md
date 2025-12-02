@@ -93,15 +93,15 @@ If you're experimenting with multi-turn agents or runtime stability workflows, y
 > If PLD sparks something — share it.
 
 ⭐ Want to contribute?
-Look for **“good first issue”** labels or start a discussion.
+Look for **“good first issue”** labels or start a discussion.  
 Even small contributions (examples, tests, docs, traces) are valuable.
 
 ---
 
 ## 🎯 Why PLD Exists
 
-Multi-turn agents rarely fail because they *don't know something*—
-they fail because behavior becomes **unstable over time**.
+Multi-turn agents rarely fail because they *don't know something*—  
+they fail because behavior becomes **unstable over time**.  
 
 Common patterns include:
 
