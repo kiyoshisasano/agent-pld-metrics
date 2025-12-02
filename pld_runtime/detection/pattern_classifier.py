@@ -41,27 +41,24 @@ class TurnSnapshot:
 class PatternClassification:
     """
     Output from the PatternClassifier for a single analyzed unit.
+    """
+    code: str
 
-    Now includes `source_hint` to satisfy Level 1 source alignment expectations.
+    # NEW - resolves Core Technical Issue #1:
+    source_hint: str = dataclasses.field()
+    """
+    REQUIRED -- MUST contain a Level 1-valid source enum value.
+    Example valid values per Level 1 schema:
+        "user", "assistant", "runtime", "controller", "detector", "system"
     """
 
-    code: str
     phase: str | None = None
     event_type_hint: str | None = None
     confidence: float | None = None
 
-    # NEW — resolves Core Technical Issue #1:
-    source_hint: str = dataclasses.field()
-    """
-    REQUIRED — MUST contain a Level 1-valid source enum value.
-    Example valid values per Level 1 schema:
-        "user", "assistant", "runtime", "controller", "detector", "system"
-
-    Classifiers MUST set this explicitly — the event builder must not infer it.
-    """
-
     tags: list[str] = dataclasses.field(default_factory=list)
     extra: dict[str, _t.Any] = dataclasses.field(default_factory=dict)
+
 
     # TODO: Confirm whether classifier should validate taxonomy correctness
     # (e.g., ensure D* → phase=drift before returning).
@@ -153,6 +150,4 @@ class PatternClassifier:
         Caller is responsible for ensuring this aligns with PLD session semantics.
         """
         self._history.clear()
-
-
 
