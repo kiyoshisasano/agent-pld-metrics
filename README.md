@@ -185,6 +185,7 @@ see `examples/reference_traces`
 ---
 
 ## ⚡ Quickstart — Run PLD in Under 10 Seconds
+> A working drift detection demo powered by the built-in runtime detectors is included in the Quickstart.
 
 ```bash
 python quickstart/hello_pld_runtime.py
