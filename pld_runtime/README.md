@@ -184,13 +184,13 @@ Descriptions reflect current intent, not a locked standard.
 
 | Module              | Definition                                           | Notes                                     |
 | ------------------- | ---------------------------------------------------- | ----------------------------------------- |
-| **01_schemas/**     | Canonical runtime schema envelopes                   | MUST align with Level 1                   |
-| **02_ingestion/**   | Normalize inputs into runtime-consumable structures  | SHOULD avoid semantic inference           |
-| **03_detection/**   | Extract drift/repair/reentry/threshold signals       | SHOULD remain side-effect-free            |
-| **04_enforcement/** | Structural + semantic validation and rule evaluation | MUST follow Level precedence              |
-| **05_controllers/** | Runtime governance logic                             | MAY route actions; MUST NOT mutate events |
-| **06_logging/**     | Structured session traces, replay-supporting formats | MUST preserve event ordering              |
-| **07_failover/**    | Recovery, retry, and mitigation logic                | SHOULD treat recovery conservatively      |
+| **schemas/**     | Canonical runtime schema envelopes                   | MUST align with Level 1                   |
+| **ingestion/**   | Normalize inputs into runtime-consumable structures  | SHOULD avoid semantic inference           |
+| **detection/**   | Extract drift/repair/reentry/threshold signals       | SHOULD remain side-effect-free            |
+| **enforcement/** | Structural + semantic validation and rule evaluation | MUST follow Level precedence              |
+| **controllers/** | Runtime governance logic                             | MAY route actions; MUST NOT mutate events |
+| **logging/**     | Structured session traces, replay-supporting formats | MUST preserve event ordering              |
+| **failover/**    | Recovery, retry, and mitigation logic                | SHOULD treat recovery conservatively      |
 
 ---
 
@@ -291,5 +291,6 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
