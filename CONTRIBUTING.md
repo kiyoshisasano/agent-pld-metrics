@@ -34,27 +34,31 @@ Please skim the following (not required to memorize):
 | Manifest example | meta/manifest.example.yaml |
 | Roadmap (where the project is heading) | meta/ROADMAP.md |
 
-## **🧩 Metadata & Manifest**
+## **🧩 Metadata & Manifest Rules**
 
-If your contribution adds or modifies:
+We have two tiers of contribution complexity:
 
-* runtime modules  
-* schemas or evaluation assets  
-* examples or integration recipes  
-* documentation that describes behavior or concepts
+### **🟢 Fast Track (Docs, Examples, Pitch, Analytics)**
+For contributions to `docs/`, `examples/`, `pitch/`, or `analytics/`:
+* **No manifest update required.** (These folders are automatically tracked).
+* **No metadata headers required** inside the files (optional).
+* Just add your files and submit a PR.
 
-➡️ Please update the root manifest.yaml.  
-(Note: If working in a distributed folder like field/, update the local manifest instead.)
+### **🔴 Core Track (Runtime Code, Governance)**
+For contributions to `pld_runtime/` or `meta/` (Level 4-5):
+* **Manifest Update Required:** You MUST add a specific entry to `manifest.yaml`.
+* **Metadata Headers Required:** Python files must include `# component_id: ...` headers.
+* **Strict Validation:** Changes must pass `python validate_manifest.py --level L2`.
 
 ### **How to validate**
 
 Run the included validator to check integrity:
 
-python validate\_manifest.py
+    python validate_manifest.py
 
 Optional stricter mode (Required for Core Runtime code):
 
-python validate\_manifest.py \--level L2
+    python validate_manifest.py --level L2
 
 Metadata is not bureaucracy — it’s how we keep the system explorable and maintainable.
 
@@ -62,14 +66,16 @@ Metadata is not bureaucracy — it’s how we keep the system explorable and mai
 
 If your work touches runtime code (especially Python files):
 
-1. **Follow Naming Patterns:** Use snake\_case and explicit function intent.  
-2. Add Metadata Headers (Crucial):  
-   To pass L2 validation, Python files (.py) MUST include a metadata block in the first 50 lines matching the manifest entry.  
-   \# component\_id: my\_new\_detector  
-   \# status: experimental  
-   \# authority\_level: 5
+1. **Follow Naming Patterns:** Use snake_case and explicit function intent.
+2. **Add Metadata Headers (Crucial):**
+   To pass L2 validation, Python files (.py) MUST include a metadata block in the first 50 lines matching the manifest entry.
 
-3. **Label Experimental Logic:** Use status: experimental in metadata.  
+   ```python
+   # component_id: my_new_detector
+   # status: experimental
+   # authority_level: 5
+
+3. **Label Experimental Logic:** Use `status: experimental` in metadata.  
 4. **Prioritize Clarity:** PLD is meant to be studied and adapted.
 
 If relevant, include a minimal runnable example under:
@@ -94,17 +100,13 @@ docs/
 
 ## **🔁 Pull Request Process**
 
-1. Fork the repository (or branch if contributor access is granted)  
-2. Make changes in small, intentional commits  
-3. Update manifest.yaml (and add headers if adding code)  
-4. Run validation (python validate\_manifest.py)  
+1. Fork the repository (or branch if contributor access is granted)
+2. Make changes in small, intentional commits
+3. **Check Metadata Requirements:**
+   * If touching `pld_runtime/`: Update `manifest.yaml` and add headers.
+   * If touching `docs/` or `examples/`: **Skip this step.**
+4. Run validation (`python validate_manifest.py`)
 5. Submit PR with a short summary explaining **"why"**, not just "what changed".
-
-We prefer pull requests that:
-
-* solve one problem at a time  
-* come with examples or context  
-* align with the roadmap — or propose extensions
 
 ## **🤝 Collaboration Philosophy**
 
