@@ -65,10 +65,22 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 ---
 
 ## 4 — Patterns, Concepts & Practices
+### 4.1 Concepts
+- Drift & Repair Model (`/docs/concepts/02_drift_repair_model.md`)
+- Repair Strategies (`/docs/concepts/03_repair_strategies.md`)
 - Operator Primitives (`/docs/concepts/operator_primitives/`)
+
+### 4.2 Architecture (Level 4)
+- Runtime Modes (Observer vs Governor) (`/docs/architecture/runtime_modes.md`)
+- Principles (`/docs/architecture/principles.md`)
+- Layers (`/docs/architecture/layers.md`)
+
+### 4.3 System Patterns
 - System Patterns (`/docs/patterns/03_system/`)
+
+### 4.4 UX Patterns
 - UX Patterns (`/docs/patterns/02_ux/`)
-- Repair Strategies & Drift Model (`/docs/concepts/`)
+
 
 ---
 
