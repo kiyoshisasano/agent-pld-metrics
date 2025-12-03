@@ -1,3 +1,14 @@
+<!--
+component_id: concepts_introduction
+kind: doc
+area: concepts
+status: candidate
+authority_level: 3
+version: 2.0.0
+license: CC-BY-4.0
+purpose: High-level conceptual introduction to the PLD lifecycle and design philosophy.
+-->
+
 # Introduction to PLD Concepts
 
 ## 1. What This Document Is
@@ -220,4 +231,5 @@ A useful diagnostic question is:
 If answering this requires guesswork, the system is not yet fully PLD-aligned.
 
 This introduction establishes the foundational mindset for understanding PLD. The subsequent documents elaborate how these ideas become concrete, traceable behaviors in real-world systems.
+
 
