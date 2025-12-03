@@ -1,4 +1,29 @@
-include pld_runtime/schemas/*.json
-recursive-include pld_runtime *.json
+# Documentation & Meta
 include README.md
 include LICENSE
+include SUMMARY.md
+include CONTRIBUTING.md
+include manifest.yaml
+include requirements.txt
+include pyproject.toml
+include *.svg
+
+# Core Data & Configs
+recursive-include pld_runtime *.json *.yaml *.md *.py
+recursive-include meta *.md *.yaml
+
+# Specs & Docs
+recursive-include docs *.md *.svg *.yaml *.json
+
+# Examples & Quickstart (Users need these)
+recursive-include quickstart *.py *.md *.jsonl *.json
+recursive-include examples *.py *.md *.jsonl *.yaml
+
+# Tests (Good practice to include)
+recursive-include tests *.py
+
+# Exclude junk
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude .env
