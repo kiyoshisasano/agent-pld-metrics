@@ -136,6 +136,8 @@ event = bridge.build_event(
 
 ## 5. Validation Rules for Module-Scope Metrics
 
+The following constraints reflect Level 3 normative specifications; runtime modules implement only advisory behavior and therefore must not alter canonical semantics.
+
 * MUST NOT redefine lifecycle semantics.
 * MUST NOT introduce new taxonomy prefixes.
 * MUST NOT mutate PLD event fields.
@@ -178,6 +180,8 @@ Recovery events:
 FR = (# failover events)
      ÷ (# lifecycle events excluding phase="none")
 ```
+
+Runtime guidance mirrors Level 3 normative definitions; modules may track advisory counts, but canonical lifecycle semantics remain fixed at the specification layer.
 
 * MUST NOT redefine lifecycle semantics
 * MUST NOT introduce new taxonomy prefixes
