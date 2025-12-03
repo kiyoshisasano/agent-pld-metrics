@@ -1,11 +1,7 @@
-# --- Integration Examples (LangGraph / OpenAI) ---
 langgraph>=0.0.10
 langchain>=0.1.0
 openai>=1.0.0
-
-# --- Observability & Telemetry (Optional) ---
 opentelemetry-api>=1.20.0
 opentelemetry-sdk>=1.20.0
-
-# --- Development & Testing ---
 pytest>=7.0.0
+pyyaml
