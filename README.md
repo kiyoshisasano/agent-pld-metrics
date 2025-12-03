@@ -315,7 +315,7 @@ Once structured events flow, the system becomes measurable:
 * **VRL — Visible Repair Load**
 * **FR — Failover Rate**
 
-Metrics cookbook → `docs/metrics/cookbook.md`
+Metrics cookbook → `docs/metrics/pld_operational_metrics_cookbook.md`
 
 #### Text-based Metrics Dashboard (Experimental)
 
