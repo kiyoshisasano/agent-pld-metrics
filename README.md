@@ -15,12 +15,12 @@ This repository contains **specifications, runtime components, examples, adoptio
 
 ## 🧭 Start Here Based on Your Role
 
-| You Are…                           | Recommended Entry Point                                                                               |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 🧑‍💻 **Developer / Engineer**     | Start with: `quickstart/` → run an example, emit structured runtime events and basic drift detection. |
-| 🧪 **Researcher / Architect**      | Explore: `docs/` (Levels 1–3) → semantics, schema, taxonomy, runtime reasoning.                       |
-| 🧑‍💼 **Product / Decision Maker** | View: `pitch/` → understand why multi-turn systems fail and how PLD stabilizes them.                  |
-| 🧭 **Evaluating or Integrating**   | Check: `examples/` and `analytics/` for patterns, metrics, and field workflows.                       |
+| You Are…                           | Recommended Entry Point                                                                                           |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 🧑‍💻 **Developer / Engineer**     | Start with: `quickstart/` → run an example such as `easy_pld_demo.py`, which provides a concise high-level usage flow. |
+| 🧪 **Researcher / Architect**      | Explore: `docs/` (Levels 1–3) → semantics, schema, taxonomy, runtime reasoning.                                   |
+| 🧑‍💼 **Product / Decision Maker** | View: `pitch/` → understand why multi-turn systems fail and how PLD stabilizes them.                              |
+| 🧭 **Evaluating or Integrating**   | Check: `examples/` and `analytics/` for patterns, metrics, and field workflows.                                   |
 
 ---
 
@@ -222,12 +222,24 @@ see `examples/reference_traces`
 > A working drift detection demo powered by the built-in runtime detectors is included in the Quickstart.
 
 ```bash
+python quickstart/easy_pld_demo.py      # Recommended: simplest demo using SimpleObserver
 python quickstart/hello_pld_runtime.py
 python quickstart/run_minimal_engine.py
 python quickstart/metrics_quickcheck/verify_metrics_local.py
 ```
 
 Next steps → `quickstart/README_quickstart.md`
+
+### High-Level Usage Example
+
+Some workflows benefit from a concise interface that prepares `EventContext`,
+manages turn sequencing, and emits structured events through the runtime.
+`quickstart/easy_pld_demo.py` illustrates this pattern using `SimpleObserver`,
+showing how a turn can be logged with only a few lines of code while still
+producing canonical PLD events.
+
+This example is useful when evaluating the runtime from an integration
+perspective or when experimenting with lightweight interaction loops.
 
 ### 🚀 What the Quickstart Demos Show
 
