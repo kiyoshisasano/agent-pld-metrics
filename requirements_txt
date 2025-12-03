@@ -1,0 +1,23 @@
+# component_id: requirements_txt
+# kind: config
+# area: meta
+# status: stable
+# authority_level: 3
+# purpose: Python package dependencies for running examples, integrations, and telemetry.
+
+# --- Core Dependencies ---
+# PLD Runtime core is designed to be dependency-free (standard library only).
+# The packages below are required for running specific examples and integrations.
+
+# --- Integration Examples (LangGraph / OpenAI) ---
+langgraph>=0.0.10
+langchain>=0.1.0
+openai>=1.0.0
+
+# --- Observability & Telemetry (Optional) ---
+# Required only if using exporter_open_telemetry.py
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+
+# --- Development & Testing ---
+pytest>=7.0.0
