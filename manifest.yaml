@@ -155,6 +155,15 @@ components:
   # 2. Documentation & Architecture
   # ---------------------------------------------------------
 
+  - path: docs/metrics/visuals/dashboard_mockup.svg
+    component_id: pld_metrics_dashboard_mockup
+    kind: doc
+    area: metrics
+    status: draft
+    authority_level: 3
+    version: 2.0.0
+    purpose: Visual mockup of an analytics-layer dashboard corresponding to examples/dashboard/app.py.
+
   - path: docs/metrics/pld_operational_metrics_cookbook.md
     component_id: pld_operational_metrics_cookbook
     kind: doc
@@ -581,7 +590,7 @@ components:
     purpose: Registry for failover strategies.
 
 # ---------------------------------------------------------
-# 4. Quickstart & Examples
+# 4. Quickstart
 # ---------------------------------------------------------
 
   - path: quickstart/README_quickstart.md
@@ -832,3 +841,13 @@ components:
     status: experimental
     authority_level: 2
     purpose: Package initialization for LangGraph integration.
+
+  - path: examples/dashboard/app.py
+    component_id: pld_metrics_dashboard_app
+    kind: example
+    area: metrics
+    status: experimental
+    authority_level: 2
+    version: 2.0.0
+    purpose: Text-based analytics dashboard demo for PRDR, VRL, and FR over PLD v2 events.
+
