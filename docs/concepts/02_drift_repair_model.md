@@ -1,292 +1,235 @@
-# PLD Drift–Repair Reference (Applied-AI Dictionary)
+# Drift–Repair Lifecycle Model
 
-> **Purpose:** This is the canonical reference for all PLD codes used in:  
-> labeling, metrics, runtime detection, auditing, and dataset annotation.
+## 1. Purpose of This Document
 
-> **Scope:** Defines allowed values, required meanings, and example patterns.  
-No theory, no interpretation — **just definitive ground truth.**
+This document defines the **conceptual Drift–Repair lifecycle model** used throughout PLD. It is a non-normative companion to the authoritative definitions in:
 
----
+* **Level 1 Schema** — event envelope and required fields
+* **Level 2 Semantic Matrix** — event meanings and phase structure
+* **Level 3 Runtime Standards** — taxonomy codes, operational phases, validation expectations
 
-## 1. Drift Codes (D-Series)
+Its purpose is to provide a clear mental model of how multi-turn agents transition between phases, how drift is detected, how repair is performed, and how continuation and outcomes are determined.
 
-A **drift event** means:  
-> The system deviates from expected meaning, constraints, workflow, or pacing.
-
-Only **one primary drift type** may be assigned per segment.
+This document MUST NOT override canonical definitions in Levels 1–3.
 
 ---
 
-### **D1 — Information Drift**
+# 2. High-Level Lifecycle Overview
 
-**Definition:**  
-System output contradicts available facts, tool results, or previously established truth.
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"D1_information_drift"` |
-
-**Detection Conditions:**
-
-- DB/API returns X → system states Y  
-- Model states "no result" → later acknowledges existing result  
-- Factual inconsistency inside the same session  
-
-**Example:**
-
-> "There are no available 4-star hotels."  
-> *(Later)*  
-> "Here are two 4-star hotels."
-
----
-
-### **D2 — Context Drift**
-
-**Definition:**  
-Loss or misuse of previously established context or constraints.
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"D2_context_drift"` |
-
-**Detection Conditions:**
-
-- Missing constraints  
-- Replaced slot value without justification  
-- Misinterpreted previous user turn  
-
-**Example:**
-
-> User: "I need vegan options."  
-> System: "Here are steakhouse recommendations."
-
----
-
-### **D3 — Intent Drift**
-
-**Definition:**  
-The system shifts task direction or goal without user signal.
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"D3_intent_drift"` |
-
-**Detection Conditions:**
-
-- Task domain switches  
-- New plan proposed without context  
-- System decides unrelated sub-task  
-
-**Example:**
-
-> User: "Book a hotel."  
-> System: "Would you like to compare train tickets instead?"
-
----
-
-### **D4 — Procedural Drift**
-
-**Definition:**  
-System diverges from expected workflow sequence or operational role.
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"D4_procedural_drift"` |
-
-**Detection Conditions:**
-
-- tool-call repetition  
-- missing postconditions  
-- planner → executor confusion  
-- execution loop without progress  
-
-**Example:**
-
-> Tool executed successfully, but planner retries anyway.
-
----
-
-### **D5 — Pacing / Latency Drift**
-
-**Definition:**  
-Timing behavior creates confusion, expectation mismatch, or trust loss.
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"D5_latency_drift"` |
-
-**Detection Conditions:**
-
-- silent delay without indicator  
-- abrupt response pacing break  
-- streaming stops prematurely  
-
-**Example:**
-
-> (15s silence)  
-> System: "…so anyway—"
-
----
-
-## 2. Repair Codes (R-Series)
-
-A **repair event** indicates:  
-> The system performs an explicit attempt to resolve a drift.
-
-Zero or multiple repairs may occur across a session, but only **one repair per labeled segment.**
-
----
-
-### **R1 — Local Repair**
-
-**Definition:**  
-Minor correction without modifying global structure or resetting context.
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"R1_local_repair"` |
-
-**Includes:**
-
-- clarification  
-- adding missing details  
-- retrying tool call with corrected argument  
-
----
-
-### **R2 — Structural Repair**
-
-**Definition:**  
-Fixing internal state: workflow, memory, slot values, constraint restoration.
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"R2_structural_repair"` |
-
-**Includes:**
-
-- restoring lost parameters  
-- synchronizing belief state with tool output  
-- re-aligning planner/executor roles  
-
----
-
-### **R3 — UX Repair**
-
-**Definition:**  
-Stabilizing pacing, timing, or feedback for perceived continuity.
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"R3_ux_repair"` |
-
-**Includes:**
-
-- “still working…”  
-- progressive disclosure  
-- safe filler responses  
-
----
-
-### **R4 — Hard Repair (Reset)**
-
-**Definition:**  
-Discarding current context and restarting workflow intentionally.
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"R4_hard_repair"` |
-
-**Includes:**
-
-- “Let’s restart.”  
-- memory clear  
-- reinitialization  
-
----
-
-## 3. Reentry Codes (RE-Series)
-
-A **reentry event** occurs when a conversation returns to the intended workflow after drift/repair.
-
----
-
-### **RE1 — Intent Reentry**
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"RE1_intent_reentry"` |
-
-**Meaning:**  
-User explicitly restores the original goal.
-
-**Example:**  
-> “Let’s go back to booking the hotel.”
-
----
-
-### **RE2 — Constraint Reentry**
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"RE2_constraint_reentry"` |
-
-**Meaning:**  
-Previously stated parameters are restored.
-
-**Example:**  
-> "Right — a 4-star hotel under £100."
-
----
-
-### **RE3 — Workflow Reentry**
-
-| Field | Value |
-|-------|-------|
-| JSON Value | `"RE3_workflow_reentry"` |
-
-**Meaning:**  
-System automatically resumes task progression after correction.
-
-**Example:**  
-> (repair applied) → continues booking.
-
----
-
-## 4. Special Values
-
-| Field | Case | JSON Value |
-|-------|------|------------|
-| Drift not present | `"none"` | `"none"` |
-| Repair not present | `"none"` | `"none"` |
-| Reentry not applicable | `"none"` | `"none"` |
-
----
-
-## 5. Machine-Readable Table Reference
-
-Use this for schema mapping:
-
-```json
-{
-  "drift": ["none", "D1_information_drift", "D2_context_drift", "D3_intent_drift", "D4_procedural_drift", "D5_latency_drift"],
-  "repair": ["none", "R1_local_repair", "R2_structural_repair", "R3_ux_repair", "R4_hard_repair"],
-  "reentry": ["none", "RE1_intent_reentry", "RE2_constraint_reentry", "RE3_workflow_reentry"]
-}
-```
-
----
-
-## 6. File Placement
+A PLD session progresses through a predictable set of phases:
 
 ```
-docs/02_pld_drift_repair_reference.md
+Drift → Repair → Reentry → Continue → Outcome
 ```
+
+Each phase is represented through canonical event types and validated through Level 2 semantics. The Drift–Repair model describes **why** those transitions occur and **how** runtime implementations should think about them.
 
 ---
 
-## 7. Version
+# 3. Drift Phase
 
-Applied-AI Edition  
-Updated: 2025-02  
-Maintainer: Kiyoshi Sasano
+The Drift phase begins when the system detects that the agent has deviated from expectations. Drift may originate from:
+
+* user instruction misunderstanding,
+* incorrect tool outputs,
+* missing or malformed fields,
+* semantic divergence from task intent,
+* policy or safety boundary violations.
+
+### 3.1 Drift Signals and Events
+
+Drift is represented using D*-family taxonomy codes and MUST use a Drift-phase event type such as:
+
+* `drift_detected`
+* `drift_escalated`
+
+These events articulate **what failed** and provide the context required for downstream repair.
+
+### 3.2 Drift Classification (Conceptual Categories)
+
+Although code-level definitions live in Level 3, conceptually Drift generally falls into five categories:
+
+* **Information Drift** — factual inconsistency
+* **Context Drift** — loss or misuse of established constraints
+* **Intent Drift** — deviation from the user’s goal
+* **Procedural Drift** — workflow or sequencing issues
+* **Pacing / Latency Drift** — timing or pacing failures
+
+**Only one primary drift type should be assigned per segment**, ensuring clear diagnosis and predictable repair behavior.
+
+A drift MAY be absent, represented conceptually as `none`.
+
+### 3.3 Goals of the Drift Phase
+
+The Drift phase is not about fixing the error; it is about:
+
+* detecting the deviation,
+* classifying its severity,
+* capturing metadata for diagnosis,
+* deciding which repair strategy to attempt.
+
+The Drift phase ends when the system decides that repair must begin.
+
+---
+
+# 4. Repair Phase
+
+The Repair phase attempts to correct the deviation identified in the Drift phase. It is represented using R*-family taxonomy codes and MUST use a Repair-phase event type such as:
+
+* `repair_triggered`
+* `repair_escalated`
+
+Repair does not automatically imply success. It is a structured attempt to resolve drift.
+
+### 4.1 Repair Strategies
+
+PLD defines three practical repair strategies:
+
+* **Static Repair** — deterministic transformations
+* **Guided Repair** — LLM-assisted self-correction
+* **Human-in-the-Loop (HITL)** — manual governance gate
+
+See `03_repair_strategies.md` for full details.
+
+### 4.2 Conceptual Repair Categories
+
+Independent of strategy, repairs can be understood across four conceptual categories:
+
+* **Local Repair** — small, localized corrections
+* **Structural Repair** — restoring internal workflow or state
+* **UX Repair** — stabilizing pacing or feedback
+* **Hard Repair (Reset)** — discarding context and restarting
+
+These conceptual categories do not override Level 3 taxonomy rules but help frame the nature of corrective actions.
+
+A repair MAY be absent, represented conceptually as `none`.
+
+### 4.3 Entering Repair
+
+The system transitions from Drift → Repair when one of the following holds:
+
+* A deviation requires correction before safe continuation
+* The drift severity demands immediate intervention
+* Runtime policy mandates correction before progressing
+
+Repair may escalate between strategies (e.g., Static → Guided → Human) using `repair_escalated`.
+
+### 4.4 Repair Budget and Retry Limits
+
+To prevent infinite oscillation between Drift and Repair:
+
+* Each repair strategy SHOULD define a **strategy-level Repair Budget**
+* If a strategy’s budget is exhausted and a higher-order strategy exists, the system SHOULD emit `repair_escalated`
+* If no higher-order strategy exists, the runtime MUST transition to:
+
+  * `failover_triggered`, or
+  * `session_closed`
+
+A system MAY define a **global Repair Budget**. When exhausted, the session MUST terminate safely and MUST NOT return to Drift.
+
+---
+
+# 5. Reentry Phase
+
+After Repair, the system may enter the Reentry phase. Reentry is **state-integrity validation**—a lightweight checkpoint confirming whether the system can safely resume the intended task.
+
+Reentry uses `reentry_observed` and aligns with Level 2 semantics.
+
+### 5.1 Purpose of Reentry
+
+Reentry ensures:
+
+* the repair succeeded,
+* no new drift is latent in the agent state,
+* task constraints are still coherent,
+* the next continuation step will not cause compounding errors.
+
+Reentry is NOT a rollback mechanism. It is a validation gateway.
+
+### 5.2 Reentry Classification (Conceptual Categories)
+
+Reentry commonly falls into three conceptual categories:
+
+* **Intent Reentry** — goal alignment is restored
+* **Constraint Reentry** — parameters and constraints are coherent again
+* **Workflow Reentry** — execution flow resumes normally
+
+A reentry MAY be absent, represented conceptually as `none`.
+
+### 5.3 Possible Outcomes of Reentry
+
+From Reentry, the system may:
+
+* proceed to Continue (`continue_allowed`),
+* block continuation (`continue_blocked`),
+* identify new drift (leading to a new Drift phase),
+* close the session due to inconsistencies.
+
+---
+
+# 6. Continue Phase
+
+The Continue phase determines whether execution proceeds, pauses, or is blocked. It is represented by C*-family taxonomy codes, using event types such as:
+
+* `continue_allowed`
+* `continue_blocked`
+
+### 6.1 Safe Continuation
+
+A continuation is safe when:
+
+* repair was successful,
+* state integrity has been validated,
+* no policy or safety thresholds prevent continuation.
+
+### 6.2 Blocked Continuation
+
+Continuation may be intentionally blocked when:
+
+* HITL approval is required,
+* safety or compliance rules are triggered,
+* additional runtime checks are pending.
+
+Blocked continuation is explicitly represented through `continue_blocked`.
+
+---
+
+# 7. Outcome Phase
+
+The Outcome phase represents final session states. It includes O*-family taxonomy codes and event types such as:
+
+* `session_closed`
+* `outcome_generated`
+
+Outcome marks the end of a lifecycle. It may reflect:
+
+* normal task completion,
+* human-terminated sessions,
+* failover-triggered termination,
+* policy-driven shutdown.
+
+---
+
+# 8. Failover Path (Optional but Recommended)
+
+The Failover path provides a safety mechanism when recovery is impossible or unsafe. It uses F*-family codes and event types like `failover_triggered`.
+
+Failover MUST be used when:
+
+* both strategy-level and global repair budgets are exhausted,
+* the system cannot recover from severe drift,
+* continuation would violate policy or safety constraints.
+
+---
+
+# 9. Summary
+
+The Drift–Repair lifecycle model provides a predictable sequence:
+
+```
+Drift → Repair → Reentry → Continue → Outcome
+```
+
+Each phase has clear entry/exit conditions and aligns strictly with the Level 2 Semantic Matrix and Level 3 Runtime Standards.
+
+This conceptual model underpins the practical repair strategies, runtime policies, and transition patterns described throughout the PLD documentation ecosystem.
