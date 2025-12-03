@@ -30,7 +30,7 @@ except ImportError:
     print("ERROR: PyYAML is required. Install with: pip install pyyaml", file=sys.stderr)
     sys.exit(1)
 
-SPEC_VERSION = "0.9.0"
+SPEC_VERSION = "0.9.1"
 
 KIND_ENUM = {
     "code",
