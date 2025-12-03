@@ -312,9 +312,7 @@ Once structured events flow, the system becomes measurable:
 <img src="docs/metrics/visuals/dashboard_mockup.svg" width="100%" alt="PLD Analytics Dashboard View" />
 
 * **PRDR — Post-Repair Drift Recurrence**
-* **REI — Repair Efficiency**
 * **VRL — Visible Repair Load**
-* **MRBF — Mean Repairs Before Failover**
 * **FR — Failover Rate**
 
 Metrics cookbook → `docs/metrics/cookbook.md`
