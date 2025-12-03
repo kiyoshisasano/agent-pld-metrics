@@ -1,7 +1,7 @@
 # component_id: controller_config
 # kind: runtime_module
 # area: controller
-# status: runtime
+# status: experimental
 # authority_level: 5
 # version: 2.0.0
 # license: Apache-2.0

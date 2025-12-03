@@ -1,7 +1,7 @@
 # component_id: state_machine
 # kind: runtime_module
 # area: controller
-# status: runtime
+# status: experimental
 # authority_level: 5
 # version: 2.0.0
 # license: Apache-2.0
