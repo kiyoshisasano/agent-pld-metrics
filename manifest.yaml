@@ -133,6 +133,55 @@ components:
       - citation.bib
       - LICENSES.md
 
+  # --- Project Configuration (New Files) ---
+  - path: pyproject.toml
+    component_id: pyproject_config
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Python project packaging configuration.
+
+  - path: requirements.txt
+    component_id: requirements_file
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Python package dependencies.
+
+  - path: MANIFEST.in
+    component_id: manifest_in_config
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Packaging inclusion rules.
+
+  - path: .gitignore
+    component_id: gitignore
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 1
+    purpose: Git exclusion rules.
+
+  - path: .github/workflows/
+    component_id: github_workflows
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: GitHub Actions workflow definitions (CI/CD).
+
+  - path: tests/
+    component_id: tests_directory
+    kind: code
+    area: test
+    status: experimental
+    authority_level: 1
+    purpose: Placeholder directory for future unit tests.
+
   # ---------------------------------------------------------
   # 2. Documentation & Architecture (Implicit Grouping)
   # ---------------------------------------------------------
