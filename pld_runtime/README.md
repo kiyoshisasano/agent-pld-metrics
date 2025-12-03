@@ -4,7 +4,7 @@ kind: doc
 area: runtime
 status: stable
 authority_level: 5
-version: 2.0.0
+version: 2.0.1
 license: Apache-2.0
 purpose: Entry-point documentation for the PLD runtime directory.
 -->
@@ -116,13 +116,23 @@ It is the recommended import path for:
 * examples, demos, and field experimentation
 * production-facing integrations where stability matters
 
-Note: SimpleObserver is a Level-5 convenience wrapper and is not part of the stable top-level API surface. It is intended for ergonomic integrations and may evolve independently of the core runtime bridge.
+### ⚠️ Note on SimpleObserver
+
+`SimpleObserver` (located under `ingestion/simple_observer.py`) is a **Level-5 convenience wrapper** that automates:
+
+* EventContext construction
+* turn sequencing
+* latency measurement
+* optional detector invocation
+
+It is **not part of the stable public API surface**, and may evolve independently of the core bridge.
+External integrations seeking long-term stability should rely on `RuntimeSignalBridge`.
 
 ---
 
-### Design Intent
+## Design Intent
 
-This API exists to ensure that **external integrations remain stable** even if the internal folder structure evolves.
+This API ensures that **external integrations remain stable** even if the internal folder structure evolves.
 
 It establishes:
 
@@ -138,42 +148,22 @@ It establishes:
 
 #### ✅ You SHOULD:
 
-* import only from the top-level namespace:
-
-  ```python
-  from pld_runtime import RuntimeSignalBridge
-  ```
+```python
+from pld_runtime import RuntimeSignalBridge
+```
 
 * treat internal module paths as **implementation details**
-
 * assume backward-compatibility for top-level API names only
 
 #### ❌ You SHOULD NOT:
 
-* import directly from internal paths:
+```python
+# discouraged — bypasses stability guarantees
+from pld_runtime.logging.runtime_logging_pipeline import RuntimeLoggingPipeline
+```
 
-  ```python
-  # discouraged — bypasses stability guarantees
-  from pld_runtime.logging.runtime_logging_pipeline import RuntimeLoggingPipeline
-  ```
-
-* modify event dictionaries built by the runtime
-
-* redefine or extend taxonomy values (`event_type`, `phase`, `pld.code`, etc.)
-
----
-
-### Why This Matters
-
-The goal of PLD is to act as a **runtime reasoning layer**, not a library of loosely defined helper utilities.
-By defining a **stable API boundary**, the system preserves:
-
-* interoperability across agent frameworks
-* predictable behavior under refactors
-* replay-safe event semantics
-* versioned compatibility with schema levels
-
-> *“There may be many frameworks — but only one governing runtime boundary.”*
+* modify event dictionaries
+* redefine or extend taxonomy values or lifecycle semantics
 
 ---
 
@@ -182,92 +172,67 @@ By defining a **stable API boundary**, the system preserves:
 Each directory corresponds to a lifecycle stage.
 Descriptions reflect current intent, not a locked standard.
 
-| Module              | Definition                                           | Notes                                     |
-| ------------------- | ---------------------------------------------------- | ----------------------------------------- |
-| **schemas/**     | Canonical runtime schema envelopes                   | MUST align with Level 1                   |
-| **ingestion/**   | The ingestion module also contains SimpleObserver, an optional high-level facade that automates
-EventContext construction, turn sequencing, latency measurement, and detector invocation. It is a Level-5 helper and does not alter canonical PLD semantics.
-  | SHOULD avoid semantic inference           |
-| **detection/**   | Extract drift/repair/reentry/threshold signals       | SHOULD remain side-effect-free            |
-| **enforcement/** | Structural + semantic validation and rule evaluation | MUST follow Level precedence              |
-| **controllers/** | Runtime governance logic                             | MAY route actions; MUST NOT mutate events |
-| **logging/**     | Structured session traces, replay-supporting formats | MUST preserve event ordering              |
-| **failover/**    | Recovery, retry, and mitigation logic                | SHOULD treat recovery conservatively      |
-| **ingestion/simple_observer.py** | High-level facade wrapping RuntimeSignalBridge; manages turn sequencing, latency, detectors | Optional helper for runtime integrations |
+| Module           | Definition                                                                                           | Notes                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **schemas/**     | Canonical runtime schema envelopes                                                                   | MUST align with Level 1                   |
+| **ingestion/**   | Normalize inputs into runtime-consumable structures; includes the high-level `SimpleObserver` facade | SHOULD avoid semantic inference           |
+| **detection/**   | Extract drift/repair/reentry/threshold signals                                                       | SHOULD remain side-effect-free            |
+| **enforcement/** | Structural + semantic validation and rule evaluation                                                 | MUST follow Level precedence              |
+| **controllers/** | Runtime governance logic                                                                             | MAY route actions; MUST NOT mutate events |
+| **logging/**     | Structured session traces and replay-supporting formats                                              | MUST preserve event ordering              |
+| **failover/**    | Recovery, retry, and mitigation logic                                                                | SHOULD treat recovery conservatively      |
 
+### Additional Note on `ingestion/simple_observer.py`
+
+The `SimpleObserver` module provides an optional ergonomic interface that wraps
+`RuntimeSignalBridge` and automates common runtime tasks.
+It does **not** alter PLD semantics and remains within Level-5 boundaries.
 
 ---
 
-#### Built-in Drift Detection (Runtime v2.0)
+## Built-in Drift Detection (Runtime v2.0)
 
-The `detection/` module includes a small set of **experimental, Level-5 detectors**
-intended for demonstration and evaluation purposes.
+The `detection/` module includes a small set of **experimental Level-5 detectors** intended for demonstration and evaluation.
 
 Current implementations:
 
-- `SchemaComplianceDetector` — detects missing required fields in structured payloads
-- `SimpleKeywordDetector` — detects prohibited or conflicting patterns in text input
+* `SchemaComplianceDetector` — detects missing required fields
+* `SimpleKeywordDetector` — keyword-based drift detection
 
-These detectors do not alter Level 1–3 semantics.  
-They simply observe runtime signals and emit PLD-compliant `drift_detected` events.
-
-They are optional: systems may use them as-is, extend them, or replace them entirely.
-
+Detectors do not alter Levels 1–3 semantics; they simply observe runtime signals and emit compliant events.
 
 ---
 
 ## Failover Model Summary
 
-Failover behavior is still under exploration. Current structure includes:
+Failover behavior is still under exploration. Current structures include:
 
-* **Backoff Policies** — timing strategy (constant/exponential/jitter)
-* **Strategies** — operational mitigation attempts
-* **Reconciliation Policy** — determine whether to continue, finalize, or recover
-* **Orchestrator** — coordinates attempts and backoff windows
-* **Registry** — factory interface for assembling runtime failover configurations
+* Backoff Policies
+* Strategies
+* Reconciliation Policy
+* Orchestrator
+* Registry
 
-This model may evolve based on feedback and evaluation in long-horizon conversational settings.
+This model may evolve with field evaluation.
 
 ---
 
 ## Configuration Boundaries
 
-| Category                           | Runtime Behavior | Expected Mutation    |
-| ---------------------------------- | ---------------- | -------------------- |
-| Schema                             | Fixed            | ❌                    |
-| Enforcement thresholds             | Configurable     | ✔                    |
-| Logging transport                  | Pluggable        | ✔                    |
-| Strategy behavior & failover logic | Experimental     | ✔ (under evaluation) |
-| Event semantics                    | Immutable        | ❌                    |
-
-Configuration is intended to be explicit and observable—silent fallbacks are discouraged.
-
----
-
-## Extension and Implementation Notes
-
-This implementation is intended to be extended through:
-
-* strategy injection
-* custom exporters
-* alternative detectors
-* experimental orchestration patterns
-
-Developers SHOULD treat this runtime as a test harness for exploring PLD-aligned system behaviors.
-
----
-
-## Compliance Notes
-
-* Validation order MUST follow: **Level 1 → Level 2 → (Level 3 expectations) → Level 5**
-* Trace immutability is required for reproducibility
-* Normalization MUST NOT conceal or infer meaning
+| Category                           | Runtime Behavior | Expected Mutation |
+| ---------------------------------- | ---------------- | ----------------- |
+| Schema                             | Fixed            | ❌                 |
+| Enforcement thresholds             | Configurable     | ✔                 |
+| Logging transport                  | Pluggable        | ✔                 |
+| Strategy behavior & failover logic | Experimental     | ✔                 |
+| Event semantics                    | Immutable        | ❌                 |
 
 ---
 
 ## Minimal Integration Example
 
-from .detection.runtime_signal_bridge import (
+```python
+from pld_runtime import (
     RuntimeSignalBridge,
     RuntimeSignal,
     SignalKind,
@@ -275,10 +240,8 @@ from .detection.runtime_signal_bridge import (
     ValidationMode,
 )
 
-# Initialize the runtime bridge
 bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
 
-# Example event generation
 signal = RuntimeSignal(kind=SignalKind.CONTINUE_NORMAL, payload={})
 context = EventContext(
     session_id="demo-session",
@@ -289,13 +252,8 @@ context = EventContext(
 )
 
 event = bridge.build_event(signal, context)
-
-# Logging pipeline
-pipeline = RuntimeLoggingPipeline(jsonl_exporter=JsonlExporter("logs/example.jsonl"))
-pipeline.on_event(event)
-
-print("Event written:", event)
-
+print("Event:", event)
+```
 
 ---
 
@@ -303,19 +261,10 @@ print("Event written:", event)
 
 * Compatible with schema **v2.x**
 * Behavior and naming MAY evolve during evaluation
-* Breaking changes will be documented once stabilization begins
+* Breaking changes will be documented as stabilization approaches
 
 Maintainer: **Kiyoshi Sasano**
-Feedback is welcome and may influence future revisions.
 
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
-
-
-
-
-
-
-
-
