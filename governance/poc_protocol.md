@@ -95,7 +95,13 @@ At minimum, both sides should be able to exchange:
 - **Configuration snapshot**  
   - high-level prompt structure  
   - routing / tool logic  
-  - no proprietary source code required  
+  - no proprietary source code required
+
+> **⚠️ Privacy & Compliance Options**
+> If raw text or transcripts cannot be shared due to internal policy:
+>
+> 1. **Structure-Only Logs:** Share PLD event logs with `payload` text redacted (retaining only drift/repair codes, phases, and timestamps).
+> 2. **Metrics-Only:** Run the dashboard tool locally (e.g., `python examples/dashboard/app.py`) and share only the **aggregated summary metrics**.
 
 ### 3.2 What We Do NOT Require
 
@@ -191,6 +197,7 @@ Add this summary to your shared collaboration document.
 
 Minimal protocol = minimal friction.  
 The goal is shared interpretation — not imposed process.
+
 
 
 
