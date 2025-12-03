@@ -1,7 +1,7 @@
 # component_id: logging_config
 # kind: runtime_module
 # area: logging
-# status: draft
+# status: stable
 # authority_level: 5
 # version: 2.0.0
 # license: Apache-2.0
