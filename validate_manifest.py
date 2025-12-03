@@ -11,7 +11,7 @@
 """
 validate_manifest.py
 
-Validate a PLD manifest.yaml against METADATA_MANIFEST_SPEC v0.9.0.
+Validate a PLD manifest.yaml against METADATA_MANIFEST_SPEC v0.9.1.
 
 Levels:
   L0 - Permissive: basic structure only
