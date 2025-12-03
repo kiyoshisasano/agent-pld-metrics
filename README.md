@@ -13,15 +13,16 @@ multi-turn LLM systems remain **stable, aligned, and predictable — across turn
 
 This repository contains **specifications, runtime components, examples, adoption resources, and evaluation patterns.**
 
+---
+
 ## 🧭 Start Here Based on Your Role
 
 | You Are…                           | Recommended Entry Point                                                                                           |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| 🧑‍💻 **Developer / Engineer**     | Start with: `quickstart/` → run an example such as `easy_pld_demo.py`, which provides a concise high-level usage flow. |
-| 🧪 **Researcher / Architect**      | Explore: `docs/` (Levels 1–3) → semantics, schema, taxonomy, runtime reasoning.                                   |
-| 🧑‍💼 **Product / Decision Maker** | View: `pitch/` → understand why multi-turn systems fail and how PLD stabilizes them.                              |
-| 🧭 **Evaluating or Integrating** | Check: `examples/` and `analytics/` for patterns, metrics, and observational workflows.                          |
-
+| 🧑‍💻 **Developer / Engineer**     | `quickstart/` → run `easy_pld_demo.py` for a concise high-level usage flow |
+| 🧪 **Researcher / Architect**      | `docs/` (Levels 1–3) → semantics, schema, taxonomy, runtime reasoning |
+| 🧑‍💼 **Product / Decision Maker** | `pitch/` → understand why multi-turn systems fail and how PLD stabilizes them |
+| 🧭 **Evaluating or Integrating**   | `examples/` and `analytics/` for patterns, metrics, and observational workflows |
 
 ---
 
@@ -52,6 +53,41 @@ PLD follows a **Standard-First** philosophy, similar to protocols such as OpenTe
 
 Such layers belong in **Level 4+ ecosystem extensions** — not inside the core repository.
 
+### 🧩 Where PLD Fits in the Agent Stack
+
+PLD is a **behavioral stability layer** that observes and governs system dynamics across turns.
+
+```
+┌───────────────────────────────────────────────┐
+│ Application Logic / Domain Tools / UX        │
+└───────────────────────────────────────────────┘
+                      ▲
+        ┌─────────────────────────────────┐
+        │      **PLD Runtime Layer**      │
+        │   (Behavioral Governance)       │
+        └─────────────────────────────────┘
+                      ▼
+┌───────────────────────────────────────────────┐
+│ LangGraph | Assistants API | Rasa | AgentOps │
+└───────────────────────────────────────────────┘
+                      ▼
+                Foundation Models
+```
+
+| Area                              | Owned by PLD? | Owner                       |
+| --------------------------------- | ------------- | --------------------------- |
+| Model inference                   | ❌             | Foundation model            |
+| Tool execution                    | ❌             | Agent / orchestrator        |
+| Memory strategy                   | ❌             | Framework or design pattern |
+| Behavioral stability across turns | ✔             | **PLD Runtime Layer**       |
+
+PLD can be **added, removed, or run in observer-mode** without altering existing business logic.
+
+```
+If your agent already works — PLD helps it stay stable.
+If your agent drifts — PLD makes the drift visible and recoverable.
+```
+
 ---
 
 ### Maintainer Role & Change Boundary
@@ -67,59 +103,7 @@ The maintainer functions primarily as:
 
 ---
 
-## 🔗 Quick Links
-
-* [Core Specifications](/docs/specifications/)
-* [Runtime Implementation](/pld_runtime/)
-* [Quickstart](/quickstart/)
-* [Exsamples](/examples/)
-* [Adoption & Communication](/pitch/)
-* [Governance & Roles](/governance/)
-
-PLD does not replace architectures like LangGraph, Assistants API, or custom orchestration.
-Instead, it **observes, labels, and stabilizes behavior across the stack — without requiring workflow redesign.**
-
----
-
-## 🌱 Community & Support
-
-PLD is actively evolving, and real-world usage and shared traces play a key role in refinement.
-
-If you're experimenting with multi-turn agents or runtime stability workflows, you're welcome to participate:
-
-* 📣 Discussions:
-  [https://github.com/kiyoshisasano/agent-pld-metrics/discussions](https://github.com/kiyoshisasano/agent-pld-metrics/discussions)
-* 🐛 Issues:
-  [https://github.com/kiyoshisasano/agent-pld-metrics/issues](https://github.com/kiyoshisasano/agent-pld-metrics/issues)
-
-> If PLD sparks something — share it.
-
-⭐ Want to contribute?
-Look for **“good first issue”** labels or start a discussion.  
-Even small contributions (examples, tests, docs, traces) are valuable.
-
----
-
 ## 🎯 Why PLD Exists
-
-## ⚡ Runtime Modes: Observer vs. Governor
-
-You can deploy PLD in two architectural modes depending on your performance requirements:
-
-* **👀 Observer Mode (Async)**
-    * **Impact:** **0ms Latency** (Fire-and-forget).
-    * **Mechanism:** PLD operates parallel to the user response.
-    * **Use Case:** Monitoring, Analytics, Post-incident analysis.
-
-* **🛡️ Governor Mode (Sync)**
-    * **Impact:** Intercepts & blocks actions before execution.
-    * **Mechanism:** PLD acts as a gatekeeper for high-risk actions.
-    * **Use Case:** Safety enforcement, Budget control, Autonomous agents.
-
-👉 *See [`/docs/architecture/runtime_modes.md`](/docs/architecture/runtime_modes.md)*
-
----
-
 
 Multi-turn agents rarely fail because they *don't know something*—  
 they fail because behavior becomes **unstable over time**.  
@@ -143,21 +127,6 @@ This ensures alignment persists across turns — not just per isolated response.
 
 ## 🔁 The Runtime Loop
 
-### 🛡️ Supported Repair Strategies
-
-PLD defines three authoritative patterns for fixing drift, allowing you to balance latency vs. safety:
-
-| Strategy | Mechanism | Best For |
-| :--- | :--- | :--- |
-| **Static Repair** | Rule-based / Regex fix | Schema errors (Zero latency) |
-| **Guided Repair** | LLM Self-Correction | Context/Tone drift |
-| **Human-in-the-Loop** | Governance Escalation | High-stakes financial ops |
-
-👉 *See [`/docs/concepts/03_repair_strategies.md`](/docs/concepts/03_repair_strategies.md)*
-
----
-
-
 | Phase        | Purpose                    | Example Signals                     |
 | ------------ | -------------------------- | ----------------------------------- |
 | **Drift**    | Detect misalignment        | contradiction, tool failure         |
@@ -169,6 +138,38 @@ PLD defines three authoritative patterns for fixing drift, allowing you to balan
 Visual summary:
 
 <img src="./README_model.svg" width="100%" />
+
+---
+
+### ⚡ Runtime Modes: Observer vs. Governor
+
+You can deploy PLD in two architectural modes depending on your performance requirements:
+
+* **👀 Observer Mode (Async)**
+    * **Impact:** **0ms Latency** (Fire-and-forget).
+    * **Mechanism:** PLD operates parallel to the user response.
+    * **Use Case:** Monitoring, Analytics, Post-incident analysis.
+
+* **🛡️ Governor Mode (Sync)**
+    * **Impact:** Intercepts & blocks actions before execution.
+    * **Mechanism:** PLD acts as a gatekeeper for high-risk actions.
+    * **Use Case:** Safety enforcement, Budget control, Autonomous agents.
+
+👉 *See [`/docs/architecture/runtime_modes.md`](/docs/architecture/runtime_modes.md)*
+
+---
+
+### 🛡️ Supported Repair Strategies
+
+PLD defines three authoritative patterns for fixing drift, allowing you to balance latency vs. safety:
+
+| Strategy | Mechanism | Best For |
+| :--- | :--- | :--- |
+| **Static Repair** | Rule-based / Regex fix | Schema errors (Zero latency) |
+| **Guided Repair** | LLM Self-Correction | Context/Tone drift |
+| **Human-in-the-Loop** | Governance Escalation | High-stakes financial ops |
+
+👉 *See [`/docs/concepts/03_repair_strategies.md`](/docs/concepts/03_repair_strategies.md)*
 
 ---
 
@@ -221,47 +222,15 @@ see `examples/reference_traces`
 ---
 
 ## ⚡ Quickstart — Run PLD in Under 10 Seconds
-> A working drift detection demo powered by the built-in runtime detectors is included in the Quickstart.
 
 ```bash
 python quickstart/easy_pld_demo.py      # Recommended: simplest demo using SimpleObserver
-python quickstart/hello_pld_runtime.py
-python quickstart/run_minimal_engine.py
-python quickstart/metrics_quickcheck/verify_metrics_local.py
+python quickstart/hello_pld_runtime.py  # Schema-compliance drift detection demo
+python quickstart/run_minimal_engine.py # Multi-turn runtime loop example
+python quickstart/metrics_quickcheck/verify_metrics_local.py  # Validate PLD metrics
 ```
 
 Next steps → `quickstart/README_quickstart.md`
-
-### High-Level Usage Example
-
-Some workflows benefit from a concise interface that prepares `EventContext`,
-manages turn sequencing, and emits structured events through the runtime.
-`quickstart/easy_pld_demo.py` illustrates this pattern using `SimpleObserver`,
-showing how a turn can be logged with only a few lines of code while still
-producing canonical PLD events.
-
-This example is useful when evaluating the runtime from an integration
-perspective or when experimenting with lightweight interaction loops.
-
-### 🚀 What the Quickstart Demos Show
-
-1. **`hello_pld_runtime.py`**
-
-   * Emits a canonical `continue_allowed` event via `RuntimeSignalBridge`.
-   * Demonstrates **schema-compliance drift detection** using the built-in `SchemaComplianceDetector`.
-   * Example: a payload missing the required key `"parking"` is treated as context drift and emits a `drift_detected` event.
-
-2. **`run_minimal_engine.py`**
-
-   * Runs a miniature runtime loop, emitting PLD events across multiple turns.
-   * Shows how Drift / Repair / Continue phases appear over time.
-
-3. **`metrics_quickcheck/verify_metrics_local.py`**
-
-   * Reads emitted JSONL logs and validates that **PLD metrics** and **taxonomy** align with the Level-3 standards.
-   * Useful as a **sanity check** when extending or integrating PLD runtime.
-
----
 
 <details>
 <summary>🧪 Built-In Runtime Detectors (Experimental)</summary>
@@ -280,14 +249,6 @@ These detectors:
 * Extend the `DriftDetector` template from `pld_runtime/detection/drift_detector.py`.
 * Emit PLD-compliant `drift_detected` events with `phase = "drift"` and `D*`-family codes.
 * Do **not** modify Level 1–3 semantics — they operate purely as Level-5 runtime components.
-
-The updated `quickstart/hello_pld_runtime.py` uses `SchemaComplianceDetector` to demonstrate a simple scenario:
-
-* Expected: payload must contain `"parking"`.
-* Actual: payload omits `"parking"`.
-* Result: a `drift_detected` event with metadata indicating the missing key.
-
-This provides a concrete code-level counterpart to the earlier **repair loop example**, making it easier to map JSON traces back to the runtime implementation.
 
 </details>
 
@@ -333,33 +294,15 @@ Metrics cookbook → `docs/metrics/cookbook.md`
 
 #### Text-based Metrics Dashboard (Experimental)
 
-A minimal console dashboard is available at:
-
-`examples/dashboard/app.py`
-
-This example:
-
-* reads PLD v2 JSONL runtime events (default: `quickstart/metrics_quickcheck/pld_events_demo.jsonl`)
-* groups events by `session_id`
-* computes analytics-layer metrics for **PRDR**, **VRL**, and **FR**
-* prints a global summary and optional per-session breakdown
+A minimal console dashboard is available at `examples/dashboard/app.py`.
 
 Usage:
 
 ```bash
-# Use the demo events file
-python examples/dashboard/app.py
-
-# Custom log file
-python examples/dashboard/app.py --file path/to/pld_events.jsonl
-
-# Metrics summary only (no per-session breakdown)
-python examples/dashboard/app.py --no-sessions
+python examples/dashboard/app.py                              # Use demo events file
+python examples/dashboard/app.py --file path/to/events.jsonl  # Custom log file
+python examples/dashboard/app.py --no-sessions                # Metrics summary only
 ```
-
-> This script operates strictly at the analytics layer:  
-> it only reads already-emitted PLD-compliant events and does not modify  
-> Level 1–3 semantics or runtime behavior.  
 
 ---
 
@@ -375,66 +318,7 @@ Less relevant for:
 
 ---
 
-### 🧩 Where PLD Fits in the Agent Stack
-
-PLD is a **behavioral stability layer** that observes and governs system dynamics across turns.
-
-#### 📍 Conceptual Position
-
-```
-┌───────────────────────────────────────────────┐
-│ Application Logic / Domain Tools / UX        │
-└───────────────────────────────────────────────┘
-                      ▲
-        ┌─────────────────────────────────┐
-        │      **PLD Runtime Layer**      │
-        │   (Behavioral Governance)       │
-        └─────────────────────────────────┘
-                      ▼
-┌───────────────────────────────────────────────┐
-│ LangGraph | Assistants API | Rasa | AgentOps │
-└───────────────────────────────────────────────┘
-                      ▼
-                Foundation Models
-```
-
-#### 🧠 What PLD Actually Does
-
-| Area                              | Owned by PLD? | Owner                       |
-| --------------------------------- | ------------- | --------------------------- |
-| Model inference                   | ❌             | Foundation model            |
-| Tool execution                    | ❌             | Agent / orchestrator        |
-| Memory strategy                   | ❌             | Framework or design pattern |
-| Behavioral stability across turns | ✔             | **PLD Runtime Layer**       |
-
-PLD observes runtime signals and governs the stability loop:
-
-> **Drift → Repair → Reentry → Continue → Outcome**
-
-#### 🚫 What PLD Does **Not** Do
-
-| Area                              | Owned by PLD? | Owner                       |
-| --------------------------------- | ------------- | --------------------------- |
-| Model inference                   | ❌             | Foundation model            |
-| Tool execution                    | ❌             | Agent / orchestrator        |
-| Memory strategy                   | ❌             | Framework or design pattern |
-| Behavioral stability across turns | ✔             | **PLD Runtime Layer**       |
-
----
-
-#### 🎯 Summary
-
-PLD is a **governance and stabilization layer — not a replacement for frameworks or agents.**
-It can be **added, removed, or run in observer-mode** without altering existing business logic.
-
-```
-If your agent already works — PLD helps it stay stable.
-If your agent drifts — PLD makes the drift visible and recoverable.
-```
-
----
-
-## 🔌Integrations
+## 🔌 Integrations
 
 Compatible with:
 
@@ -446,48 +330,39 @@ Compatible with:
 
 Vendor-neutral — only a runtime behavioral contract.
 
-🆕 **Observer-Mode Integration Example (Experimental)**
-A minimal reference integration is available under:
-`examples/langgraph_assistants/`
-This example shows how PLD Runtime v2.0 can be attached to a LangGraph + OpenAI Assistants-style agent without modifying its behavior.
-It demonstrates:
+**Observer-Mode Integration Example (Experimental)**  
+A minimal reference integration is available under `examples/langgraph_assistants/`.
 
-* PLD as a non-intrusive observer layer
-* automatic emission of structured runtime events (`continue`, `drift`, `outcome`)
-* JSONL logging via the Level-5 runtime (`RuntimeSignalBridge` + `RuntimeLoggingPipeline`)
-* a simple lifecycle pattern: `init → emit → shutdown`
-
-Try it:
-`export OPENAI_API_KEY=your_key_here`
-`python examples/langgraph_assistants/run.py`
-Logs will appear in:
-`logs/langgraph_pld_demo.jsonl`
-Status: **Experimental — seeking evaluation feedback**.
+```bash
+export OPENAI_API_KEY=your_key_here
+python examples/langgraph_assistants/run.py
+# Logs: logs/langgraph_pld_demo.jsonl
+```
 
 ---
 
-### 📌 Current Phase
+## 🌱 Community & Support
 
-This repository is currently in an **Exploratory / Candidate Stage**.  
-Components may evolve based on evaluation, implementation feedback, and research findings.
+PLD is actively evolving, and real-world usage and shared traces play a key role in refinement.
 
-Feedback and field reports are welcome and help shape the next revision.
+* 📣 Discussions: [GitHub Discussions](https://github.com/kiyoshisasano/agent-pld-metrics/discussions)
+* 🐛 Issues: [GitHub Issues](https://github.com/kiyoshisasano/agent-pld-metrics/issues)
 
----
-
-## 🤝 Contribution
-
-Contributions welcome, especially:
-
-* bridges & adapters
-* traces / evaluation datasets
-* runtime patterns and observability tools
+⭐ Want to contribute? Look for **"good first issue"** labels or start a discussion.  
+Even small contributions (examples, tests, docs, traces) are valuable.
 
 See: `CONTRIBUTING.md`
 
 ---
 
-## 📜 License & Attribution
+## 📌 Project Information
+
+### Current Phase
+
+This repository is currently in an **Exploratory / Candidate Stage**.  
+Components may evolve based on evaluation, implementation feedback, and research findings.
+
+### License & Attribution
 
 | Scope                       | License    |
 | --------------------------- | ---------- |
@@ -496,19 +371,14 @@ See: `CONTRIBUTING.md`
 
 Full details: `LICENSES/OVERVIEW.md`
 
----
+### Trademark Statement
 
-## 🏷 Trademark Statement
-
-“Phase Loop Dynamics” and “PLD” are names and identifiers associated with the work of **Kiyoshi Sasano** and are treated as common-law trademarks.  
-Please follow the trademark policy when referring to or using these names:  
+"Phase Loop Dynamics" and "PLD" are names and identifiers associated with the work of **Kiyoshi Sasano** and are treated as common-law trademarks.  
 ➡ `LICENSES/TRADEMARK_POLICY.md`
 
----
+### Maintainer
 
-## 👤 Maintainer
-
-**Maintainer:** Kiyoshi Sasano
+**Maintainer:** Kiyoshi Sasano  
 © 2025 — All rights reserved where applicable.
 
 ---
