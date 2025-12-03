@@ -237,6 +237,20 @@ Next steps → `quickstart/README_quickstart.md`
 * **`hello_pld_runtime.py`:** Demonstrates built-in schema drift detection (e.g., missing keys).
 * **`run_minimal_engine.py`:** Runs a multi-turn simulation to show the full phase loop.
 
+# From quickstart/easy_pld_demo.py
+# ⚡ Integrate PLD in 3 lines:
+
+from pld_runtime import SimpleObserver
+
+# 1. Wrap your agent (Observer Mode)
+pld = SimpleObserver(agent_name="my_agent")
+
+# 2. Log interaction
+pld.log_turn(user_input="...", agent_output="...")
+
+# 3. Check for drift (Automatic)
+# -> Events are emitted to .jsonl automatically
+
 <details>
 <summary>🧪 Built-In Runtime Detectors (Experimental)</summary>
 
