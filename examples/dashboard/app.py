@@ -4,7 +4,7 @@
 # area: metrics
 # status: experimental
 # authority_level: 2
-# version: 0.1.0
+# version: 2.0.0
 # license: Apache-2.0
 # purpose: Text-based analytics dashboard demo for PRDR, VRL, and FR over PLD v2 events.
 # maintainer: TBD
