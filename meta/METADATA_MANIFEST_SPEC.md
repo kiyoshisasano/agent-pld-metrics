@@ -41,6 +41,31 @@ components:
     authority\_level: 5  
     purpose: ...
 
+---
+
+## **🧩 Manifest Structure & Granularity**
+
+To balance governance with ease of contribution, components can be defined at two levels of granularity:
+
+### **1. Explicit (File-Level)**
+**Required for Authority Level 4 & 5 (Critical/Governed).**
+Each critical file MUST be explicitly listed to ensure strict tracking.
+
+- path: pld_runtime/core/controller.py
+  component_id: core_controller
+  ...
+
+### **2. Implicit (Directory-Level)**
+**Allowed for Authority Level 1, 2, & 3 (Docs/Examples/Metrics).**
+A directory path covers all contained files. New non-critical files added to these directories do not require manifest updates.
+
+- path: docs/metrics/visuals/   <-- Ends with slash
+  component_id: metric_visuals_bundle
+  kind: doc
+  description: "All visualization assets for metrics."
+
+---
+
 ## **📖 Controlled Vocabulary**
 
 ### **kind**
