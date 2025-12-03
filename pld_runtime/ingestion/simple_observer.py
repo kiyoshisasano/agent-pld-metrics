@@ -1,3 +1,12 @@
+# component_id: simple_observer
+# kind: runtime_module
+# area: ingestion
+# status: experimental
+# authority_level: 5
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: High-level facade over RuntimeSignalBridge and StructuredLogger that auto-builds PLD v2-compliant events, manages turn sequencing, latency measurement, and optional detector execution.
+
 # pld_runtime/ingestion/simple_observer.py
 
 from __future__ import annotations
