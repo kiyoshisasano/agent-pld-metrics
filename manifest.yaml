@@ -1,12 +1,7 @@
 # manifest.yaml
-# PLD Repository Metadata Manifest (Refactored)
+# PLD Repository Metadata Manifest (Fixed)
 # Format spec: METADATA_MANIFEST_SPEC v0.9.1
 # SPDX-License-Identifier: Apache-2.0
-#
-# Refactoring Policy:
-#   - authority_level 1-3: Grouped by directory (Implicit Grouping)
-#   - authority_level 4-5: Individual entries (Explicit Definition)
-#   - pld_runtime/*: Always individual entries regardless of authority_level
 
 version: 0.9.1
 default_license: Apache-2.0
@@ -14,7 +9,7 @@ default_license: Apache-2.0
 components:
 
   # ---------------------------------------------------------
-  # 0. Adoption & Communication (Implicit Grouping)
+  # 0. Adoption & Communication
   # ---------------------------------------------------------
 
   - path: pitch/
@@ -25,41 +20,59 @@ components:
     authority_level: 1
     version: 0.1.0
     license: CC-BY-4.0
-    purpose: >
-      Communication and adoption materials intended to help product teams,
-      engineering leadership, and decision-makers understand the value and role
-      of PLD in stabilizing multi-turn AI systems.
-    feedback: "Feedback from implementers and internal advocates is encouraged."
+    purpose: Communication and adoption materials.
 
   # ---------------------------------------------------------
-  # 1. Meta & Governance
+  # 1. Meta & Governance (Files exist in root or meta/)
   # ---------------------------------------------------------
 
-  # --- Root-level Documents (Grouped) ---
-  - path: root_meta/
-    component_id: root_meta_docs
+  - path: README.md
+    component_id: repo_readme
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 1
+    purpose: Repository entry point.
+
+  - path: SUMMARY.md
+    component_id: repo_summary
     kind: doc
     area: meta
     status: stable
     authority_level: 2
-    purpose: >
-      Root-level supplementary documents including README.md, SUMMARY.md,
-      SUMMARY.svg, README_model.svg, and CONTRIBUTING.md.
-    includes:
-      - README.md
-      - SUMMARY.md
-      - SUMMARY.svg
-      - README_model.svg
-      - CONTRIBUTING.md
+    purpose: Navigation index.
 
-  # --- Governance Documents (authority_level 5 - Individual) ---
+  - path: SUMMARY.svg
+    component_id: repo_summary_diagram
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 2
+    purpose: Visual overview diagram.
+
+  - path: README_model.svg
+    component_id: readme_model_diagram
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 2
+    purpose: Runtime model diagram.
+
+  - path: CONTRIBUTING.md
+    component_id: contributing_guide
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Contribution guidelines.
+
   - path: meta/CHANGELOG.md
     component_id: changelog
     kind: doc
     area: meta
     status: stable
     authority_level: 5
-    purpose: Official change history for the PLD repository and runtime ecosystem.
+    purpose: Change history.
 
   - path: meta/METADATA_MANIFEST_SPEC.md
     component_id: manifest_spec
@@ -67,7 +80,7 @@ components:
     area: meta
     status: candidate
     authority_level: 5
-    purpose: Governing specification for PLD metadata and manifest structure.
+    purpose: Metadata specification.
 
   - path: meta/VERSIONING_POLICY.md
     component_id: versioning_policy
@@ -75,115 +88,27 @@ components:
     area: meta
     status: stable
     authority_level: 5
-    purpose: Versioning rules and governance policy for schemas, runtime modules, and specifications.
+    purpose: Versioning rules.
 
-  # --- Roadmap (authority_level 3 - Grouped with meta/) ---
-  - path: meta/supplementary/
-    component_id: meta_supplementary_docs
+  - path: meta/ROADMAP.md
+    component_id: roadmap
     kind: doc
     area: meta
     status: draft
     authority_level: 3
-    purpose: Supplementary meta documents including roadmap and future plans.
-    includes:
-      - ROADMAP.md
+    purpose: Project roadmap.
 
-  # --- Legal Documents (authority_level 5 - Individual) ---
-  - path: LICENSES/LICENSE-APACHE-2.0.txt
-    component_id: license_apache_2_0
+  # --- Licenses ---
+  - path: LICENSES/
+    component_id: licenses_dir
     kind: legal
     area: compliance
     status: stable
-    authority_level: 5
-    purpose: Primary open-source license governing repository use and redistribution.
-
-  - path: LICENSES/LICENSE-CC-BY-4.0.txt
-    component_id: license_cc_by_4_0
-    kind: legal
-    area: compliance
-    status: stable
-    authority_level: 5
-    purpose: Additional content license covering documentation, examples, and derivative works.
-
-  - path: LICENSES/NOTICE.txt
-    component_id: legal_notice
-    kind: legal
-    area: compliance
-    status: stable
-    authority_level: 5
-    purpose: Required legal notice for compliance with open-source redistribution requirements.
-
-  - path: LICENSES/TRADEMARK_POLICY.md
-    component_id: trademark_policy
-    kind: legal
-    area: compliance
-    status: stable
-    authority_level: 5
-    purpose: Trademark usage restrictions and authorized usage scope for the PLD name and branding.
-
-  # --- Legal Supplementary (authority_level 3 - Grouped) ---
-  - path: LICENSES/supplementary/
-    component_id: licenses_supplementary
-    kind: doc
-    area: compliance
-    status: stable
     authority_level: 3
-    purpose: Supplementary licensing documents including citation reference and license overview.
-    includes:
-      - citation.bib
-      - LICENSES.md
-
-  # --- Project Configuration (New Files) ---
-  - path: pyproject.toml
-    component_id: pyproject_config
-    kind: config
-    area: meta
-    status: stable
-    authority_level: 3
-    purpose: Python project packaging configuration.
-
-  - path: requirements.txt
-    component_id: requirements_file
-    kind: config
-    area: meta
-    status: stable
-    authority_level: 3
-    purpose: Python package dependencies.
-
-  - path: MANIFEST.in
-    component_id: manifest_in_config
-    kind: config
-    area: meta
-    status: stable
-    authority_level: 3
-    purpose: Packaging inclusion rules.
-
-  - path: .gitignore
-    component_id: gitignore
-    kind: config
-    area: meta
-    status: stable
-    authority_level: 1
-    purpose: Git exclusion rules.
-
-  - path: .github/workflows/
-    component_id: github_workflows
-    kind: config
-    area: meta
-    status: stable
-    authority_level: 3
-    purpose: GitHub Actions workflow definitions (CI/CD).
-
-  - path: tests/
-    component_id: tests_directory
-    kind: code
-    area: test
-    status: experimental
-    authority_level: 1
-    purpose: Placeholder directory for future unit tests.
+    purpose: License files collection.
 
   # ---------------------------------------------------------
-  # 2. Documentation & Architecture (Implicit Grouping)
+  # 2. Documentation (Implicit Grouping)
   # ---------------------------------------------------------
 
   - path: docs/metrics/
@@ -192,11 +117,7 @@ components:
     area: metrics
     status: draft
     authority_level: 3
-    version: 2.0.0
-    license: CC-BY-4.0
-    purpose: >
-      Metrics documentation including operational cookbook, dashboard mockups,
-      and visualization assets.
+    purpose: Metrics documentation.
 
   - path: docs/concepts/
     component_id: docs_concepts
@@ -204,26 +125,18 @@ components:
     area: concepts
     status: candidate
     authority_level: 3
-    version: 2.0.0
-    license: CC-BY-4.0
-    purpose: >
-      Conceptual documentation covering PLD introduction, drift-repair model,
-      repair strategies, reference maps, and operator primitives.
+    purpose: Conceptual documentation.
 
   - path: docs/patterns/
     component_id: docs_patterns
     kind: doc
-    area: quickstart_patterns
+    area: patterns
     status: draft
     authority_level: 3
-    version: 2.0.0
-    license: CC-BY-4.0
-    purpose: >
-      LLM pattern documentation including foundations, state transitions,
-      drift responses, repair templates, reentry alignment, and tool response rules.
+    purpose: Pattern documentation.
 
   # ---------------------------------------------------------
-  # 3. PLD Runtime Core (Explicit Definition - All Individual)
+  # 3. PLD Runtime Core (Matched to file headers)
   # ---------------------------------------------------------
 
   - path: pld_runtime/README.md
@@ -232,7 +145,7 @@ components:
     area: runtime
     status: stable
     authority_level: 5
-    purpose: Entry-point documentation for the PLD runtime directory.
+    purpose: Runtime documentation.
 
   # --- schemas ---
   - path: pld_runtime/schemas/runtime_event_envelope.json
@@ -241,7 +154,7 @@ components:
     area: runtime_schema
     status: stable
     authority_level: 5
-    purpose: JSON schema definition for the PLD Event Envelope.
+    purpose: JSON schema definition.
 
   - path: pld_runtime/schemas/runtime_event_envelope.ops.md
     component_id: runtime_event_envelope_ops
@@ -249,8 +162,7 @@ components:
     area: schema
     status: candidate
     authority_level: 5
-    version: 2.0.0
-    purpose: Operational guidance for emitting, validating, transporting, and observing PLD runtime events.
+    purpose: Operational guidance.
 
   - path: pld_runtime/schemas/runtime_event_envelope.examples.md
     component_id: runtime_event_envelope_examples
@@ -258,8 +170,7 @@ components:
     area: schema
     status: candidate
     authority_level: 5
-    version: 2.0.0
-    purpose: Runtime event envelope examples for operational reference.
+    purpose: Envelope examples.
 
   - path: pld_runtime/schemas/runtime_event_envelope.notes.md
     component_id: runtime_event_envelope_notes
@@ -267,33 +178,32 @@ components:
     area: schema
     status: draft
     authority_level: 5
-    version: 2.0.0
-    purpose: Operational companion reference for the PLD runtime event envelope.
+    purpose: Operational notes.
 
-  # --- ingestion ---
+  # --- ingestion (Fixed Levels) ---
   - path: pld_runtime/ingestion/ingestion_config.py
     component_id: ingestion_config
     kind: config
     area: ingestion
-    status: experimental
-    authority_level: 3
-    purpose: Configuration for data ingestion pipelines.
+    status: candidate
+    authority_level: 5
+    purpose: Ingestion configuration.
 
   - path: pld_runtime/ingestion/multiwoz_loader.py
     component_id: multiwoz_loader
     kind: runtime_module
     area: ingestion
     status: experimental
-    authority_level: 2
-    purpose: Loader for MultiWOZ dataset adaptation.
+    authority_level: 5
+    purpose: MultiWOZ loader.
 
   - path: pld_runtime/ingestion/normalization.py
     component_id: normalization
     kind: runtime_module
     area: ingestion
-    status: stable
-    authority_level: 4
-    purpose: Normalizes input signals into PLD format.
+    status: draft
+    authority_level: 5
+    purpose: Signal normalization.
 
   - path: pld_runtime/ingestion/simple_observer.py
     component_id: simple_observer
@@ -301,9 +211,7 @@ components:
     area: ingestion
     status: experimental
     authority_level: 5
-    version: 2.0.0
-    license: Apache-2.0
-    purpose: High-level facade over RuntimeSignalBridge and StructuredLogger.
+    purpose: High-level observer facade.
 
   # --- detection ---
   - path: pld_runtime/detection/drift_detector.py
@@ -312,7 +220,7 @@ components:
     area: detection
     status: experimental
     authority_level: 5
-    purpose: Core logic for detecting conversation drift.
+    purpose: Drift detector base.
 
   - path: pld_runtime/detection/repair_detector.py
     component_id: repair_detector
@@ -320,15 +228,15 @@ components:
     area: detection
     status: experimental
     authority_level: 5
-    purpose: Identifies repair sequences.
+    purpose: Repair detector.
 
   - path: pld_runtime/detection/pattern_classifier.py
     component_id: pattern_classifier
     kind: runtime_module
     area: detection
     status: experimental
-    authority_level: 4
-    purpose: Classifies detected patterns against the taxonomy.
+    authority_level: 5
+    purpose: Pattern classifier.
 
   - path: pld_runtime/detection/runtime_signal_bridge.py
     component_id: runtime_signal_bridge
@@ -336,7 +244,7 @@ components:
     area: detection
     status: stable
     authority_level: 5
-    purpose: Bridges raw signals to runtime events.
+    purpose: Signal bridge.
 
   - path: pld_runtime/detection/builtin_detectors.py
     component_id: builtin_detectors
@@ -344,7 +252,7 @@ components:
     area: detection
     status: experimental
     authority_level: 5
-    purpose: Built-in detectors for keyword- and schema-based drift.
+    purpose: Built-in detectors.
 
   # --- enforcement ---
   - path: pld_runtime/enforcement/response_policy.py
@@ -353,7 +261,7 @@ components:
     area: enforcement
     status: draft
     authority_level: 5
-    purpose: Map PLD runtime events to advisory response policy.
+    purpose: Response policy.
 
   - path: pld_runtime/enforcement/schema_validator.py
     component_id: schema_validator
@@ -361,7 +269,7 @@ components:
     area: enforcement
     status: draft
     authority_level: 5
-    purpose: Validate PLD runtime events against Level 1 schema.
+    purpose: Schema validator.
 
   - path: pld_runtime/enforcement/sequence_rules.py
     component_id: sequence_rules
@@ -369,7 +277,7 @@ components:
     area: enforcement
     status: draft
     authority_level: 5
-    purpose: Evaluate ordering constraints in runtime event sequences.
+    purpose: Sequence rules.
 
   - path: pld_runtime/enforcement/thresholds.py
     component_id: enforcement_thresholds
@@ -377,32 +285,32 @@ components:
     area: enforcement
     status: draft
     authority_level: 5
-    purpose: Threshold templates for runtime enforcement.
+    purpose: Threshold templates.
 
-  # --- controllers ---
+  # --- controllers (Fixed Levels) ---
   - path: pld_runtime/controllers/pld_controller.py
     component_id: pld_controller
     kind: runtime_module
     area: controller
     status: experimental
-    authority_level: 4
-    purpose: Main runtime loop controller.
+    authority_level: 5
+    purpose: Main controller.
 
   - path: pld_runtime/controllers/action_router.py
     component_id: action_router
     kind: runtime_module
     area: controller
     status: experimental
-    authority_level: 4
-    purpose: Routes controller decisions to execution modules.
+    authority_level: 5
+    purpose: Action router.
 
   - path: pld_runtime/controllers/controller_config.py
     component_id: controller_config
     kind: config
     area: controller
     status: experimental
-    authority_level: 3
-    purpose: Configuration for the runtime controller.
+    authority_level: 5
+    purpose: Controller configuration.
 
   - path: pld_runtime/controllers/state_machine.py
     component_id: state_machine
@@ -410,106 +318,106 @@ components:
     area: controller
     status: experimental
     authority_level: 5
-    purpose: Manages state transitions (Drift -> Repair -> Reentry).
+    purpose: State machine.
 
-  # --- logging ---
+  # --- logging (Fixed Runtime/Draft mismatches) ---
   - path: pld_runtime/logging/runtime_logging_pipeline.py
     component_id: logging_pipeline
     kind: runtime_module
     area: logging
     status: stable
-    authority_level: 3
-    purpose: Structured logging pipeline.
+    authority_level: 5
+    purpose: Logging pipeline.
 
   - path: pld_runtime/logging/event_writer.py
     component_id: event_writer
     kind: runtime_module
     area: logging
     status: stable
-    authority_level: 3
-    purpose: Writes validated events to storage.
+    authority_level: 5
+    purpose: Event writer.
 
   - path: pld_runtime/logging/logging_config.py
     component_id: logging_config
     kind: config
     area: logging
     status: stable
-    authority_level: 3
-    purpose: Configuration for logging levels and outputs.
+    authority_level: 5
+    purpose: Logging configuration.
 
   - path: pld_runtime/logging/session_trace_buffer.py
     component_id: session_trace_buffer
     kind: runtime_module
     area: logging
     status: experimental
-    authority_level: 4
-    purpose: Buffers session events for trace assembly.
+    authority_level: 5
+    purpose: Trace buffer.
 
   - path: pld_runtime/logging/structured_logger.py
     component_id: structured_logger
     kind: runtime_module
     area: logging
     status: stable
-    authority_level: 3
-    purpose: Core logger implementation.
+    authority_level: 5
+    purpose: Structured logger.
 
   - path: pld_runtime/logging/exporters/exporter_jsonl.py
     component_id: exporter_jsonl
     kind: runtime_module
     area: logging
     status: stable
-    authority_level: 3
-    purpose: Exports logs to JSONL format.
+    authority_level: 5
+    purpose: JSONL exporter.
 
   - path: pld_runtime/logging/exporters/exporter_open_telemetry.py
     component_id: exporter_open_telemetry
     kind: runtime_module
     area: logging
     status: experimental
-    authority_level: 3
-    purpose: Exports logs via OpenTelemetry.
+    authority_level: 5
+    purpose: OTel exporter.
 
-  # --- failover ---
+  # --- failover (Fixed Draft/Experimental mismatches) ---
   - path: pld_runtime/failover/runtime_failover.py
     component_id: runtime_failover
     kind: runtime_module
     area: failover
-    status: experimental
+    status: draft
     authority_level: 5
-    purpose: Manages failover logic when runtime errors occur.
+    purpose: Runtime failover logic.
 
   - path: pld_runtime/failover/backoff_policies.py
     component_id: backoff_policies
     kind: runtime_module
     area: failover
-    status: experimental
-    authority_level: 4
-    purpose: Defines retry and backoff strategies.
+    status: draft
+    authority_level: 5
+    purpose: Backoff policies.
 
   - path: pld_runtime/failover/reconciliation.py
     component_id: reconciliation
     kind: runtime_module
     area: failover
-    status: experimental
+    status: draft
     authority_level: 5
-    purpose: Reconciles state after failover.
+    purpose: State reconciliation.
 
   - path: pld_runtime/failover/strategy_registry.py
     component_id: strategy_registry
     kind: runtime_module
     area: failover
-    status: experimental
-    authority_level: 4
-    purpose: Registry for failover strategies.
+    status: draft
+    authority_level: 5
+    purpose: Strategy registry.
 
-  # --- Package Initializers (authority_level 5 - Individual) ---
+  # --- Package Initializers ---
   - path: pld_runtime/__init__.py
     component_id: pld_runtime_public_api
     kind: runtime_module
     area: api
     status: stable
     authority_level: 5
-    purpose: Public API surface for PLD Runtime v2.0.
+    purpose: Public API.
 
   - path: pld_runtime/schemas/__init__.py
     component_id: schemas_pkg_init
@@ -517,7 +425,7 @@ components:
     area: schema
     status: stable
     authority_level: 5
-    purpose: Package initialization for schemas.
+    purpose: Schemas init.
 
   - path: pld_runtime/ingestion/__init__.py
     component_id: ingestion_pkg_init
@@ -525,7 +433,7 @@ components:
     area: ingestion
     status: stable
     authority_level: 5
-    purpose: Package initialization for ingestion.
+    purpose: Ingestion init.
 
   - path: pld_runtime/detection/__init__.py
     component_id: detection_pkg_init
@@ -533,7 +441,7 @@ components:
     area: detection
     status: stable
     authority_level: 5
-    purpose: Package initialization for detection.
+    purpose: Detection init.
 
   - path: pld_runtime/enforcement/__init__.py
     component_id: enforcement_pkg_init
@@ -541,7 +449,7 @@ components:
     area: enforcement
     status: stable
     authority_level: 5
-    purpose: Package initialization for enforcement.
+    purpose: Enforcement init.
 
   - path: pld_runtime/controllers/__init__.py
     component_id: controllers_pkg_init
@@ -549,7 +457,7 @@ components:
     area: controller
     status: stable
     authority_level: 5
-    purpose: Package initialization for controllers.
+    purpose: Controller init.
 
   - path: pld_runtime/logging/__init__.py
     component_id: logging_pkg_init
@@ -557,7 +465,7 @@ components:
     area: logging
     status: stable
     authority_level: 5
-    purpose: Package initialization for logging.
+    purpose: Logging init.
 
   - path: pld_runtime/logging/exporters/__init__.py
     component_id: exporters_pkg_init
@@ -565,7 +473,7 @@ components:
     area: logging
     status: stable
     authority_level: 5
-    purpose: Package initialization for logging exporters.
+    purpose: Exporters init.
 
   - path: pld_runtime/failover/__init__.py
     component_id: failover_pkg_init
@@ -573,10 +481,10 @@ components:
     area: failover
     status: stable
     authority_level: 5
-    purpose: Package initialization for failover.
+    purpose: Failover init.
 
   # ---------------------------------------------------------
-  # 4. Quickstart (Implicit Grouping)
+  # 4. Quickstart & Examples (Implicit Grouping)
   # ---------------------------------------------------------
 
   - path: quickstart/
@@ -585,16 +493,7 @@ components:
     area: quickstart
     status: experimental
     authority_level: 1
-    version: 2.0.0
-    license: Apache-2.0
-    purpose: >
-      Quickstart examples and demos including hello_pld_runtime.py,
-      run_minimal_engine.py, minimal_pld_demo.py, easy_pld_demo.py,
-      metrics_quickcheck/, and dashboard configurations.
-
-  # ---------------------------------------------------------
-  # 5. Examples (Implicit Grouping)
-  # ---------------------------------------------------------
+    purpose: Quickstart examples.
 
   - path: examples/
     component_id: examples_collection
@@ -602,28 +501,61 @@ components:
     area: examples
     status: experimental
     authority_level: 2
-    version: 2.0.0
-    license: Apache-2.0
-    purpose: >
-      Integration examples and reference traces including LangGraph assistants
-      integration, reference trace generators, forensic traces, golden semantic
-      repair traces, and metrics dashboard app.
+    purpose: Integration examples.
 
   # ---------------------------------------------------------
-  # 6. Works in Progress / Pending Update (Implicit Grouping)
+  # 5. Project Config
   # ---------------------------------------------------------
-  # These directories are currently being refactored for V2.0.
-  # Content may be mixed between V1.0 (legacy) and V2.0 (draft).
+  - path: pyproject.toml
+    component_id: pyproject_config
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Packaging config.
 
+  - path: requirements.txt
+    component_id: requirements_file
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Dependencies.
+
+  - path: MANIFEST.in
+    component_id: manifest_in_config
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Manifest inclusion rules.
+
+  - path: .gitignore
+    component_id: gitignore
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 1
+    purpose: Git ignore rules.
+
+  - path: .github/workflows/
+    component_id: github_workflows
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: CI/CD workflows.
+
+  # ---------------------------------------------------------
+  # 6. Works in Progress
+  # ---------------------------------------------------------
   - path: analytics/
     component_id: analytics_suite_wip
     kind: metric
     area: analytics
     status: experimental
     authority_level: 2
-    purpose: >
-      Analytics tools, frameworks, and datasets.
-      Currently under refactoring to align with PLD V2.0 metrics standards.
+    purpose: Analytics tools WIP.
 
   - path: governance/
     component_id: governance_legacy
@@ -631,12 +563,7 @@ components:
     area: meta
     status: stable
     authority_level: 5
-    purpose: >
-      Governance protocols, onboarding guides, and PoC standards.
-      Current contents reflect V1.0 stability; V2.0 updates are pending.
-
-  # --- Pending Documentation Sub-directories ---
-  # Note: metrics, concepts, and patterns are already defined in Section 2.
+    purpose: Governance legacy docs.
 
   - path: docs/architecture/
     component_id: docs_architecture_wip
@@ -644,9 +571,7 @@ components:
     area: architecture
     status: draft
     authority_level: 3
-    purpose: >
-      Architectural layering and implementation rules.
-      Pending update for V2.0 Runtime alignment.
+    purpose: Architecture docs WIP.
 
   - path: docs/specifications/
     component_id: docs_specifications_wip
@@ -654,6 +579,4 @@ components:
     area: schema
     status: draft
     authority_level: 4
-    purpose: >
-      Level 1 and Level 2 specifications (Schema & Semantics).
-      Pending formalization of V2.0 artifacts.
+    purpose: Specifications WIP.
