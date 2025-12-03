@@ -141,7 +141,7 @@ engine = MinimalEngine(validation_mode="strict")
 from jsonschema import validate
 import json
 
-with open("quickstart/metrics/schemas/pld_event.schema.json") as f:
+with open("quickstart/metrics/schemas/pld_event.schema.json", encoding="utf-8") as f:
     schema = json.load(f)
 
 validate(event, schema)
