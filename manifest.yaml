@@ -349,7 +349,7 @@ components:
     component_id: session_trace_buffer
     kind: runtime_module
     area: logging
-    status: status: stable
+    status: stable
     authority_level: 5
     purpose: Trace buffer.
 
