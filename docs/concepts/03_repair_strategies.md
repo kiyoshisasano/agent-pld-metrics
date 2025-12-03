@@ -1,3 +1,14 @@
+<!--
+component_id: concepts_repair_strategies
+kind: doc
+area: concepts
+status: candidate
+authority_level: 3
+version: 2.0.0
+license: CC-BY-4.0
+purpose: Describes the three repair strategies (Static, Guided, Human-in-the-Loop) used in PLD.
+-->
+
 # Repair Strategies in PLD Runtimes
 
 ## 1. Motivation and Scope
