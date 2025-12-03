@@ -1,7 +1,7 @@
 # component_id: event_writer
 # kind: runtime_module
 # area: logging
-# status: draft
+# status: stable
 # authority_level: 5
 # version: 2.0.0
 # license: Apache-2.0
@@ -212,4 +212,5 @@ __all__ = [
     "make_stdout_writer",
     "make_stderr_writer",
 ]
+
 
