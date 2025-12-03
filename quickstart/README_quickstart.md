@@ -205,6 +205,8 @@ Events remain **immutable** after construction.
 
 # 7. Runtime Rules and Constraints (Important)
 
+The following constraints reflect canonical runtime rules; Quickstart examples operate as a consumer layer and therefore must not modify underlying PLD semantics.
+
 Quickstart code **must NOT**:
 
 - Manually craft PLD dictionaries
