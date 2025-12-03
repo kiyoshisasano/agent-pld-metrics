@@ -1,7 +1,7 @@
 # component_id: session_trace_buffer
 # kind: runtime_module
 # area: logging
-# status: runtime
+# status: stable
 # authority_level: 5
 # version: 2.0.0
 # license: Apache-2.0
@@ -241,4 +241,5 @@ class SessionTraceBuffer:
         """
         with self._lock:
             return sum(len(events) for events in self._events_by_session.values())
+
 
