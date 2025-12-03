@@ -1,8 +1,22 @@
-# .gitignore
+# Python compilation
 __pycache__/
 *.py[cod]
-.DS_Store
-.vscode/
+*.so
+
+# Environment & Logs
 .env
-venv/
+logs/
 *.log
+*.jsonl
+
+# Build & Dist
+dist/
+build/
+*.egg-info/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Local data (Optional)
+analytics/multiwoz_2.4_n200/
