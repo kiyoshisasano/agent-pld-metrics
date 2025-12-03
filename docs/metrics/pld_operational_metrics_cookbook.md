@@ -1,8 +1,5 @@
-# PLD Operational Metrics Cookbook
 
-> **Scope:** Module-level runtime_template  
-> **Status:** Draft (user-requested generation)  
-> **Audience:** Runtime engineers and analysts integrating PLD operational metrics  
+# PLD Operational Metrics Cookbook
 
 ## 1. Overview
 
