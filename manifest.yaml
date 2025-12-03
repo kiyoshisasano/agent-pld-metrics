@@ -242,7 +242,7 @@ components:
     component_id: runtime_signal_bridge
     kind: runtime_module
     area: detection
-    status: stable
+    status: status: draft
     authority_level: 5
     purpose: Signal bridge.
 
@@ -292,7 +292,7 @@ components:
     component_id: pld_controller
     kind: runtime_module
     area: controller
-    status: experimental
+    status: status: draft
     authority_level: 5
     purpose: Main controller.
 
@@ -349,7 +349,7 @@ components:
     component_id: session_trace_buffer
     kind: runtime_module
     area: logging
-    status: experimental
+    status: status: stable
     authority_level: 5
     purpose: Trace buffer.
 
@@ -365,7 +365,7 @@ components:
     component_id: exporter_jsonl
     kind: runtime_module
     area: logging
-    status: stable
+    status: experimental
     authority_level: 5
     purpose: JSONL exporter.
 
