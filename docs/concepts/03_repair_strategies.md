@@ -106,7 +106,7 @@ To prevent infinite drift/repair oscillation, every repair strategy SHOULD imple
 * `repair_escalated` is the only valid path to another repair strategy.
 * These rules ensure controlled termination without infinite oscillation.
 
-## 5. Guided Repair Strategy Guided Repair Strategy (LLM-Assisted)
+## 5. Guided Repair Strategy (LLM-Assisted)
 
 ### 5.1 Concept
 
