@@ -1,4 +1,11 @@
-# quickstart/easy_pld_demo.py
+# component_id: easy_pld_demo
+# kind: example
+# area: quickstart
+# status: experimental
+# authority_level: 1
+# version: 2.0.0
+# license: Apache-2.0
+# purpose: Quickstart demonstration of SimpleObserver showing simple log_turn usage, traced turns with latency, and optional keyword-based drift detectors.
 
 """
 easy_pld_demo.py
