@@ -292,7 +292,7 @@ components:
     component_id: pld_controller
     kind: runtime_module
     area: controller
-    status: status: draft
+    status: draft
     authority_level: 5
     purpose: Main controller.
 
