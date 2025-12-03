@@ -1,7 +1,7 @@
 # component_id: structured_logger
 # kind: runtime_module
 # area: logging
-# status: draft
+# status: stable
 # authority_level: 5
 # version: 2.0.0
 # license: Apache-2.0
@@ -137,4 +137,5 @@ def make_console_logger(
 
 
 __all__ = ["LoggingMode", "StructuredLogger", "make_console_logger"]
+
 
