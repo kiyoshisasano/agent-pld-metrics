@@ -40,6 +40,7 @@ KIND_ENUM = {
     "metric",
     "example",
     "doc",
+    "legal",
 }
 
 STATUS_ENUM = {
