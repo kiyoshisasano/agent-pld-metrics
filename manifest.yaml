@@ -242,7 +242,7 @@ components:
     component_id: runtime_signal_bridge
     kind: runtime_module
     area: detection
-    status: status: draft
+    status: draft
     authority_level: 5
     purpose: Signal bridge.
 
