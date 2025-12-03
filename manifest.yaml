@@ -154,29 +154,6 @@ components:
   # ---------------------------------------------------------
   # 2. Documentation & Architecture
   # ---------------------------------------------------------
-  - path: docs/architecture/Architecture_Principles.md
-    component_id: arch_principles
-    kind: doc
-    area: architecture
-    status: draft
-    authority_level: 4
-    purpose: Core architectural values and constraints.
-
-  - path: docs/metrics/PLD_metrics_spec.md
-    component_id: metrics_spec
-    kind: schema
-    area: analytics
-    status: candidate
-    authority_level: 3
-    purpose: Definitions of PRDR, REI, and VRL metrics.
-
-  - path: docs/taxonomy/PLD_taxonomy_v2.0.md
-    component_id: taxonomy_v2
-    kind: doc
-    area: taxonomy
-    status: stable
-    authority_level: 5
-    purpose: Core taxonomy defining Drift, Repair, and Reentry types.
 
   - path: docs/concepts/01_introduction.md
     component_id: concepts_introduction
@@ -661,24 +638,11 @@ components:
   # ---------------------------------------------------------
   # 5. Field Collaboration
   # ---------------------------------------------------------
-  - path: field/README.md
-    component_id: field_readme
-    kind: doc
-    area: field_ops
-    status: stable
-    authority_level: 1
-    purpose: Guide for external collaboration.
+
 
   # ---------------------------------------------------------
   # 6. Analytics
   # ---------------------------------------------------------
-  - path: analytics/taxonomy/taxonomy_observation_sheet_v2.0.csv
-    component_id: taxonomy_sheet
-    kind: metric
-    area: analytics
-    status: draft
-    authority_level: 2
-    purpose: Observation log for aligning taxonomy against real data.
 
   # ---------------------------------------------------------
   # 7. Examples
