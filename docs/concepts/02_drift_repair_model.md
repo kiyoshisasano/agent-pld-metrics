@@ -1,3 +1,14 @@
+<!--
+component_id: concepts_drift_repair_model
+kind: doc
+area: concepts
+status: candidate
+authority_level: 3
+version: 2.0.0
+license: CC-BY-4.0
+purpose: Defines the conceptual lifecycle model for Drift → Repair → Reentry → Continue → Outcome.
+-->
+
 # Drift–Repair Lifecycle Model
 
 ## 1. Purpose of This Document
@@ -233,3 +244,4 @@ Drift → Repair → Reentry → Continue → Outcome
 Each phase has clear entry/exit conditions and aligns strictly with the Level 2 Semantic Matrix and Level 3 Runtime Standards.
 
 This conceptual model underpins the practical repair strategies, runtime policies, and transition patterns described throughout the PLD documentation ecosystem.
+
