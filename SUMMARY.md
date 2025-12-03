@@ -45,6 +45,7 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 - Logging & Telemetry (`/pld_runtime/logging/`)
 - Controllers (`/pld_runtime/controllers/`)
 - Ingestion (`/pld_runtime/ingestion/`)
+  - simple_observer.py — High-level facade for turn tracing & detectors
 - Failover & Recovery (`/pld_runtime/failover/`)
 
 ---
@@ -52,6 +53,7 @@ purpose: High-level navigation index for the PLD repository aligned to the Level
 ## 3 — Quickstart & Recipes (Level 4)
 
 ### 3.1 Quickstart
+- easy_pld_demo.py — SimpleObserver high-level demo
 - hello_pld_runtime.py
 - run_minimal_engine.py
 - metrics quickcheck (`/quickstart/metrics_quickcheck/`)
