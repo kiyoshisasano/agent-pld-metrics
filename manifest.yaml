@@ -1,5 +1,5 @@
 # manifest.yaml
-# PLD Repository Metadata Manifest (Fixed)
+# PLD Repository Metadata Manifest (Audit Passed)
 # Format spec: METADATA_MANIFEST_SPEC v0.9.1
 # SPDX-License-Identifier: Apache-2.0
 
@@ -23,7 +23,7 @@ components:
     purpose: Communication and adoption materials.
 
   # ---------------------------------------------------------
-  # 1. Meta & Governance (Files exist in root or meta/)
+  # 1. Meta & Governance
   # ---------------------------------------------------------
 
   - path: README.md
@@ -33,6 +33,30 @@ components:
     status: stable
     authority_level: 1
     purpose: Repository entry point.
+
+  - path: manifest.yaml
+    component_id: repo_manifest
+    kind: config
+    area: meta
+    status: stable
+    authority_level: 1
+    purpose: The metadata manifest itself.
+
+  - path: LICENSE
+    component_id: root_license
+    kind: legal
+    area: compliance
+    status: stable
+    authority_level: 1
+    purpose: Root license definition (Apache 2.0).
+
+  - path: validate_manifest.py
+    component_id: manifest_validator
+    kind: tool
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Script to validate manifest integrity.
 
   - path: SUMMARY.md
     component_id: repo_summary
@@ -98,7 +122,7 @@ components:
     authority_level: 3
     purpose: Project roadmap.
 
-  # --- Licenses ---
+  # --- Licenses Folder ---
   - path: LICENSES/
     component_id: licenses_dir
     kind: legal
@@ -136,7 +160,7 @@ components:
     purpose: Pattern documentation.
 
   # ---------------------------------------------------------
-  # 3. PLD Runtime Core (Matched to file headers)
+  # 3. PLD Runtime Core
   # ---------------------------------------------------------
 
   - path: pld_runtime/README.md
@@ -180,7 +204,7 @@ components:
     authority_level: 5
     purpose: Operational notes.
 
-  # --- ingestion (Fixed Levels) ---
+  # --- ingestion ---
   - path: pld_runtime/ingestion/ingestion_config.py
     component_id: ingestion_config
     kind: config
@@ -287,7 +311,7 @@ components:
     authority_level: 5
     purpose: Threshold templates.
 
-  # --- controllers (Fixed Levels) ---
+  # --- controllers ---
   - path: pld_runtime/controllers/pld_controller.py
     component_id: pld_controller
     kind: runtime_module
@@ -320,7 +344,7 @@ components:
     authority_level: 5
     purpose: State machine.
 
-  # --- logging (Fixed Runtime/Draft mismatches) ---
+  # --- logging ---
   - path: pld_runtime/logging/runtime_logging_pipeline.py
     component_id: logging_pipeline
     kind: runtime_module
@@ -377,7 +401,7 @@ components:
     authority_level: 5
     purpose: OTel exporter.
 
-  # --- failover (Fixed Draft/Experimental mismatches) ---
+  # --- failover ---
   - path: pld_runtime/failover/runtime_failover.py
     component_id: runtime_failover
     kind: runtime_module
@@ -484,7 +508,7 @@ components:
     purpose: Failover init.
 
   # ---------------------------------------------------------
-  # 4. Quickstart & Examples (Implicit Grouping)
+  # 4. Quickstart & Examples
   # ---------------------------------------------------------
 
   - path: quickstart/
