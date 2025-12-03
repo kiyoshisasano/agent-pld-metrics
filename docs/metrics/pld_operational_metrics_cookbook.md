@@ -1,52 +1,20 @@
 # PLD Operational Metrics Cookbook
 
-Version: 2.0.0  
-*Status*: Candidate — Stabilizing based on implementation feedback
-This document is part of an ongoing research and early adoption effort to explore operational metrics for PLD-aligned systems. The definitions and interpretations may evolve as real-world implementation feedback is collected.
+> **Scope:** Module-level runtime_template
+> **Status:** Draft (user-requested generation)
+> **Audience:** Runtime engineers and analysts integrating PLD operational metrics
 
-Authority Level: 3 — Derived operational rule (proposed canonical baseline)  
-Governance Approach: Experimental dual-track metrics versioning  
-Maintainer: TBD
+## 1. Overview
 
----
+This cookbook provides module-scoped guidance for implementing and using PLD operational metrics within a runtime environment. It offers actionable examples derived from canonical PLD metrics while preserving Level 1–3 invariants.
 
-## 0. Specification Purpose
+Template Variant **B** focuses on **runtime-facing examples** and **module-local integration flows**.
 
-This document defines the proposed canonical operational metrics used to evaluate runtime health and lifecycle stability within PLD-aligned systems.
+## 2. Canonical Metrics Summary
 
-It combines:
+### 2.1 Metric Metadata Template (Reference)
 
-- Machine-parseable, versioned metric definitions (normative)  
-- Operational interpretation guidance such as thresholds, queries, dashboards, and rollout heuristics (non-normative and subject to iteration)
-
-These metrics are intended to support:
-
-- Longitudinal benchmark comparability  
-- Runtime regression detection  
-- Drift management evaluation  
-- Observability standardization across implementations  
-
----
-
-## 1. Reference and Dependency Layers
-
-| Level       | Purpose / Role                              | Referenced Sources                                                                                                                                                               | Enforcement / Status                              |
-| ----------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **Level 1** | **Schema Definition**                       | `docs/schemas/pld_event.schema.json`                                                                                                                                             | **MUST pass schema validation**                   |
-| **Level 2** | **Semantic Rules & Constraints**            | `docs/event_matrix.md`, `docs/schemas/event_matrix.yaml`, `docs/03_pld_event_spec.md`                                                                                            | **MUST satisfy semantic alignment**               |
-| **Level 3** | **Operational Guidance & Metric Standards** | `docs/01_pld_for_agent_engineers.md`, `docs/07_pld_operational_metrics_cookbook.md`, `docs/schemas/metrics_schema.yaml`                                                          | Proposed canonical operational metric definitions |
-| **Level 4** | **Examples and Illustrative Materials**     | `quickstart/hello_pld_runtime.py`, `quickstart/run_minimal_engine.py`, `quickstart/examples/minimal_pld_demo.py`, `quickstart/patterns/03_system/logging_and_schema_examples.md` | Informative only (non-normative)                  |
-
-
-If conflicting conditions arise, apply the following resolution order:
-
-> **Level 1 → Level 2 → Level 3 → Level 4**
-
----
-
-## 2. Metric Specification Format (Required)
-
-Each metric MUST follow this metadata template:
+Module-level integrations SHOULD be aware of the metadata schema for PLD metrics. Runtime modules do **not** compute canonical metrics but may rely on this structure for advisory state tracking.
 
 ```
 ---
@@ -55,36 +23,132 @@ version: <SEMVER>
 status: <canonical|archived|experimental|deprecated>
 validation_modes: [strict|warn|normalize]
 output_unit: <percent|seconds|ratio|count>
-output_range: <required value space>
+output_range: <value space>
 schema_dependency: pld_event.schema.json
 semantic_dependency: event_matrix.yaml + event_matrix.md
 ---
 ```
 
-All metric formulas MUST be deterministic and computable solely from PLD-valid event streams.
+### 2.2 Recovery Event Reference (For Runtime Advisory)
 
----
+Runtime modules MAY treat the following as **recovery-class events** when computing advisory latency samples:
 
-## 3. Canonical Metrics (Baseline Proposal for v2.0)
+| event_type       | phase    |
+| ---------------- | -------- |
+| continue_allowed | continue |
+| reentry_observed | reentry  |
 
-These metrics represent the current recommended baseline for evaluating PLD-aligned systems and may be refined as broader implementation feedback emerges.
+These definitions are normative at Level 3 and MUST NOT be changed in runtime code.
 
----
+* **PRDR** — Post-Repair Drift Recurrence
+* **VRL** — Recovery Latency
+* **FR** — Failover Recurrence
 
-### 3.1 PRDR — Post-Repair Drift Recurrence
+Each metric operates only on **PLD-valid events** and MUST follow ordering by `turn_sequence`.
+
+## 3. Runtime Module Integration Patterns
+
+This section outlines module-level patterns for computing and emitting operational metrics.
+
+### 3.1 Local Runtime Metric Snapshot
+
+A runtime module may attach ephemeral metrics snapshots under the `runtime` block of the event:
+
+```yaml
+runtime:
+  latency_ms: <number>
+  model: <string>
+  module_metric_state:
+    active_repair_count: <int>
+    recent_drift_codes: <list>
+```
+
+These fields are advisory and MUST NOT conflict with Level 3 metrics rules.
+
+### 3.2 Module-Level PRDR Detection (Advisory)
+
+Modules may track transitions:
 
 ```
----
-metric: PRDR
-version: 2.0.0
-status: proposed_canonical
-validation_modes: [strict, warn]
-output_unit: percent
-output_range: [0.0, 100.0]
----
+repair_triggered → drift_detected
 ```
 
-**Normative Definition:**
+and update a local counter.
+
+```python
+module_state["repair_count"] += 1
+if event.event_type == "drift_detected":
+    module_state["post_repair_drift"] += 1
+```
+
+### 3.3 VRL_TurnDistance (Advisory Estimator)
+
+This estimator measures **turn-distance from the onset of drift episodes**.
+It is **not** the canonical VRL metric (which is timestamp-based and analytics-only).
+
+Modules maintain an `initial_drift_turn` marker and compute turn-distance until recovery:
+
+```python
+if event.event_type == "drift_detected":
+    # Record initial drift only (do not overwrite subsequent drifts)
+    if module_state.get("initial_drift_turn") is None:
+        module_state["initial_drift_turn"] = event.turn_sequence
+elif event.event_type in ("reentry_observed", "continue_allowed"):
+    start = module_state.get("initial_drift_turn")
+    if start is not None:
+        vrl_turns = event.turn_sequence - start  # advisory estimator
+        module_state["vrl_samples"].append(vrl_turns)
+        # reset for next drift episode
+        module_state["initial_drift_turn"] = None
+```
+
+### 3.4 Failover Recurrence (FR) Advisory Tracking
+
+Modules may count failover events and lifecycle events:
+
+```python
+if event.event_type == "failover_triggered":
+    module_state["failover_count"] += 1
+if event.pld.phase in ("drift", "repair", "reentry", "continue", "outcome", "failover"):
+    module_state["lifecycle_events"] += 1
+```
+
+## 4. Export Patterns
+
+Modules SHOULD NOT write metric results directly into canonical logs.
+They MAY:
+
+* expose `/metrics` endpoints,
+* attach snapshots to `runtime` block,
+* emit module-specific INFO events using M-prefix codes (phase=`none`).
+
+Example advisory emission:
+
+```python
+event = bridge.build_event(
+    signal=RuntimeSignal(
+        kind=SignalKind.INFO,
+        payload={"module_vrl_mean": mean(vrl_samples)},
+    ),
+    context=context,
+)
+```
+
+## 5. Validation Rules for Module-Scope Metrics
+
+* MUST NOT redefine lifecycle semantics.
+* MUST NOT introduce new taxonomy prefixes.
+* MUST NOT mutate PLD event fields.
+* MAY maintain local counters, windows, and state.
+
+---
+
+## 6. Canonical Metric Definitions (Analytics-Only — Runtime MUST NOT Compute)
+
+Runtime implementations may maintain advisory estimators (Section 3), but **canonical metrics are computed exclusively in analytics layers**. (Normative Reference – Appendix)
+Runtime modules MUST NOT compute canonical metrics directly. They MAY maintain advisory counters that analytics layers later use.
+
+### 6.1 PRDR — Post-Repair Drift Recurrence (Reference)
 
 ```
 PRDR = (# of sessions where a repair event is followed by a drift event)
@@ -92,166 +156,58 @@ PRDR = (# of sessions where a repair event is followed by a drift event)
       × 100
 ```
 
-**Required Conditions:**
+Required conditions:
 
-- Drift detection MUST occur after a repair event within the same session using strictly increasing `turn_sequence`.  
-- A recurrence time window MAY be applied, but MUST be declared in metadata.
+* drift must occur **after** repair in the same session
+* ordering enforced via `turn_sequence`
 
-**Interpretation Guidance (Non-Normative):**
-
-| Result | Meaning | Suggested Action |
-|--------|---------|------------------|
-| 🟢 0–10% | Durable repair behavior | No action |
-| ⚠ 10–30% | Partial improvement | Evaluate drift detectors or repair policy |
-| 🔴 >30% | Fragile repair strategy | Investigation recommended |
-
-**Example SQL (Informative only):**
-
-```sql
-WITH repairs AS (
-  SELECT session_id, turn_sequence AS repair_turn
-  FROM pld_events
-  WHERE event_type = 'repair_triggered'
-),
-drifts AS (
-  SELECT DISTINCT r.session_id
-  FROM repairs r
-  JOIN pld_events e USING(session_id)
- WHERE e.turn_sequence > r.repair_turn
-   AND e.event_type = 'drift_detected'
-)
-SELECT 
-  (COUNT(*) * 100.0) / NULLIF((SELECT COUNT(*) FROM repairs), 0) AS prdr
-FROM drifts;
-```
-
----
-
-### 3.2 VRL — Recovery Latency
-
-Legacy VRL (“Visible Repair Load”) is archived. The revised definition measures **time to stabilization**.
-
-```
----
-metric: VRL
-version: 2.0.0
-status: proposed_canonical
-output_unit: seconds
-output_range: [0, ∞)
-validation_modes: [strict, normalize]
----
-```
-
-**Normative Definition:**
+### 6.2 VRL — Recovery Latency (Reference)
 
 ```
 VRL = mean( timestamp(recovery_event) - timestamp(initial_drift_event) )
 ```
 
-Valid recovery events MUST be one of:
+Recovery events:
 
-| event_type | phase |
-|------------|--------|
-| continue_allowed | continue |
-| reentry_observed | reentry |
+* continue_allowed
+* reentry_observed
 
-If no recovery occurs, serialize as `"NaN"`.
-
-**Interpretation (Informative):**
-
-| Time | Interpretation |
-|------|---------------|
-| 🟢 <2s | Fast and minimally perceptible |
-| ⚠ 2–8s | Noticeable, borderline |
-| 🔴 >8s | User-visible instability |
-
----
-
-### 3.3 FR — Failover Recurrence Index
-
-```
----
-metric: FR
-version: 2.0.0
-status: proposed_canonical
-output_unit: ratio
-output_range: [0.0, ∞)
-validation_modes: [strict]
----
-```
-
-**Normative Definition:**
+### 6.3 FR — Failover Recurrence (Reference)
 
 ```
 FR = (# failover events)
      ÷ (# lifecycle events excluding phase="none")
 ```
 
-**Threshold Guidance (Non-Normative):**
+* MUST NOT redefine lifecycle semantics
+* MUST NOT introduce new taxonomy prefixes
+* MUST NOT mutate PLD event fields
+* MAY maintain local counters, windows, and state
 
-| Value | Meaning | Suggested Action |
-|--------|---------|------------------|
-| 🟢 0–5% | Expected variance | None |
-| ⚠ 5–15% | Elevated | Review drift → repair cycle |
-| 🔴 ≥15% | Possible systemic issue | Escalation recommended |
+## 7. Metric Version Awareness (Module Guidance)
 
----
+Runtime modules SHOULD be aware of the maturity of canonical metrics:
 
-## 4. Archived Metrics
-
-| Metric | Status | Notes |
-|--------|--------|--------|
-| REI | archived | MAY return in v2.0 depending on workload feedback |
-| MRBF | archived | Deprecated due to overlap with VRL + PRDR |
+| Metric | Version | Review Interval |
+| ------ | ------- | --------------- |
+| PRDR   | 2.0.0   | 90-day          |
+| VRL    | 2.0.0   | 180-day         |
+| FR     | 2.0.0   | 90-day          |
 
 ---
 
-## 5. Dashboard + BI Integration Layer (Informative)
+## 8. Appendix: Recommended Module State Structure
 
-This section supports implementation in:
+```json
+{
+  "repair_count": 0,
+  "post_repair_drift": 0,
+  "vrl_samples": [],
+  "failover_count": 0,
+  "lifecycle_events": 0,
+  "initial_drift_turn": null
+}
+```
 
-- Grafana / Supabase / Looker / Metabase  
-- Alerting and rollout guardrails  
-- Visual exploration of event-driven metrics  
-
-These artifacts operationalize metrics — they do not define them.
-
----
-
-### 5.1 Operational Visualization Reference (Informative)
-
-The following mock dashboard illustrates how the metrics defined in this document may be operationalized.  
-This visualization is **not a requirement**, but a reference target to support early implementation efforts.
-
-<p align="center">
-<img src="assets/dashboard_mockup.svg" width="100%" />
-</p>
-
-Teams may begin with individual metric queries and expand toward full dashboards depending on maturity, tooling, and operational needs.
-
-
----
-
-## 6. Version Lifecycle Table
-
-| Metric | Current Version | Previous | Next Review |
-|--------|----------------|----------|-------------|
-| PRDR | 2.0.0 | 1.0.0 | 90-day |
-| VRL | 2.0.0 | semantic fork (archived) | 180-day |
-| FR | 2.0.0 | 1.0.0 | 90-day |
-
----
-
-## 7. Revision Log
-
-- v1.1: Early operational guidance version  
-- v2.0: First combined normative + operational draft with versioned metrics
-
----
-
-### Feedback & Iteration
-
-This document remains a working draft.  
-If you apply these metrics in real implementations or discover limitations, edge cases, or improvements, feedback is welcome and encouraged.
 
 End of Document — v2.0 Draft
