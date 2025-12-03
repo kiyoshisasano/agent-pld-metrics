@@ -52,8 +52,7 @@ class ObserverDetector(Protocol):
         turn_sequence: int,
         user_visible_state_change: bool = False,
         payload: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Dict[str, Any]]:
-        ...
+    ) -> Optional[Dict[str, Any]]: ...
 
 
 @dataclass
@@ -117,7 +116,11 @@ class _TurnContext:
             - emit a D4_tool_error drift event (SignalKind.TOOL_ERROR)
             - preserve the original exception (return False)
         """
-        if exc_type is not None and not self._completed and self.observer._record_exceptions:
+        if (
+            exc_type is not None
+            and not self._completed
+            and self.observer._record_exceptions
+        ):
             self.observer._emit_turn_exception(
                 turn_sequence=self.turn_sequence,
                 role=self.role,
