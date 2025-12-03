@@ -1,4 +1,3 @@
-# component_id: requirements_txt
 # kind: config
 # area: meta
 # status: stable
