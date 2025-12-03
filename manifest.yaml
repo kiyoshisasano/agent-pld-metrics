@@ -178,7 +178,51 @@ components:
     authority_level: 5
     purpose: Core taxonomy defining Drift, Repair, and Reentry types.
 
-      - path: docs/operator_primitives/01_detect_drift.md
+      # ---------------------------------------------------------
+  # 2. Documentation & Architecture
+  # ---------------------------------------------------------
+
+  - path: docs/concepts/01_introduction.md
+    component_id: concepts_introduction
+    kind: doc
+    area: concepts
+    status: candidate
+    authority_level: 3
+    version: 2.0.0
+    license: CC-BY-4.0
+    purpose: High-level conceptual introduction to PLD lifecycle and design philosophy.
+
+  - path: docs/concepts/02_drift_repair_model.md
+    component_id: concepts_drift_repair_model
+    kind: doc
+    area: concepts
+    status: candidate
+    authority_level: 3
+    version: 2.0.0
+    license: CC-BY-4.0
+    purpose: Conceptual lifecycle model: Drift → Repair → Reentry → Continue → Outcome.
+
+  - path: docs/concepts/03_repair_strategies.md
+    component_id: concepts_repair_strategies
+    kind: doc
+    area: concepts
+    status: candidate
+    authority_level: 3
+    version: 2.0.0
+    license: CC-BY-4.0
+    purpose: Three PLD repair strategies: Static, Guided, Human-in-the-Loop.
+
+  - path: docs/concepts/reference_map.md
+    component_id: concepts_reference_map
+    kind: doc
+    area: concepts
+    status: candidate
+    authority_level: 3
+    version: 2.0.0
+    license: CC-BY-4.0
+    purpose: Navigation guide linking Concepts to specs, architecture, patterns, and runtime components.
+
+  - path: docs/operator_primitives/01_detect_drift.md
  　 component_id: detect_drift_operator
   　kind: doc
   　area: runtime_operators
