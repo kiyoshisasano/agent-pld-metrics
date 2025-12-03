@@ -213,8 +213,7 @@ class MetricsSummary:
         if self.prdr_sessions_with_repair == 0:
             return None
         return 100.0 * (
-            self.prdr_sessions_with_post_repair_drift
-            / self.prdr_sessions_with_repair
+            self.prdr_sessions_with_post_repair_drift / self.prdr_sessions_with_repair
         )
 
     @property
@@ -531,8 +530,12 @@ def render_session_summary(session: SessionTrace) -> str:
         f"status: {'closed' if session.is_closed() else 'incomplete (no session_closed event)'}"
     )
     lines.append("")
-    lines.append("turn | timestamp                | event_type         | phase     | code")
-    lines.append("-----+--------------------------+--------------------+-----------+----------------------")
+    lines.append(
+        "turn | timestamp                | event_type         | phase     | code"
+    )
+    lines.append(
+        "-----+--------------------------+--------------------+-----------+----------------------"
+    )
 
     for e in events:
         turn = e.turn_sequence if e.turn_sequence is not None else "-"
@@ -622,7 +625,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         if args.session:
             session = session_map.get(args.session)
             if not session:
-                print(f"[WARN] No session found with id={args.session}", file=sys.stderr)
+                print(
+                    f"[WARN] No session found with id={args.session}", file=sys.stderr
+                )
             else:
                 print(render_session_summary(session))
         else:
