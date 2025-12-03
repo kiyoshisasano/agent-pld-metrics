@@ -105,8 +105,8 @@ The maintainer functions primarily as:
 
 ## 🎯 Why PLD Exists
 
-Multi-turn agents rarely fail because they *don't know something*—  
-they fail because behavior becomes **unstable over time**.  
+> Multi-turn agents rarely fail because they *don't know something*—  
+> they fail because behavior becomes **unstable over time**.
 
 Common patterns include:
 
