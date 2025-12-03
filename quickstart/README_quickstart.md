@@ -25,7 +25,7 @@ RuntimeSignal → RuntimeSignalBridge → PLD Event → StructuredLogger → Out
 ```
 
 
-## No manual event construction is required — **the runtime builds canonical PLD events for you.**
+### No manual event construction is required — **the runtime builds canonical PLD events for you.**
 
 ---
 
