@@ -195,7 +195,7 @@ components:
     license: CC-BY-4.0
     purpose: Navigation guide linking Concepts to specs, architecture, patterns, and runtime components.
 
-  - path: docs/operator_primitives/01_detect_drift.md
+  - path: docs/concepts/operator_primitives/01_detect_drift.md
  　 component_id: detect_drift_operator
   　kind: doc
   　area: runtime_operators
@@ -204,7 +204,7 @@ components:
  　 version: 2.0.0
  　 purpose: "Exploratory operator notes describing drift detection patterns in PLD runtime contexts."
 　
-　- path: docs/operator_primitives/02_soft_repair.md
+　- path: docs/concepts/operator_primitives/02_soft_repair.md
 　  component_id: soft_repair_operator
  　 kind: doc
   　area: runtime_operators
@@ -213,7 +213,7 @@ components:
   　version: 2.0.0
 　  purpose: "Working draft describing soft corrective behavior interpretations for PLD."
 
-　- path: docs/operator_primitives/03_hard_repair.md
+　- path: docs/concepts/operator_primitives/03_hard_repair.md
   　component_id: hard_repair_operator
  　 kind: doc
   　area: runtime_operators
@@ -222,7 +222,7 @@ components:
   　version: 2.0.0
   　purpose: "Notes defining exploratory framing for structural reset conditions and escalation boundaries."
 
-　- path: docs/operator_primitives/04_latency_operator.md
+　- path: docs/concepts/operator_primitives/04_latency_operator.md
   　component_id: latency_operator
   　kind: doc
   　area: observability
@@ -231,7 +231,7 @@ components:
  　 version: 2.0.0
  　 purpose: "Observability notes describing latency signal handling and non-lifecycle metadata events."
 
-　- path: docs/operator_primitives/05_reentry_operator.md
+　- path: docs/concepts/operator_primitives/05_reentry_operator.md
   　component_id: reentry_operator
   　kind: doc
   　area: runtime_operators
@@ -240,7 +240,7 @@ components:
   　version: 2.0.0
   　purpose: "Exploratory framing for stabilization transitions following repair sequences."
 
-- path: docs/patterns/01_llm/foundations.md
+- path: docs/concepts/patterns/01_llm/foundations.md
   component_id: llm_patterns_foundations
   kind: doc
   area: quickstart_patterns
