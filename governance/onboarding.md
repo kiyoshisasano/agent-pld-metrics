@@ -60,7 +60,7 @@ Take 3–5 real or demo transcripts and:
 
 ### Part 3 — Metrics Overview (15–20 min)
 
-Show a simple dashboard or summary table:
+Show a simple dashboard or summary table (e.g., using the provided CLI dashboard tool):
 
 - Drift rate
 - Soft vs Hard repair ratio
@@ -162,4 +162,5 @@ Instead, focus on:
 > Onboarding is not about teaching PLD in full.  
 > It is about giving collaborators **just enough structure**  
 > so their intuition lines up with the PLD runtime loop.
+
 
