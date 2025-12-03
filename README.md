@@ -331,6 +331,36 @@ Once structured events flow, the system becomes measurable:
 
 Metrics cookbook → `docs/metrics/cookbook.md`
 
+#### Text-based Metrics Dashboard (Experimental)
+
+A minimal console dashboard is available at:
+
+`examples/dashboard/app.py`
+
+This example:
+
+* reads PLD v2 JSONL runtime events (default: `quickstart/metrics_quickcheck/pld_events_demo.jsonl`)
+* groups events by `session_id`
+* computes analytics-layer metrics for **PRDR**, **VRL**, and **FR**
+* prints a global summary and optional per-session breakdown
+
+Usage:
+
+```bash
+# Use the demo events file
+python examples/dashboard/app.py
+
+# Custom log file
+python examples/dashboard/app.py --file path/to/pld_events.jsonl
+
+# Metrics summary only (no per-session breakdown)
+python examples/dashboard/app.py --no-sessions
+```
+
+> This script operates strictly at the analytics layer:  
+> it only reads already-emitted PLD-compliant events and does not modify  
+> Level 1–3 semantics or runtime behavior.  
+
 ---
 
 ## 🧪 PLD is most useful when:
