@@ -257,6 +257,18 @@ print("Event:", event)
 
 ---
 
+## ⚙️ System Requirements
+
+To ensure runtime stability and correct timestamp handling:
+
+* **Python:** **3.9+** is required.
+    * The runtime relies on modern standard library features for timezone-aware timestamps (e.g., `datetime.now(timezone.utc)`).
+    * Type hinting utilizes syntax consistent with modern Python standards.
+
+> **Note:** Usage with Python 3.8 or older is **not supported** without manual backports and modification of datetime logic.
+
+---
+
 ## Versioning and Compatibility
 
 * Compatible with schema **v2.x**
@@ -268,3 +280,4 @@ Maintainer: **Kiyoshi Sasano**
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
