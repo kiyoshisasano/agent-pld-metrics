@@ -116,6 +116,8 @@ It is the recommended import path for:
 * examples, demos, and field experimentation
 * production-facing integrations where stability matters
 
+Note: SimpleObserver is a Level-5 convenience wrapper and is not part of the stable top-level API surface. It is intended for ergonomic integrations and may evolve independently of the core runtime bridge.
+
 ---
 
 ### Design Intent
@@ -183,12 +185,16 @@ Descriptions reflect current intent, not a locked standard.
 | Module              | Definition                                           | Notes                                     |
 | ------------------- | ---------------------------------------------------- | ----------------------------------------- |
 | **schemas/**     | Canonical runtime schema envelopes                   | MUST align with Level 1                   |
-| **ingestion/**   | Normalize inputs into runtime-consumable structures  | SHOULD avoid semantic inference           |
+| **ingestion/**   | The ingestion module also contains SimpleObserver, an optional high-level facade that automates
+EventContext construction, turn sequencing, latency measurement, and detector invocation. It is a Level-5 helper and does not alter canonical PLD semantics.
+  | SHOULD avoid semantic inference           |
 | **detection/**   | Extract drift/repair/reentry/threshold signals       | SHOULD remain side-effect-free            |
 | **enforcement/** | Structural + semantic validation and rule evaluation | MUST follow Level precedence              |
 | **controllers/** | Runtime governance logic                             | MAY route actions; MUST NOT mutate events |
 | **logging/**     | Structured session traces, replay-supporting formats | MUST preserve event ordering              |
 | **failover/**    | Recovery, retry, and mitigation logic                | SHOULD treat recovery conservatively      |
+| **ingestion/simple_observer.py** | High-level facade wrapping RuntimeSignalBridge; manages turn sequencing, latency, detectors | Optional helper for runtime integrations |
+
 
 ---
 
@@ -305,6 +311,7 @@ Feedback is welcome and may influence future revisions.
 ---
 
 This document reflects the current working understanding of the runtime and is subject to revision as research and feedback continue.
+
 
 
 
