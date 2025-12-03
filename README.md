@@ -326,7 +326,7 @@ Metrics cookbook → `docs/metrics/cookbook.md`
 ✔ alignment persistence matters more than single-response quality  
 
 Less relevant for:
-⚠ single-turn Q&A
+⚠ single-turn Q&A  
 ⚠ fully deterministic scripted flows
 
 ---
