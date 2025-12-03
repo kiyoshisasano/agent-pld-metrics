@@ -232,6 +232,11 @@ python quickstart/metrics_quickcheck/verify_metrics_local.py  # Validate PLD met
 
 Next steps → `quickstart/README_quickstart.md`
 
+### 🚀 Quickstart Scripts Guide
+* **`easy_pld_demo.py`:** Easiest entry point. Shows the "3-line integration" pattern.
+* **`hello_pld_runtime.py`:** Demonstrates built-in schema drift detection (e.g., missing keys).
+* **`run_minimal_engine.py`:** Runs a multi-turn simulation to show the full phase loop.
+
 <details>
 <summary>🧪 Built-In Runtime Detectors (Experimental)</summary>
 
