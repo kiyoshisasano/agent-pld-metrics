@@ -154,7 +154,7 @@ components:
   # ---------------------------------------------------------
   # 2. Documentation & Architecture
   # ---------------------------------------------------------
-  - path: docs/architecture/PLD_Runtime_Architecture_Principles.md
+  - path: docs/architecture/Architecture_Principles.md
     component_id: arch_principles
     kind: doc
     area: architecture
@@ -177,10 +177,6 @@ components:
     status: stable
     authority_level: 5
     purpose: Core taxonomy defining Drift, Repair, and Reentry types.
-
-      # ---------------------------------------------------------
-  # 2. Documentation & Architecture
-  # ---------------------------------------------------------
 
   - path: docs/concepts/01_introduction.md
     component_id: concepts_introduction
