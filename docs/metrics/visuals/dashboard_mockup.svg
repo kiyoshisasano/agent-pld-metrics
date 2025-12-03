@@ -1,91 +1,252 @@
-<svg width="1200" height="720" viewBox="0 0 1200 720" fill="none" xmlns="http://www.w3.org/2000/svg">
-<style>
-  .title { font-family: Inter, sans-serif; font-weight: 600; font-size: 22px; fill: #E9ECEF; }
-  .subtitle { font-family: Inter, sans-serif; font-weight: 400; font-size: 14px; fill: #9BA4AE; }
-  .metric-label { font-family: Inter, sans-serif; font-weight: 500; font-size: 14px; fill: #DDE2E8; }
-  .metric-value { font-family: Inter, sans-serif; font-weight: 600; font-size: 26px; fill: #FFFFFF; }
-  .badge-green { font-family: Inter, sans-serif; font-size: 14px; font-weight: 500; fill: #4ADE80; }
-  .badge-yellow { font-family: Inter, sans-serif; font-size: 14px; font-weight: 500; fill: #FACC15; }
-  .badge-red { font-family: Inter, sans-serif; font-size: 14px; font-weight: 500; fill: #EF4444; }
-  .grid-label { font-family: Inter, sans-serif; font-size: 11px; fill: #7D8893; }
-</style>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1200"
+  height="800"
+  viewBox="0 0 1200 800"
+>
+  <style>
+    .title       { font-family: system-ui, -apple-system, sans-serif; font-size: 24px; font-weight: 600; }
+    .subtitle    { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; fill: #555; }
+    .card-title  { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: 600; }
+    .card-main   { font-family: system-ui, -apple-system, sans-serif; font-size: 24px; font-weight: 600; }
+    .card-sub    { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #555; }
+    .label       { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; }
+    .small       { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #555; }
+    .mono        { font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace; font-size: 11px; }
+    .table-head  { font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace; font-size: 11px; font-weight: 600; }
+    .table-cell  { font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace; font-size: 11px; }
 
-<!-- Background -->
-<rect width="1200" height="720" rx="20" fill="#111417"/>
+    .card-bg     { fill: #f8fafc; stroke: #e2e8f0; stroke-width: 1; }
+    .panel-bg    { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1; }
+    .badge       { fill: #e2e8f0; }
 
-<!-- Header -->
-<text x="40" y="60" class="title">PLD Operational Dashboard</text>
-<text x="40" y="90" class="subtitle">Monitoring runtime alignment stability and repair effectiveness</text>
+    .phase-drift    { fill: #f97316; }
+    .phase-repair   { fill: #3b82f6; }
+    .phase-continue { fill: #22c55e; }
+    .phase-outcome  { fill: #6b7280; }
+    .phase-none     { fill: #a855f7; }
 
-<!-- ⋮ menu -->
-<circle cx="1140" cy="50" r="3" fill="#495057"/>
-<circle cx="1140" cy="65" r="3" fill="#495057"/>
-<circle cx="1140" cy="80" r="3" fill="#495057"/>
+    .axis-line   { stroke: #cbd5e1; stroke-width: 1; }
+    .sep-line    { stroke: #e5e7eb; stroke-width: 1; stroke-dasharray: 4 4; }
 
+    .marker-circle   { stroke: #0f172a; stroke-width: 1; }
+    .marker-diamond  { stroke: #0f172a; stroke-width: 1; fill: #6b7280; }
+    .marker-triangle { stroke: #0f172a; stroke-width: 1; fill: #a855f7; }
 
-<!-- TILE 1 — PRDR -->
-<rect x="40" y="130" width="360" height="230" rx="16" fill="#1A1F23"/>
-<text x="60" y="165" class="metric-label">PRDR — Post-Repair Drift Recurrence</text>
-<text x="60" y="210" class="metric-value">8%</text>
-<text x="60" y="235" class="badge-green">✅ Stable (0–10%)</text>
+    .legend-box  { fill: #f9fafb; stroke: #e5e7eb; stroke-width: 1; }
+  </style>
 
-<polyline points="60,260 120,240 180,290 240,245 300,270 360,235"
- stroke="#5AC8FA" stroke-width="3" fill="none" stroke-linecap="round"/>
-<text x="60" y="315" class="grid-label">Time (last 7 days) →</text>
+  <!-- Title -->
+  <text x="40" y="50" class="title">
+    PLD Operational Metrics Dashboard — Mockup
+  </text>
+  <text x="40" y="72" class="subtitle">
+    Analytics-only visualization of PRDR / VRL / FR over PLD v2 runtime events
+  </text>
 
+  <!-- Metric summary cards -->
+  <rect x="40" y="90" width="1120" height="120" class="panel-bg"/>
 
-<!-- TILE 2 — REI -->
-<rect x="420" y="130" width="360" height="230" rx="16" fill="#1A1F23"/>
-<text x="440" y="165" class="metric-label">REI — Repair Efficiency Index</text>
-<text x="440" y="210" class="metric-value">+15%</text>
-<text x="440" y="235" class="badge-green">↑ Efficient</text>
+  <!-- PRDR card -->
+  <rect x="60" y="110" width="250" height="80" class="card-bg" rx="8" ry="8"/>
+  <text x="80" y="135" class="card-title">PRDR</text>
+  <text x="80" y="160" class="card-main">33.3%</text>
+  <text x="80" y="178" class="card-sub">Post-Repair Drift Recurrence · 1 / 3 sessions</text>
 
-<!-- Before/After simple bars -->
-<rect x="440" y="270" width="60" height="40" rx="6" fill="#6B7280"/>
-<rect x="520" y="250" width="60" height="60" rx="6" fill="#22C55E"/>
+  <!-- VRL card -->
+  <rect x="330" y="110" width="250" height="80" class="card-bg" rx="8" ry="8"/>
+  <text x="350" y="135" class="card-title">VRL</text>
+  <text x="350" y="160" class="card-main">10.0 s</text>
+  <text x="350" y="178" class="card-sub">Recovery Latency (mean) · 1 sample</text>
 
-<text x="440" y="320" class="grid-label">Baseline vs Improved →</text>
+  <!-- FR card -->
+  <rect x="600" y="110" width="250" height="80" class="card-bg" rx="8" ry="8"/>
+  <text x="620" y="135" class="card-title">FR</text>
+  <text x="620" y="160" class="card-main">0.0</text>
+  <text x="620" y="178" class="card-sub">Failover Recurrence · 0 / 18 lifecycle events</text>
 
+  <!-- Sessions card -->
+  <rect x="870" y="110" width="270" height="80" class="card-bg" rx="8" ry="8"/>
+  <text x="890" y="135" class="card-title">Sessions</text>
+  <text x="890" y="160" class="card-main">3</text>
+  <text x="890" y="178" class="card-sub">demo-fail-01 · demo-ok-01 · demo-metrics-01</text>
 
-<!-- TILE 3 — VRL -->
-<rect x="800" y="130" width="360" height="230" rx="16" fill="#1A1F23"/>
-<text x="820" y="165" class="metric-label">VRL — Visible Repair Load</text>
-<text x="820" y="210" class="metric-value">12%</text>
-<text x="820" y="235" class="badge-yellow">⚠ Noticeable (5–20%)</text>
+  <!-- Session timelines panel -->
+  <rect x="40" y="230" width="1120" height="260" class="panel-bg" rx="10" ry="10"/>
+  <text x="60" y="255" class="label">Session timelines (turn_sequence / phase-aligned events)</text>
 
-<!-- Progress bar -->
-<rect x="820" y="275" width="260" height="14" rx="7" fill="#3B3F45"/>
-<rect x="820" y="275" width="120" height="14" rx="7" fill="#FACC15"/>
+  <!-- Legend - 拡大して収まるように調整 -->
+  <rect x="60" y="265" width="280" height="90" class="legend-box" rx="6" ry="6"/>
+  <text x="75" y="283" class="small" style="font-weight:600">Legend</text>
 
-<text x="820" y="315" class="grid-label">User-visible repairs per 100 turns</text>
+  <!-- Legend items -->
+  <circle cx="85" cy="300" r="5" class="phase-drift marker-circle"/>
+  <text x="100" y="304" class="small">drift (D* codes)</text>
 
+  <circle cx="85" cy="318" r="5" class="phase-repair marker-circle"/>
+  <text x="100" y="322" class="small">repair (R* codes)</text>
 
-<!-- TILE 4 — FR -->
-<rect x="40" y="390" width="360" height="230" rx="16" fill="#1A1F23"/>
-<text x="60" y="425" class="metric-label">FR — Failover Rate</text>
-<text x="60" y="470" class="metric-value">3.2%</text>
-<text x="60" y="495" class="badge-green">🟢 Expected (0–5%)</text>
+  <circle cx="85" cy="336" r="5" class="phase-continue marker-circle"/>
+  <text x="100" y="340" class="small">continue (C* codes)</text>
 
-<polyline points="60,520 120,510 180,485 240,530 300,495 360,470"
- stroke="#A855F7" stroke-width="3" fill="none" stroke-linecap="round"/>
-<text x="60" y="580" class="grid-label">Time (last 7 days) →</text>
+  <rect x="209" y="294" width="10" height="10" class="marker-diamond" transform="rotate(45 214 299)"/>
+  <text x="230" y="304" class="small">outcome (O* codes)</text>
 
+  <polygon points="214,313 220,325 208,325" class="marker-triangle"/>
+  <text x="230" y="322" class="small">info event</text>
 
-<!-- TILE 5 — MRBF -->
-<rect x="420" y="390" width="360" height="230" rx="16" fill="#1A1F23"/>
-<text x="440" y="425" class="metric-label">MRBF — Mean Repairs Before Failover</text>
-<text x="440" y="470" class="metric-value">7.0</text>
-<text x="440" y="495" class="badge-yellow">⚠ High persistence (>4)</text>
+  <!-- demo-fail-01 -->
+  <text x="60" y="385" class="label">demo-fail-01 (closed)</text>
+  <line x1="200" y1="385" x2="880" y2="385" class="axis-line"/>
 
-<text x="440" y="540" class="grid-label">Higher means repeated unsuccessful correction before failover.</text>
+  <g class="small">
+    <line x1="200" y1="381" x2="200" y2="389" stroke="#94a3b8" stroke-width="1"/>
+    <text x="196" y="400">1</text>
 
+    <line x1="280" y1="381" x2="280" y2="389" stroke="#94a3b8" stroke-width="1"/>
+    <text x="276" y="400">2</text>
 
-<!-- TILE 6 — NEW: Metric Health Summary -->
-<rect x="800" y="390" width="360" height="230" rx="16" fill="#1A1F23"/>
-<text x="820" y="425" class="metric-label">Metric Health Summary</text>
+    <line x1="360" y1="381" x2="360" y2="389" stroke="#94a3b8" stroke-width="1"/>
+    <text x="356" y="400">3</text>
 
-<text x="820" y="470" class="badge-green">🟢 4 metrics healthy</text>
-<text x="820" y="500" class="badge-yellow">⚠ 1 requires attention</text>
-<text x="820" y="535" class="grid-label">Based on thresholds defined in Operational Metrics Cookbook.</text>
+    <line x1="440" y1="381" x2="440" y2="389" stroke="#94a3b8" stroke-width="1"/>
+    <text x="436" y="400">4</text>
 
+    <line x1="520" y1="381" x2="520" y2="389" stroke="#94a3b8" stroke-width="1"/>
+    <text x="516" y="400">5</text>
+
+    <line x1="600" y1="381" x2="600" y2="389" stroke="#94a3b8" stroke-width="1"/>
+    <text x="596" y="400">6</text>
+
+    <line x1="680" y1="381" x2="680" y2="389" stroke="#94a3b8" stroke-width="1"/>
+    <text x="676" y="400">7</text>
+
+    <line x1="760" y1="381" x2="760" y2="389" stroke="#94a3b8" stroke-width="1"/>
+    <text x="756" y="400">8</text>
+  </g>
+
+  <circle cx="200" cy="385" r="7" class="phase-continue marker-circle"/>
+  <text x="185" y="370" class="small">C0</text>
+
+  <circle cx="280" cy="385" r="7" class="phase-drift marker-circle"/>
+  <text x="265" y="370" class="small">D4</text>
+
+  <circle cx="360" cy="385" r="6" class="phase-repair marker-circle"/>
+  <circle cx="440" cy="385" r="6" class="phase-repair marker-circle"/>
+  <circle cx="520" cy="385" r="6" class="phase-repair marker-circle"/>
+  <circle cx="600" cy="385" r="6" class="phase-repair marker-circle"/>
+  <circle cx="680" cy="385" r="6" class="phase-repair marker-circle"/>
+  <text x="475" y="370" class="small">R2 ×5</text>
+
+  <rect x="754" y="379" width="12" height="12" class="marker-diamond" transform="rotate(45 760 385)"/>
+  <text x="780" y="389" class="small">O0 (max_retries)</text>
+
+  <line x1="60" y1="415" x2="880" y2="415" class="sep-line"/>
+
+  <!-- demo-ok-01 -->
+  <text x="60" y="440" class="label">demo-ok-01 (closed)</text>
+  <line x1="200" y1="440" x2="880" y2="440" class="axis-line"/>
+
+  <g class="small">
+    <line x1="200" y1="436" x2="200" y2="444" stroke="#94a3b8" stroke-width="1"/>
+    <text x="196" y="455">1</text>
+
+    <line x1="280" y1="436" x2="280" y2="444" stroke="#94a3b8" stroke-width="1"/>
+    <text x="276" y="455">2</text>
+
+    <line x1="360" y1="436" x2="360" y2="444" stroke="#94a3b8" stroke-width="1"/>
+    <text x="356" y="455">3</text>
+
+    <line x1="440" y1="436" x2="440" y2="444" stroke="#94a3b8" stroke-width="1"/>
+    <text x="436" y="455">4</text>
+
+    <line x1="520" y1="436" x2="520" y2="444" stroke="#94a3b8" stroke-width="1"/>
+    <text x="516" y="455">5</text>
+
+    <line x1="600" y1="436" x2="600" y2="444" stroke="#94a3b8" stroke-width="1"/>
+    <text x="596" y="455">6</text>
+  </g>
+
+  <circle cx="200" cy="440" r="7" class="phase-continue marker-circle"/>
+  <text x="185" y="425" class="small">C0</text>
+
+  <circle cx="280" cy="440" r="7" class="phase-drift marker-circle"/>
+  <text x="265" y="425" class="small">D1</text>
+
+  <circle cx="360" cy="440" r="7" class="phase-repair marker-circle"/>
+  <text x="345" y="425" class="small">R1</text>
+
+  <circle cx="440" cy="440" r="7" class="phase-continue marker-circle"/>
+  <text x="425" y="425" class="small">C0</text>
+
+  <polygon points="520,432 528,448 512,448" class="marker-triangle"/>
+  <text x="540" y="444" class="small">INFO</text>
+
+  <rect x="594" y="434" width="12" height="12" class="marker-diamond" transform="rotate(45 600 440)"/>
+  <text x="620" y="444" class="small">O0</text>
+
+  <line x1="60" y1="470" x2="880" y2="470" class="sep-line"/>
+
+  <!-- demo-metrics-01 -->
+  <text x="60" y="480" class="label">demo-metrics-01 (closed · PRDR demo)</text>
+
+  <!-- Session details panel -->
+  <rect x="40" y="510" width="1120" height="260" class="panel-bg" rx="10" ry="10"/>
+  <text x="60" y="535" class="label">Session details (text-mode view)</text>
+
+  <!-- Badge for selected session -->
+  <rect x="60" y="545" width="230" height="24" class="badge" rx="4" ry="4"/>
+  <text x="70" y="562" class="small">Selected session: demo-metrics-01</text>
+
+  <!-- Table header -->
+  <text x="60"  y="590" class="table-head">turn</text>
+  <text x="110" y="590" class="table-head">timestamp</text>
+  <text x="290" y="590" class="table-head">event_type</text>
+  <text x="450" y="590" class="table-head">phase</text>
+  <text x="540" y="590" class="table-head">code</text>
+
+  <line x1="60" y1="598" x2="700" y2="598" class="axis-line"/>
+
+  <!-- Rows for demo-metrics-01 -->
+  <text x="60"  y="618" class="table-cell">1</text>
+  <text x="110" y="618" class="table-cell">2025-01-15T12:00:00Z</text>
+  <text x="290" y="618" class="table-cell">continue_allowed</text>
+  <text x="450" y="618" class="table-cell">continue</text>
+  <text x="540" y="618" class="table-cell">C0_normal</text>
+
+  <text x="60"  y="640" class="table-cell">2</text>
+  <text x="110" y="640" class="table-cell">2025-01-15T12:00:05Z</text>
+  <text x="290" y="640" class="table-cell">drift_detected</text>
+  <text x="450" y="640" class="table-cell">drift</text>
+  <text x="540" y="640" class="table-cell">D3_repeated_plan</text>
+
+  <text x="60"  y="662" class="table-cell">3</text>
+  <text x="110" y="662" class="table-cell">2025-01-15T12:00:10Z</text>
+  <text x="290" y="662" class="table-cell">repair_triggered</text>
+  <text x="450" y="662" class="table-cell">repair</text>
+  <text x="540" y="662" class="table-cell">R2_soft_repair</text>
+
+  <text x="60"  y="684" class="table-cell">4</text>
+  <text x="110" y="684" class="table-cell">2025-01-15T12:00:15Z</text>
+  <text x="290" y="684" class="table-cell">drift_detected</text>
+  <text x="450" y="684" class="table-cell">drift</text>
+  <text x="540" y="684" class="table-cell">D3_repeated_plan</text>
+
+  <text x="60"  y="706" class="table-cell">5</text>
+  <text x="110" y="706" class="table-cell">2025-01-15T12:00:20Z</text>
+  <text x="290" y="706" class="table-cell">info</text>
+  <text x="450" y="706" class="table-cell">none</text>
+  <text x="540" y="706" class="table-cell">M1_PRDR</text>
+
+  <text x="60"  y="728" class="table-cell">6</text>
+  <text x="110" y="728" class="table-cell">2025-01-15T12:00:25Z</text>
+  <text x="290" y="728" class="table-cell">session_closed</text>
+  <text x="450" y="728" class="table-cell">outcome</text>
+  <text x="540" y="728" class="table-cell">O0_session_closed</text>
+
+  <!-- Footnote -->
+  <text x="60" y="758" class="small">
+    This dashboard mockup operates at the analytics layer only. M-prefix codes (e.g., M1_PRDR) are derived metric markers.
+  </text>
 </svg>
