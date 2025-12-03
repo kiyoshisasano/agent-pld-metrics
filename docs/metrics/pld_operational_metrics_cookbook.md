@@ -1,3 +1,17 @@
+<!--
+path: docs/metrics/pld_operational_metrics_cookbook.md
+component_id: pld_operational_metrics_cookbook
+kind: doc
+area: metrics
+status: draft
+authority_level: 3
+version: 2.0.0
+license: CC-BY-4.0
+purpose: Runtime-oriented cookbook providing advisory estimators and integration patterns
+         derived from canonical PLD metrics. Targets module-level implementers while
+         preserving Level 1–3 invariants.
+maintainer: TBD
+-->
 
 # PLD Operational Metrics Cookbook
 
