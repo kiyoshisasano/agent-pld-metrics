@@ -1,5 +1,5 @@
 # manifest.yaml
-# PLD Repository Metadata Manifest (Audit Passed & Fixed)
+# PLD Repository Metadata Manifest (Audit Passed & Fixed v3)
 # Format spec: METADATA_MANIFEST_SPEC v0.9.1
 # SPDX-License-Identifier: Apache-2.0
 
@@ -51,7 +51,7 @@ components:
     purpose: Root license definition (Apache 2.0).
 
   - path: validate_manifest.py
-    component_id: manifest_validator
+    component_id: validate_manifest
     kind: code
     area: meta
     status: stable
