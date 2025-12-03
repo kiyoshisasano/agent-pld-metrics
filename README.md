@@ -20,7 +20,9 @@ This repository contains **specifications, runtime components, examples, adoptio
 | 🧑‍💻 **Developer / Engineer**     | Start with: `quickstart/` → run an example such as `easy_pld_demo.py`, which provides a concise high-level usage flow. |
 | 🧪 **Researcher / Architect**      | Explore: `docs/` (Levels 1–3) → semantics, schema, taxonomy, runtime reasoning.                                   |
 | 🧑‍💼 **Product / Decision Maker** | View: `pitch/` → understand why multi-turn systems fail and how PLD stabilizes them.                              |
-| 🧭 **Evaluating or Integrating**   | Check: `examples/` and `analytics/` for patterns, metrics, and field workflows.                                   |
+| 🧭 Evaluating or Integrating | Check: `examples/` and `analytics/` for patterns, metrics, and field workflows.  
+  Selected examples also illustrate how structured PLD traces can be viewed or explored through lightweight dashboards.
+
 
 ---
 
