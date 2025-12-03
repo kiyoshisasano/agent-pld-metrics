@@ -59,12 +59,12 @@ components:
     purpose: Script to validate manifest integrity.
 
   - path: tests/test_basic.py
-　  component_id: test_basic_survival
-   kind: code
-   area: meta
-   status: stable
-   authority_level: 3
-   purpose: Basic survival test.
+    component_id: test_basic_survival
+    kind: code
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Basic survival test.
     
   - path: SUMMARY.md
     component_id: repo_summary
