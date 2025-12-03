@@ -559,3 +559,52 @@ components:
       Integration examples and reference traces including LangGraph assistants
       integration, reference trace generators, forensic traces, golden semantic
       repair traces, and metrics dashboard app.
+
+  # ---------------------------------------------------------
+  # 6. Works in Progress / Pending Update (Implicit Grouping)
+  # ---------------------------------------------------------
+  # These directories are currently being refactored for V2.0.
+  # Content may be mixed between V1.0 (legacy) and V2.0 (draft).
+
+  - path: analytics/
+    component_id: analytics_suite_wip
+    kind: metric
+    area: analytics
+    status: experimental
+    authority_level: 2
+    purpose: >
+      Analytics tools, frameworks, and datasets.
+      Currently under refactoring to align with PLD V2.0 metrics standards.
+
+  - path: governance/
+    component_id: governance_legacy
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 5
+    purpose: >
+      Governance protocols, onboarding guides, and PoC standards.
+      Current contents reflect V1.0 stability; V2.0 updates are pending.
+
+  # --- Pending Documentation Sub-directories ---
+  # Note: metrics, concepts, and patterns are already defined in Section 2.
+
+  - path: docs/architecture/
+    component_id: docs_architecture_wip
+    kind: doc
+    area: architecture
+    status: draft
+    authority_level: 3
+    purpose: >
+      Architectural layering and implementation rules.
+      Pending update for V2.0 Runtime alignment.
+
+  - path: docs/specifications/
+    component_id: docs_specifications_wip
+    kind: doc
+    area: schema
+    status: draft
+    authority_level: 4
+    purpose: >
+      Level 1 and Level 2 specifications (Schema & Semantics).
+      Pending formalization of V2.0 artifacts.
