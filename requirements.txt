@@ -1,7 +1,17 @@
+# --- Core Runtime ---
+pyyaml
+jsonschema>=4.17.0      # Required for JSON schema validation
+
+# --- AI & Tracing ---
 langgraph>=0.0.10
 langchain>=0.1.0
 openai>=1.0.0
 opentelemetry-api>=1.20.0
 opentelemetry-sdk>=1.20.0
+
+# --- Analytics & Utils ---
+pandas>=2.0.0           # For analytics data processing
+python-dotenv>=1.0.0    # For loading environment variables (.env)
+
+# --- Dev/Test ---
 pytest>=7.0.0
-pyyaml
