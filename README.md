@@ -69,11 +69,12 @@ The maintainer functions primarily as:
 
 ## 🔗 Quick Links
 
-* 📄 [Core Specifications](/docs/specifications/)
-* ⚙️ [Runtime Implementation](/pld_runtime/)
-* 🚀 [Quickstart](/quickstart/)
-* 🎨 [Adoption & Communication](/pitch/)
-* 🤝 [Governance & Roles](/governance/)
+* [Core Specifications](/docs/specifications/)
+* [Runtime Implementation](/pld_runtime/)
+* [Quickstart](/quickstart/)
+* [Exsamples](/examples/)
+* [Adoption & Communication](/pitch/)
+* [Governance & Roles](/governance/)
 
 PLD does not replace architectures like LangGraph, Assistants API, or custom orchestration.
 Instead, it **observes, labels, and stabilizes behavior across the stack — without requiring workflow redesign.**
