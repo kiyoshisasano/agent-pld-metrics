@@ -100,6 +100,25 @@ Even small contributions (examples, tests, docs, traces) are valuable.
 
 ## 🎯 Why PLD Exists
 
+## ⚡ Runtime Modes: Observer vs. Governor
+
+You can deploy PLD in two architectural modes depending on your performance requirements:
+
+* **👀 Observer Mode (Async)**
+    * **Impact:** **0ms Latency** (Fire-and-forget).
+    * **Mechanism:** PLD operates parallel to the user response.
+    * **Use Case:** Monitoring, Analytics, Post-incident analysis.
+
+* **🛡️ Governor Mode (Sync)**
+    * **Impact:** Intercepts & blocks actions before execution.
+    * **Mechanism:** PLD acts as a gatekeeper for high-risk actions.
+    * **Use Case:** Safety enforcement, Budget control, Autonomous agents.
+
+👉 *See [`/docs/architecture/runtime_modes.md`](/docs/architecture/runtime_modes.md)*
+
+---
+
+
 Multi-turn agents rarely fail because they *don't know something*—  
 they fail because behavior becomes **unstable over time**.  
 
@@ -121,6 +140,21 @@ This ensures alignment persists across turns — not just per isolated response.
 ---
 
 ## 🔁 The Runtime Loop
+
+### 🛡️ Supported Repair Strategies
+
+PLD defines three authoritative patterns for fixing drift, allowing you to balance latency vs. safety:
+
+| Strategy | Mechanism | Best For |
+| :--- | :--- | :--- |
+| **Static Repair** | Rule-based / Regex fix | Schema errors (Zero latency) |
+| **Guided Repair** | LLM Self-Correction | Context/Tone drift |
+| **Human-in-the-Loop** | Governance Escalation | High-stakes financial ops |
+
+👉 *See [`/docs/concepts/03_repair_strategies.md`](/docs/concepts/03_repair_strategies.md)*
+
+---
+
 
 | Phase        | Purpose                    | Example Signals                     |
 | ------------ | -------------------------- | ----------------------------------- |
