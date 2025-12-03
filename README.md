@@ -325,7 +325,7 @@ Metrics cookbook → `docs/metrics/cookbook.md`
 ✔ tools, retrieval, memory, or planning are involved  
 ✔ alignment persistence matters more than single-response quality  
 
-Less relevant for:
+Less relevant for:  
 ⚠ single-turn Q&A  
 ⚠ fully deterministic scripted flows
 
