@@ -391,6 +391,16 @@ components:
     authority_level: 4
     purpose: Normalizes input signals into PLD format.
 
+  - path: pld_runtime/ingestion/simple_observer.py
+    component_id: simple_observer
+    kind: runtime_module
+    area: ingestion
+    status: experimental
+    authority_level: 5
+    version: 2.0.0
+    license: Apache-2.0
+    purpose: High-level facade over RuntimeSignalBridge and StructuredLogger; manages turn sequencing, latency measurement, and optional detector execution for PLD-compliant event generation.
+
   # --- detection ---
   - path: pld_runtime/detection/drift_detector.py
     component_id: drift_detector
@@ -625,6 +635,16 @@ components:
     status: experimental
     authority_level: 1
     purpose: End-to-end quickstart demonstration showing a scripted flow converted to PLD runtime events and logged through StructuredLogger for inspection.
+
+  - path: quickstart/easy_pld_demo.py
+    component_id: easy_pld_demo
+    kind: example
+    area: quickstart
+    status: experimental
+    authority_level: 1
+    version: 2.0.0
+    license: Apache-2.0
+    purpose: Quickstart demonstration of SimpleObserver covering simple log_turn usage, traced turns with latency measurement, and optional keyword-based drift detection.
 
   - path: quickstart/metrics_quickcheck/README.md
     component_id: quickstart_metrics_readme
