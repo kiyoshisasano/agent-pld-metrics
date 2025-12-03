@@ -223,6 +223,12 @@ see `examples/reference_traces`
 
 ## ⚡ Quickstart — Run PLD in Under 10 Seconds
 
+> **⚠️ Note on Running Scripts**
+> Always run scripts from the **repository root directory** (where this README is located) to ensure `pld_runtime` is importable.
+>
+> ✅ `python quickstart/easy_pld_demo.py`
+> ❌ `cd quickstart && python easy_pld_demo.py`
+
 ```bash
 python quickstart/easy_pld_demo.py      # Recommended: simplest demo using SimpleObserver
 python quickstart/hello_pld_runtime.py  # Schema-compliance drift detection demo
