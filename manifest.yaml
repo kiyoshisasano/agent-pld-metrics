@@ -1,83 +1,58 @@
 # manifest.yaml
-# PLD Repository Metadata Manifest
+# PLD Repository Metadata Manifest (Refactored)
 # Format spec: METADATA_MANIFEST_SPEC v0.9.1
 # SPDX-License-Identifier: Apache-2.0
+#
+# Refactoring Policy:
+#   - authority_level 1-3: Grouped by directory (Implicit Grouping)
+#   - authority_level 4-5: Individual entries (Explicit Definition)
+#   - pld_runtime/*: Always individual entries regardless of authority_level
 
 version: 0.9.1
 default_license: Apache-2.0
 
 components:
-# ---------------------------------------------------------
-# 0. Adoption & Communication (New)
-# ---------------------------------------------------------
 
-- path: pitch/
-  component_id: pitch_kit
-  kind: doc
-  area: adoption
-  status: candidate
-  authority_level: 1
-  version: 0.1.0
-  license: CC-BY-4.0
-  purpose: >
-    Communication and adoption materials intended to help product teams,
-    engineering leadership, and decision-makers understand the value and role
-    of PLD in stabilizing multi-turn AI systems. This folder exists as part of
-    the OSS distribution but remains in an evolving exploratory phase, seeking
-    field feedback before stabilization.
-  feedback: "Feedback from implementers and internal advocates is encouraged."
+  # ---------------------------------------------------------
+  # 0. Adoption & Communication (Implicit Grouping)
+  # ---------------------------------------------------------
+
+  - path: pitch/
+    component_id: pitch_kit
+    kind: doc
+    area: adoption
+    status: candidate
+    authority_level: 1
+    version: 0.1.0
+    license: CC-BY-4.0
+    purpose: >
+      Communication and adoption materials intended to help product teams,
+      engineering leadership, and decision-makers understand the value and role
+      of PLD in stabilizing multi-turn AI systems.
+    feedback: "Feedback from implementers and internal advocates is encouraged."
 
   # ---------------------------------------------------------
   # 1. Meta & Governance
   # ---------------------------------------------------------
-  - path: README.md
-    component_id: repo_readme
-    kind: doc
-    area: meta
-    status: stable
-    authority_level: 1
-    purpose: Repository entry point.
 
-  - path: SUMMARY.md
-    component_id: repo_summary
+  # --- Root-level Documents (Grouped) ---
+  - path: root_meta/
+    component_id: root_meta_docs
     kind: doc
     area: meta
     status: stable
     authority_level: 2
-    purpose: High-level summary and navigation index for the PLD repository contents.
+    purpose: >
+      Root-level supplementary documents including README.md, SUMMARY.md,
+      SUMMARY.svg, README_model.svg, and CONTRIBUTING.md.
+    includes:
+      - README.md
+      - SUMMARY.md
+      - SUMMARY.svg
+      - README_model.svg
+      - CONTRIBUTING.md
 
-  - path: SUMMARY.svg
-    component_id: repo_summary_diagram
-    kind: doc
-    area: meta
-    status: stable
-    authority_level: 2
-    purpose: Visual overview diagram of the PLD repository structure.
-
-  - path: README_model.svg
-    component_id: readme_model_diagram
-    kind: doc
-    area: meta
-    status: stable
-    authority_level: 2
-    purpose: Diagram illustrating the core PLD runtime model referenced by the repository README.
-
-  - path: CONTRIBUTING.md
-    component_id: contributing_guide
-    kind: doc
-    area: meta
-    status: stable
-    authority_level: 3
-    purpose: Contribution guidelines for maintainers and external collaborators.
-
-  - path: meta/ROADMAP.md
-    component_id: roadmap
-    kind: doc
-    area: meta
-    status: draft
-    authority_level: 3
-    purpose: Roadmap and future development plans for the PLD repository and runtime ecosystem.
-
+  # --- Governance Documents (authority_level 5 - Individual) ---
   - path: meta/CHANGELOG.md
     component_id: changelog
     kind: doc
@@ -102,6 +77,18 @@ components:
     authority_level: 5
     purpose: Versioning rules and governance policy for schemas, runtime modules, and specifications.
 
+  # --- Roadmap (authority_level 3 - Grouped with meta/) ---
+  - path: meta/supplementary/
+    component_id: meta_supplementary_docs
+    kind: doc
+    area: meta
+    status: draft
+    authority_level: 3
+    purpose: Supplementary meta documents including roadmap and future plans.
+    includes:
+      - ROADMAP.md
+
+  # --- Legal Documents (authority_level 5 - Individual) ---
   - path: LICENSES/LICENSE-APACHE-2.0.txt
     component_id: license_apache_2_0
     kind: legal
@@ -134,38 +121,24 @@ components:
     authority_level: 5
     purpose: Trademark usage restrictions and authorized usage scope for the PLD name and branding.
 
-  - path: LICENSES/citation.bib
-    component_id: citation_reference
+  # --- Legal Supplementary (authority_level 3 - Grouped) ---
+  - path: LICENSES/supplementary/
+    component_id: licenses_supplementary
     kind: doc
     area: compliance
     status: stable
     authority_level: 3
-    purpose: Reference entry for proper scholarly citation of the PLD specification and runtime ecosystem.
-
-  - path: LICENSES/LICENSES.md
-    component_id: license_collection_overview
-    kind: doc
-    area: compliance
-    status: stable
-    authority_level: 3
-    purpose: Index and explanation of licensing models applicable across repository components.
-
+    purpose: Supplementary licensing documents including citation reference and license overview.
+    includes:
+      - citation.bib
+      - LICENSES.md
 
   # ---------------------------------------------------------
-  # 2. Documentation & Architecture
+  # 2. Documentation & Architecture (Implicit Grouping)
   # ---------------------------------------------------------
 
-  - path: docs/metrics/visuals/dashboard_mockup.svg
-    component_id: pld_metrics_dashboard_mockup
-    kind: doc
-    area: metrics
-    status: draft
-    authority_level: 3
-    version: 2.0.0
-    purpose: Visual mockup of an analytics-layer dashboard corresponding to examples/dashboard/app.py.
-
-  - path: docs/metrics/pld_operational_metrics_cookbook.md
-    component_id: pld_operational_metrics_cookbook
+  - path: docs/metrics/
+    component_id: docs_metrics
     kind: doc
     area: metrics
     status: draft
@@ -173,152 +146,35 @@ components:
     version: 2.0.0
     license: CC-BY-4.0
     purpose: >
-      Runtime-oriented cookbook providing advisory estimators and integration
-      patterns derived from canonical PLD metrics for module-level implementers.
+      Metrics documentation including operational cookbook, dashboard mockups,
+      and visualization assets.
 
-
-
-  - path: docs/concepts/01_introduction.md
-    component_id: concepts_introduction
+  - path: docs/concepts/
+    component_id: docs_concepts
     kind: doc
     area: concepts
     status: candidate
     authority_level: 3
     version: 2.0.0
     license: CC-BY-4.0
-    purpose: High-level conceptual introduction to PLD lifecycle and design philosophy.
+    purpose: >
+      Conceptual documentation covering PLD introduction, drift-repair model,
+      repair strategies, reference maps, and operator primitives.
 
-  - path: docs/concepts/02_drift_repair_model.md
-    component_id: concepts_drift_repair_model
+  - path: docs/patterns/
+    component_id: docs_patterns
     kind: doc
-    area: concepts
-    status: candidate
+    area: quickstart_patterns
+    status: draft
     authority_level: 3
     version: 2.0.0
     license: CC-BY-4.0
-    purpose: Conceptual lifecycle model: Drift → Repair → Reentry → Continue → Outcome.
-
-  - path: docs/concepts/03_repair_strategies.md
-    component_id: concepts_repair_strategies
-    kind: doc
-    area: concepts
-    status: candidate
-    authority_level: 3
-    version: 2.0.0
-    license: CC-BY-4.0
-    purpose: Three PLD repair strategies: Static, Guided, Human-in-the-Loop.
-
-  - path: docs/concepts/reference_map.md
-    component_id: concepts_reference_map
-    kind: doc
-    area: concepts
-    status: candidate
-    authority_level: 3
-    version: 2.0.0
-    license: CC-BY-4.0
-    purpose: Navigation guide linking Concepts to specs, architecture, patterns, and runtime components.
-
-  - path: docs/concepts/operator_primitives/01_detect_drift.md
- 　 component_id: detect_drift_operator
-  　kind: doc
-  　area: runtime_operators
- 　 status: candidate
- 　 authority_level: 2
- 　 version: 2.0.0
- 　 purpose: "Exploratory operator notes describing drift detection patterns in PLD runtime contexts."
-　
-　- path: docs/concepts/operator_primitives/02_soft_repair.md
-　  component_id: soft_repair_operator
- 　 kind: doc
-  　area: runtime_operators
-  　status: candidate
-  　authority_level: 2
-  　version: 2.0.0
-　  purpose: "Working draft describing soft corrective behavior interpretations for PLD."
-
-　- path: docs/concepts/operator_primitives/03_hard_repair.md
-  　component_id: hard_repair_operator
- 　 kind: doc
-  　area: runtime_operators
-  　status: candidate
-  　authority_level: 2
-  　version: 2.0.0
-  　purpose: "Notes defining exploratory framing for structural reset conditions and escalation boundaries."
-
-　- path: docs/concepts/operator_primitives/04_latency_operator.md
-  　component_id: latency_operator
-  　kind: doc
-  　area: observability
-  　status: candidate
- 　 authority_level: 2
- 　 version: 2.0.0
- 　 purpose: "Observability notes describing latency signal handling and non-lifecycle metadata events."
-
-　- path: docs/concepts/operator_primitives/05_reentry_operator.md
-  　component_id: reentry_operator
-  　kind: doc
-  　area: runtime_operators
-  　status: candidate
-  　authority_level: 2
-  　version: 2.0.0
-  　purpose: "Exploratory framing for stabilization transitions following repair sequences."
-
-- path: docs/concepts/patterns/01_llm/foundations.md
-  component_id: llm_patterns_foundations
-  kind: doc
-  area: quickstart_patterns
-  status: draft
-  authority_level: 3
-  version: 2.0.0
-  purpose: Foundational conventions and boundaries for LLM pattern files in patterns/01_llm.
-
-- path: docs/patterns/01_llm/state_transition_examples.md
-  component_id: llm_patterns_state_transitions
-  kind: doc
-  area: quickstart_patterns
-  status: draft
-  authority_level: 3
-  version: 2.0.0
-  purpose: Illustrative examples of PLD lifecycle transitions for LLM-reactive behavior.
-
-- path: docs/patterns/01_llm/drift_response_patterns.md
-  component_id: llm_patterns_drift_responses
-  kind: doc
-  area: quickstart_patterns
-  status: draft
-  authority_level: 3
-  version: 2.0.0
-  purpose: Reactive conversational patterns for handling drift signals after runtime detection.
-
-- path: docs/patterns/01_llm/repair_templates.md
-  component_id: llm_patterns_repair_templates
-  kind: doc
-  area: quickstart_patterns
-  status: draft
-  authority_level: 3
-  version: 2.0.0
-  purpose: Templates for alignment repair responses once a repair signal (R1–R5) has been emitted.
-
-- path: docs/patterns/01_llm/reentry_alignment_patterns.md
-  component_id: llm_patterns_reentry_alignment
-  kind: doc
-  area: quickstart_patterns
-  status: draft
-  authority_level: 3
-  version: 2.0.0
-  purpose: Patterns for transitioning from repair back to normal task execution after reentry signals.
-
-- path: docs/patterns/01_llm/tool_response_rules.md
-  component_id: llm_patterns_tool_response_rules
-  kind: doc
-  area: quickstart_patterns
-  status: draft
-  authority_level: 3
-  version: 2.0.0
-  purpose: Reactive rules for how LLMs present and frame tool outputs provided by the runtime.
+    purpose: >
+      LLM pattern documentation including foundations, state transitions,
+      drift responses, repair templates, reentry alignment, and tool response rules.
 
   # ---------------------------------------------------------
-  # 3. PLD Runtime Core
+  # 3. PLD Runtime Core (Explicit Definition - All Individual)
   # ---------------------------------------------------------
 
   - path: pld_runtime/README.md
@@ -363,8 +219,7 @@ components:
     status: draft
     authority_level: 5
     version: 2.0.0
-    purpose: Operational companion reference for the PLD runtime event envelope, including behavioral rules and deployment guidance.
-
+    purpose: Operational companion reference for the PLD runtime event envelope.
 
   # --- ingestion ---
   - path: pld_runtime/ingestion/ingestion_config.py
@@ -399,7 +254,7 @@ components:
     authority_level: 5
     version: 2.0.0
     license: Apache-2.0
-    purpose: High-level facade over RuntimeSignalBridge and StructuredLogger; manages turn sequencing, latency measurement, and optional detector execution for PLD-compliant event generation.
+    purpose: High-level facade over RuntimeSignalBridge and StructuredLogger.
 
   # --- detection ---
   - path: pld_runtime/detection/drift_detector.py
@@ -434,14 +289,13 @@ components:
     authority_level: 5
     purpose: Bridges raw signals to runtime events.
 
-   - path: pld_runtime/detection/builtin_detectors.py 
-     component_id: builtin_detectors 
-     kind: runtime_module 
-     area: detection 
-     status: experimental 
-     authority_level: 5 
-     purpose: Built-in detectors for keyword- and schema-based drift
- 
+  - path: pld_runtime/detection/builtin_detectors.py
+    component_id: builtin_detectors
+    kind: runtime_module
+    area: detection
+    status: experimental
+    authority_level: 5
+    purpose: Built-in detectors for keyword- and schema-based drift.
 
   # --- enforcement ---
   - path: pld_runtime/enforcement/response_policy.py
@@ -599,180 +453,7 @@ components:
     authority_level: 4
     purpose: Registry for failover strategies.
 
-# ---------------------------------------------------------
-# 4. Quickstart
-# ---------------------------------------------------------
-
-  - path: quickstart/README_quickstart.md
-    component_id: quickstart_readme
-    kind: doc
-    area: quickstart
-    status: experimental
-    authority_level: 1
-    purpose: Quickstart guide for PLD runtime usage examples.
-
-
-  - path: quickstart/hello_pld_runtime.py
-    component_id: hello_pld_runtime
-    kind: example
-    area: quickstart
-    status: experimental
-    authority_level: 1
-    purpose: Minimal quickstart script that builds a single PLD v2-compliant event via RuntimeSignalBridge and emits it using the Level 5 logging pipeline.
-
-  - path: quickstart/run_minimal_engine.py
-    component_id: run_minimal_engine
-    kind: example
-    area: quickstart
-    status: experimental
-    authority_level: 1
-    purpose: Minimal engine loop that processes a sequence of RuntimeSignals into PLD v2-compliant events via RuntimeSignalBridge and emits them through the Level 5 structured logging pipeline.
-
-  - path: quickstart/minimal_pld_demo.py
-    component_id: minimal_pld_demo
-    kind: example
-    area: quickstart
-    status: experimental
-    authority_level: 1
-    purpose: End-to-end quickstart demonstration showing a scripted flow converted to PLD runtime events and logged through StructuredLogger for inspection.
-
-  - path: quickstart/easy_pld_demo.py
-    component_id: easy_pld_demo
-    kind: example
-    area: quickstart
-    status: experimental
-    authority_level: 1
-    version: 2.0.0
-    license: Apache-2.0
-    purpose: Quickstart demonstration of SimpleObserver covering simple log_turn usage, traced turns with latency measurement, and optional keyword-based drift detection.
-
-  - path: quickstart/metrics_quickcheck/README.md
-    component_id: quickstart_metrics_readme
-    kind: doc
-    area: metrics
-    status: draft
-    authority_level: 2
-    purpose: Entry-point README for the metrics quickstart module, describing structure and usage.
-
-  - path: quickstart/metrics_quickcheck/verify_metrics_local.py
-    component_id: verify_metrics_local
-    kind: example
-    area: metrics
-    status: draft
-    authority_level: 2
-    purpose: Local inspection script that loads demo PLD events and computes lightweight drift/repair metrics.
-
-  - path: quickstart/metrics_quickcheck/pld_events_demo.jsonl
-    component_id: pld_events_demo_dataset
-    kind: metric
-    area: metrics
-    status: draft
-    authority_level: 2
-    purpose: Handcrafted demo PLD event dataset for exploring drift, repair, and recovery patterns.
-
-  - path: quickstart/metrics/dashboards/reentry_success_dashboard.json
-    component_id: reentry_success_dashboard
-    kind: config
-    area: metrics
-    status: draft
-    authority_level: 2
-    purpose: Example dashboard configuration for visualizing reentry-related metrics and session timelines.
-
-  # ---------------------------------------------------------
-  # 5. Field Collaboration
-  # ---------------------------------------------------------
-
-
-  # ---------------------------------------------------------
-  # 6. Analytics
-  # ---------------------------------------------------------
-
-  # ---------------------------------------------------------
-  # 7. Examples
-  # ---------------------------------------------------------
-  - path: examples/langgraph_assistants/README.md
-    component_id: langgraph_assistants_readme
-    kind: doc
-    area: integration
-    status: stable
-    authority_level: 2
-    purpose: Documentation for the LangGraph observer-mode integration example.
-
-  - path: examples/langgraph_assistants/config.yaml
-    component_id: langgraph_assistants_config
-    kind: config
-    area: integration
-    status: experimental
-    authority_level: 2
-    purpose: Configuration for the LangGraph demo (model, logs).
-
-  - path: examples/langgraph_assistants/run.py
-    component_id: langgraph_pld_run
-    kind: example
-    area: integration
-    status: experimental
-    authority_level: 2
-    purpose: Entry point for the LangGraph + PLD observer-mode integration.
-
-  - path: examples/langgraph_assistants/graph.py
-    component_id: langgraph_pld_graph
-    kind: example
-    area: integration
-    status: experimental
-    authority_level: 2
-    purpose: LangGraph definition wiring the PLD observer.
-
-  - path: examples/langgraph_assistants/agent_node.py
-    component_id: langgraph_assistant_node
-    kind: example
-    area: integration
-    status: experimental
-    authority_level: 2
-    purpose: Wrapper for OpenAI Assistants API (Application Layer).
-
-  - path: examples/langgraph_assistants/pld_runtime_integration.py
-    component_id: langgraph_pld_bridge
-    kind: example
-    area: integration
-    status: experimental
-    authority_level: 2
-    purpose: Observer-only bridge from LangGraph state to PLD runtime events.
-
-  - path: examples/reference_traces/generators/generate_forensic_trace.py
-    component_id: forensic_trace_generator
-    kind: code
-    area: examples
-    status: candidate
-    authority_level: 3
-    purpose: Python script to generate high-fidelity production simulation logs with entropy and noise.
-
-  - path: examples/reference_traces/forensic_infra_noise.jsonl
-    component_id: trace_forensic_noise
-    kind: metric
-    area: examples
-    status: candidate
-    authority_level: 3
-    purpose: Reference JSONL dataset demonstrating PLD behavior under infrastructure noise, timeouts, and partial failures.
-
-　- path: examples/reference_traces/golden_semantic_repair.jsonl
-    component_id: trace_golden_semantic
-    kind: metric
-    area: examples
-    status: candidate
-    authority_level: 3
-    purpose: Story-focused reference trace demonstrating drift detection and repair (Happy Path).
-
-  - path: examples/reference_traces/README.md
-    component_id: reference_traces_readme
-    kind: doc
-    area: examples
-    status: candidate
-    authority_level: 3
-    purpose: Documentation for simulated log traces and generation tools.
-  
-  # ---------------------------------------------------------
-  # Package Initializers & Public API
-  # ---------------------------------------------------------
+  # --- Package Initializers (authority_level 5 - Individual) ---
   - path: pld_runtime/__init__.py
     component_id: pld_runtime_public_api
     kind: runtime_module
@@ -781,7 +462,6 @@ components:
     authority_level: 5
     purpose: Public API surface for PLD Runtime v2.0.
 
-  # --- Internal Package Markers (Optional but good for completeness) ---
   - path: pld_runtime/schemas/__init__.py
     component_id: schemas_pkg_init
     kind: code
@@ -846,28 +526,36 @@ components:
     authority_level: 5
     purpose: Package initialization for failover.
 
-  - path: examples/__init__.py
-    component_id: examples_pkg_init
-    kind: code
-    area: examples
-    status: stable
-    authority_level: 2
-    purpose: Package initialization for examples.
+  # ---------------------------------------------------------
+  # 4. Quickstart (Implicit Grouping)
+  # ---------------------------------------------------------
 
-  - path: examples/langgraph_assistants/__init__.py
-    component_id: langgraph_assistants_pkg_init
-    kind: code
-    area: integration
-    status: experimental
-    authority_level: 2
-    purpose: Package initialization for LangGraph integration.
-
-  - path: examples/dashboard/app.py
-    component_id: pld_metrics_dashboard_app
+  - path: quickstart/
+    component_id: quickstart_examples
     kind: example
-    area: metrics
+    area: quickstart
+    status: experimental
+    authority_level: 1
+    version: 2.0.0
+    license: Apache-2.0
+    purpose: >
+      Quickstart examples and demos including hello_pld_runtime.py,
+      run_minimal_engine.py, minimal_pld_demo.py, easy_pld_demo.py,
+      metrics_quickcheck/, and dashboard configurations.
+
+  # ---------------------------------------------------------
+  # 5. Examples (Implicit Grouping)
+  # ---------------------------------------------------------
+
+  - path: examples/
+    component_id: examples_collection
+    kind: example
+    area: examples
     status: experimental
     authority_level: 2
     version: 2.0.0
-    purpose: Text-based analytics dashboard demo for PRDR, VRL, and FR over PLD v2 events.
-
+    license: Apache-2.0
+    purpose: >
+      Integration examples and reference traces including LangGraph assistants
+      integration, reference trace generators, forensic traces, golden semantic
+      repair traces, and metrics dashboard app.
