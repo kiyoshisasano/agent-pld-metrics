@@ -1,3 +1,14 @@
+<!--
+component_id: concepts_reference_map
+kind: doc
+area: concepts
+status: candidate
+authority_level: 3
+version: 2.0.0
+license: CC-BY-4.0
+purpose: Navigation guide linking PLD Concepts to specifications, architecture, patterns, and runtime components.
+-->
+
 # PLD Concepts Reference Map
 
 This document is a **navigation guide** for the PLD Concepts section. It connects high-level concepts to:
