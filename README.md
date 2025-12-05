@@ -23,7 +23,7 @@ This repository contains **specifications, runtime components, examples, adoptio
 | 🧪 **Researcher / Architect**      | `docs/` (Levels 1–3) → semantics, schema, taxonomy, runtime reasoning |
 | 🧑‍💼 **Product / Decision Maker** | `pitch/` → understand why multi-turn systems fail and how PLD stabilizes them |
 | 🧭 **Evaluating or Integrating**   | `examples/` and `analytics/` for patterns, metrics, and observational workflows |
-| **Partner / Biz stakeholder preparing a PoC** | `governance/PLD_business_overview.md` and `governance/PoC_kickoff_guide.md` |
+| 🤝 **Partner / Biz stakeholder preparing a PoC** | `governance/PLD_business_overview.md` and `governance/PoC_kickoff_guide.md` |
 
 ---
 
