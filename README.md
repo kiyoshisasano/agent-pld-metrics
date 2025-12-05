@@ -23,6 +23,7 @@ This repository contains **specifications, runtime components, examples, adoptio
 | 🧪 **Researcher / Architect**      | `docs/` (Levels 1–3) → semantics, schema, taxonomy, runtime reasoning |
 | 🧑‍💼 **Product / Decision Maker** | `pitch/` → understand why multi-turn systems fail and how PLD stabilizes them |
 | 🧭 **Evaluating or Integrating**   | `examples/` and `analytics/` for patterns, metrics, and observational workflows |
+| **Partner / Biz stakeholder preparing a PoC** | `governance/PLD_business_overview.md` and `governance/PoC_kickoff_guide.md` |
 
 ---
 
@@ -365,6 +366,30 @@ export OPENAI_API_KEY=your_key_here
 python examples/langgraph_assistants/run.py
 # Logs: logs/langgraph_pld_demo.jsonl
 ```
+
+---
+
+## 📁 Collaboration & PoC Starter Materials
+
+If you are preparing a shared Proof-of-Concept (PoC) or collaborating with partner organizations,  
+the **`governance/`** folder provides business-friendly materials to help teams begin quickly and stay aligned.
+
+Recommended entry points:
+
+| Purpose | File |
+|--------|------|
+| 1-page business introduction | `governance/PLD_business_overview.md` |
+| PoC kickoff guide (Biz-friendly) | `governance/PoC_kickoff_guide.md` |
+| Lightweight templates (scope, session review sheet, submission format) | `governance/starter_kit/` |
+
+These resources enable both sides to:
+
+- agree on scope and expectations  
+- collect 5–10 representative sessions  
+- run the first joint review using consistent terminology  
+- collaborate without requiring PLD technical expertise
+
+Use these materials when beginning a PoC, onboarding partners, or aligning multi-team PLD adoption.
 
 ---
 
