@@ -1,3 +1,13 @@
+<!==
+  - path: docs/README.md
+    component_id: docs_readme
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 2
+    purpose: Top-level index for documentation tree.
+    ==>
+
 # Phase Loop Dynamics (PLD) — Documentation Index
 
 This documentation set exists to support the design, implementation, evaluation, and governance of multi-turn AI agents using the Phase Loop Dynamics model.

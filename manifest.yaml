@@ -26,6 +26,14 @@ components:
   # 1. Meta & Governance
   # ---------------------------------------------------------
 
+  - path: meta/manifest.example.yaml
+    component_id: manifest_example
+    kind: example
+    area: meta
+    status: draft
+    authority_level: 1
+    purpose: Example manifest for integrators and contributors.
+
   - path: README.md
     component_id: repo_readme
     kind: doc
@@ -65,6 +73,14 @@ components:
     status: stable
     authority_level: 3
     purpose: Basic survival test.
+
+  - path: tests/__init__.py
+    component_id: tests_pkg_init
+    kind: code
+    area: meta
+    status: stable
+    authority_level: 3
+    purpose: Test package initializer.
     
   - path: SUMMARY.md
     component_id: repo_summary
@@ -142,6 +158,15 @@ components:
   # ---------------------------------------------------------
   # 2. Documentation (Implicit Grouping)
   # ---------------------------------------------------------
+
+  - path: docs/README.md
+    component_id: docs_readme
+    kind: doc
+    area: meta
+    status: stable
+    authority_level: 2
+    purpose: Top-level index for documentation tree.
+
 
   - path: docs/metrics/
     component_id: docs_metrics
@@ -612,3 +637,12 @@ components:
     status: draft
     authority_level: 4
     purpose: Specifications WIP.
+
+  - path: docs/labs/
+    component_id: docs_labs
+    kind: doc
+    area: labs
+    status: experimental
+    authority_level: 2
+    purpose: Experimental lab docs and proposals.
+

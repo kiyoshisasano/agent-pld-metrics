@@ -1,188 +1,314 @@
-# PLD Trace Examples for Shared Review
+<!--
+component_id: governance_legacy
+kind: doc
+area: meta
+status: stable
+authority_level: 5
+purpose: Legacy trace examples used for governance and semantic evaluation.
+-->
 
-This file provides **small, focused examples** of traces to use when aligning on:
+# Business-Facing Summary (for Non-Technical Stakeholders)
 
-- What we call “drift”  
-- What counts as a “repair”  
-- What “reentry” looks like in practice  
-- How we label outcomes  
+This document provides a set of small, standardized PLD trace examples that help teams align on how to interpret system behavior. You do not need technical experience with schemas or runtimes to understand them. The examples are designed to show what Drift, Repair, Reentry, Continue, and Outcome look like in real conversations.
 
-It is not a full dataset.  
-It is a **starter kit** for field collaboration.
+Use this document to:
 
----
+* Quickly learn how PLD-compliant logs should look
+* Align with partners on which Drift Code (D*) applies in a scenario
+* Understand what a good Repair or Reentry response looks like
+* Verify that sanitized logs still preserve required PLD metadata
 
-## 1. Recommended Trace Format
-
-For joint work, we recommend a simple JSONL or Markdown structure:
-
-- Each **session** includes:
-  - `session_id`
-  - `turns` (list)
-
-- Each **turn** contains:
-  - `turn_index`
-  - `user_message`
-  - `system_reply`
-  - `pld_event`:
-    - `drift.present`
-    - `drift.type`
-    - `repair.present`
-    - `repair.mode`
-    - `reentry.present`
-    - `reentry.success`
-    - `outcome.status` (when applicable)
-
-This format aligns with the PLD logging model used in `quickstart/metrics/`.
+These examples act as a shared “calibration kit” so that two different teams can evaluate behavior consistently—even if they cannot share raw data.
 
 ---
 
-## 2. Example 1 — Intent Drift with Soft Repair
+# PLD Trace Examples for Shared Review (v2-Aligned)
 
-### 2.1 Conversation Snippet
+**Status:** Stable (Level 5 Governance Guidance)
 
-```text
-User   : I need to book a flight to Berlin next Tuesday in economy.
-System : There are several great hotels in Berlin. Do you prefer Mitte or Kreuzberg?
-User   : I'm asking about a flight, not a hotel.
-System : Right, you’re asking for a flight. Let me switch to flights for Berlin next Tuesday in economy.
-System : To confirm: Berlin next Tuesday, economy class, from your current city. Is that correct?
-User   : Yes, that’s right.
-System : Great, I’ve found three flight options...
-```
+These examples provide a shared calibration standard for:
 
-### 2.2 Annotated Turns (Simplified JSON)
+* **L2 Semantics** — Correct lifecycle transitions
+* **L3 Standards** — Canonical taxonomy usage
+* **Safety** — Proper sanitization of payload content
+
+All examples use the **PLD Runtime Event Envelope (schema v2.0)**.
+This ensures that collaborators interpret *Drift*, *Repair*, *Reentry*, *Continue*, and *Failover* consistently.
+
+---
+
+# 1. Standard Sanitized JSONL Format (v2-Aligned)
+
+Sanitized logs MUST:
+
+* preserve **PLD metadata** (phase, code, event_type)
+* mask **payload.text** only
+* keep **runtime / metrics / pld** unmasked
+
+### **Example Format**
 
 ```json
 {
-  "session_id": "example_intent_drift_001",
-  "turns": [
-    {
-      "turn_index": 0,
-      "user_message": "I need to book a flight to Berlin next Tuesday in economy.",
-      "system_reply": "There are several great hotels in Berlin. Do you prefer Mitte or Kreuzberg?",
-      "pld_event": {
-        "drift": {
-          "present": true,
-          "type": "D3_intent_drift",
-          "reason": "User asked for a flight, system responded with hotels."
-        },
-        "repair": { "present": false, "mode": null, "code": null },
-        "reentry": { "present": false, "success": null },
-        "outcome": { "status": "ongoing" }
-      }
-    },
-    {
-      "turn_index": 1,
-      "user_message": "I'm asking about a flight, not a hotel.",
-      "system_reply": "Right, you’re asking for a flight. Let me switch to flights for Berlin next Tuesday in economy.",
-      "pld_event": {
-        "drift": {
-          "present": true,
-          "type": "D3_intent_drift",
-          "reason": "Drift acknowledged by user; system switches context."
-        },
-        "repair": { "present": true, "mode": "soft", "code": "R1_clarify_and_correct" },
-        "reentry": { "present": false, "success": null },
-        "outcome": { "status": "ongoing" }
-      }
-    },
-    {
-      "turn_index": 2,
-      "user_message": "",
-      "system_reply": "To confirm: Berlin next Tuesday, economy class, from your current city. Is that correct?",
-      "pld_event": {
-        "drift": { "present": false, "type": null, "reason": null },
-        "repair": { "present": true, "mode": "soft", "code": "R2_reentry_confirmation" },
-        "reentry": { "present": true, "success": null },
-        "outcome": { "status": "ongoing" }
-      }
-    },
-    {
-      "turn_index": 3,
-      "user_message": "Yes, that’s right.",
-      "system_reply": "Great, I’ve found three flight options...",
-      "pld_event": {
-        "drift": { "present": false, "type": null, "reason": null },
-        "repair": { "present": false, "mode": null, "code": null },
-        "reentry": { "present": true, "success": true },
-        "outcome": { "status": "complete" }
-      }
-    }
-  ]
+  "schema_version": "2.0",
+  "event_id": "<UUID>",
+  "timestamp": "2025-01-01T00:00:00Z",
+  "session_id": "sess_001",
+  "turn_sequence": 1,
+  "source": "assistant",
+  "event_type": "repair_triggered",
+  "pld": {
+    "phase": "repair",
+    "code": "R1_clarify"
+  },
+  "payload": {
+    "text": "Confirming flight to <MASKED_CITY>..."
+  },
+  "runtime": {
+    "model": "model-v1"
+  },
+  "ux": {
+    "user_visible_state_change": true
+  }
 }
 ```
 
-Use this example to align on:
-
-- When intent drift is labeled  
-- When soft repair is counted as present  
-- When reentry success is marked  
+**Mask only payload fields.**
+Taxonomy, phases, metrics MUST remain intact.
 
 ---
 
-## 3. Example 2 — Hard Repair and Failure
+# 2. Example 1 — Instruction Drift → Soft Repair → Reentry → Continue
 
-This example should represent a session where:
+## 2.1 Context
 
-- The system cannot safely continue  
-- A hard repair is applied (reset/escalation/fallback)  
-- The outcome is **failed or abandoned**
+The user asks for a flight, the model responds about hotels.
+This is an **instruction drift** (`D1_instruction`). The assistant performs a **soft repair** (`R1_clarify`).
+
+## 2.2 Lifecycle Flow (v2)
+
+```
+User → Assistant
+    drift_detected (D1_instruction)
+→  repair_triggered (R1_clarify)
+→  reentry_observed
+→  continue_allowed
+→  outcome (success)
+```
+
+## 2.3 Compliant PLD v2 JSONL Trace
 
 ```json
-{
-  "session_id": "example_hard_repair_001",
-  "turns": [
-    {
-      "turn_index": 0,
-      "user_message": "...",
-      "system_reply": "...",
-      "pld_event": {
-        "drift": {
-          "present": true,
-          "type": "D4_safety_or_boundary",
-          "reason": "..."
-        },
-        "repair": {
-          "present": true,
-          "mode": "hard",
-          "code": "R9_escalate_or_abort"
-        },
-        "reentry": { "present": true, "success": true },
-        "outcome": { "status": "failed" }
-      }
-    }
-  ]
-}
+[
+  {
+    "schema_version": "2.0",
+    "event_id": "<UUID0>",
+    "timestamp": "2025-01-01T00:00:00Z",
+    "session_id": "sess_001",
+    "turn_sequence": 1,
+    "source": "assistant",
+    "event_type": "drift_detected",
+    "pld": {
+      "phase": "drift",
+      "code": "D1_instruction"
+    },
+    "payload": {
+      "text": "I found great hotels in <MASKED_CITY>."
+    },
+    "runtime": {},
+    "ux": { "user_visible_state_change": true }
+  },
+  {
+    "schema_version": "2.0",
+    "event_id": "<UUID1>",
+    "timestamp": "2025-01-01T00:00:01Z",
+    "session_id": "sess_001",
+    "turn_sequence": 2,
+    "source": "assistant",
+    "event_type": "repair_triggered",
+    "pld": {
+      "phase": "repair",
+      "code": "R1_clarify"
+    },
+    "payload": {
+      "text": "Apologies — confirming: Flight to <MASKED_CITY>, correct?"
+    },
+    "runtime": {},
+    "ux": { "user_visible_state_change": true }
+  },
+  {
+    "schema_version": "2.0",
+    "event_id": "<UUID2>",
+    "timestamp": "2025-01-01T00:00:02Z",
+    "session_id": "sess_001",
+    "turn_sequence": 3,
+    "source": "user",
+    "event_type": "reentry_observed",
+    "pld": {
+      "phase": "reentry",
+      "code": "RE0_reentry"
+    },
+    "payload": {
+      "text": "Yes."
+    },
+    "runtime": {},
+    "ux": { "user_visible_state_change": false }
+  }
+]
 ```
 
-This example helps both teams synchronize on:
+---
 
-- When a hard repair is appropriate  
-- How a failure outcome should be labeled and reviewed  
+# 3. Example 2 — Safety Drift → Hard Repair → Failover → Outcome
+
+## 3.1 Context
+
+The user attempts a disallowed action.
+A **safety drift** is detected (`D5_safety`). The agent performs a **hard repair** (`R5_hard_reset`) and triggers failover.
+
+## 3.2 Lifecycle Flow (v2)
+
+```
+drift_detected (D5_safety)
+→ repair_triggered (R5_hard_reset)
+→ failover_triggered
+→ outcome (session_closed)
+```
+
+## 3.3 Compliant PLD v2 JSONL Trace
+
+```json
+[
+  {
+    "schema_version": "2.0",
+    "event_id": "<UUID10>",
+    "timestamp": "2025-01-01T01:00:00Z",
+    "session_id": "sess_900",
+    "turn_sequence": 1,
+    "source": "user",
+    "event_type": "drift_detected",
+    "pld": {
+      "phase": "drift",
+      "code": "D5_safety"
+    },
+    "payload": {
+      "text": "<MASKED_MALICIOUS_INPUT>"
+    },
+    "runtime": {},
+    "ux": { "user_visible_state_change": true }
+  },
+  {
+    "schema_version": "2.0",
+    "event_id": "<UUID11>",
+    "timestamp": "2025-01-01T01:00:01Z",
+    "session_id": "sess_900",
+    "turn_sequence": 2,
+    "source": "assistant",
+    "event_type": "repair_triggered",
+    "pld": {
+      "phase": "repair",
+      "code": "R5_hard_reset"
+    },
+    "payload": {
+      "text": "I cannot perform that action."
+    },
+    "runtime": {},
+    "ux": { "user_visible_state_change": true }
+  },
+  {
+    "schema_version": "2.0",
+    "event_id": "<UUID12>",
+    "timestamp": "2025-01-01T01:00:02Z",
+    "session_id": "sess_900",
+    "turn_sequence": 3,
+    "source": "system",
+    "event_type": "failover_triggered",
+    "pld": {
+      "phase": "failover",
+      "code": "F1_failover"
+    },
+    "payload": {
+      "text": "Session terminated due to policy violation."
+    },
+    "runtime": {},
+    "ux": { "user_visible_state_change": true }
+  }
+]
+```
 
 ---
 
-## 4. How to Use These Examples in Collaboration
+# 4. Example 3 — Tool Misuse → Context Drift → Soft Repair → Reentry
 
-When beginning a PoC with a partner:
+## 4.1 Context (New)
 
-1. Exchange:  
-   - **2–3 soft repair examples** (similar to Example 1)  
-   - **1–2 hard repair failure cases** (similar to Example 2)
+A tool is repeatedly invoked with missing or invalid parameters.
+This is a **context drift** (`D2_context`).
 
-2. Review together:
+## 4.2 Lifecycle Flow
 
-- Are drift / repair / reentry labeled consistently?
-- Does the outcome classification reflect real-world expectations?
+```
+drift_detected (D2_context)
+→ repair_triggered (R2_soft_repair)
+→ reentry_observed
+→ continue_allowed
+```
 
-3. Decide:
+## 4.3 Compliant PLD v2 JSONL
 
-- Which behaviors should be **encouraged**?
-- Which require **intervention**, **guardrails**, or **runtime enforcement**?
+```json
+[
+  {
+    "schema_version": "2.0",
+    "event_id": "<UUID20>",
+    "timestamp": "2025-01-01T02:00:00Z",
+    "session_id": "sess_777",
+    "turn_sequence": 1,
+    "source": "assistant",
+    "event_type": "drift_detected",
+    "pld": {
+      "phase": "drift",
+      "code": "D2_context"
+    },
+    "payload": {
+      "text": "Tool failed due to missing parameter <MASKED>."
+    },
+    "runtime": { "tool": "search_api" },
+    "ux": { "user_visible_state_change": false }
+  },
+  {
+    "schema_version": "2.0",
+    "event_id": "<UUID21>",
+    "timestamp": "2025-01-01T02:00:01Z",
+    "session_id": "sess_777",
+    "turn_sequence": 2,
+    "source": "assistant",
+    "event_type": "repair_triggered",
+    "pld": {
+      "phase": "repair",
+      "code": "R2_soft_repair"
+    },
+    "payload": {
+      "text": "Could you confirm the missing parameter?"
+    },
+    "runtime": {},
+    "ux": { "user_visible_state_change": true }
+  }
+]
+```
 
 ---
 
-Shared examples are the fastest way to ensure that:
+# 5. How to Use These Examples
 
-> **“drift”, “repair”, and “reentry” mean the same thing to everyone involved.**
+During joint PoC onboarding:
+
+* Copy these JSONL templates
+* Replace **session_id**, **payload.text**, **runtime fields** with your values
+* Confirm:
+
+  * Drift codes use canonical Level 3 taxonomy
+  * Repairs follow v2 lifecycle
+  * Masking applies only to payload
+  * Failover examples match your governance requirements
+
+Shared trace examples ensure that **“Drift” means the same thing to all partners** and accelerate lifecycle alignment.

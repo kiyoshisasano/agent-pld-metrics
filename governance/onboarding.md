@@ -1,166 +1,244 @@
+<!--
+component_id: governance_legacy
+kind: doc
+area: meta
+status: stable
+authority_level: 5
+purpose: Legacy onboarding guide for governance processes and contribution flow.
+-->
+
+# Business-Facing Summary (for Non-Technical Stakeholders)
+
+This document provides a simple, practical onboarding guide for teams beginning to use PLD in a joint Proof-of-Concept (PoC) or internal evaluation. You do not need deep technical knowledge of PLD to benefit from this guide. Its purpose is to help new collaborators quickly understand the core loop—Drift, Repair, Reentry, Outcome—and learn how to review logs and verify compliance.
+
+Use this guide to:
+
+* Become "PLD-literate" in the first week
+* Learn how to spot Drift and understand why it matters
+* Understand the basics of safe log sharing and sanitization
+* Follow a structured 90-minute onboarding session template
+* Run early diagnostics to confirm that your PLD integration is healthy and compliant
+
+This document focuses on practical alignment, not implementation details. After reading the summary and the first sections, most teams can begin meaningful PLD evaluation work immediately.
+
+---
+
 # PLD Onboarding & Diagnostics for Collaborators
 
-This document is a **practical onboarding and first-diagnostics guide**  
-for teams who want to collaborate on PLD-based systems.
+**Status:** Stable (Level 5 Governance Guidance)
 
-**Note:** PLD terminology refers to observable conversational behavior,  
- not model psychology, intention inference, or emotional state attribution.
+This onboarding guide helps new collaborators quickly become **PLD-literate**, understand the **Normative Triad (L1–L3)**, and perform early diagnostics on their PLD integration.
 
-It answers:
+PLD terminology describes **observable system behavior**, not model psychology or intent inference.
 
-- How do we get a new team “PLD-literate” quickly?
-- What do we look at together in the first week?
-- How do we run a simple health check on a PLD integration?
+This document answers:
 
----
-
-## 1. Onboarding Objectives
-
-By the end of onboarding, collaborators should:
-
-1. Understand the PLD loop:
-   - Drift → Repair → Reentry → Continue → Outcome
-2. Recognize drift and repair in real traces
-3. Know where PLD is wired into the system (runtime/integration)
-4. Be able to read and interpret basic PLD metrics
-
-They do **not** need to understand:
-- All internal implementation details
-- All operator codes or schema fields
-- Your full infrastructure
+* How do we make a new team PLD-compliant in the first week?
+* What should we examine together early on?
+* How do we run a health check on a PLD integration?
 
 ---
 
-## 2. 90-Minute Onboarding Session (Template)
+# 1. Onboarding Objectives (v2-Aligned)
 
-You can adapt this agenda for a live call or internal workshop.
+By the end of onboarding, collaborators should be able to:
 
-### Part 1 — Concepts (20–30 min)
+### **Understand the Lifecycle (Two Views)**
 
-- Walk through the PLD loop diagram:
-  - What is drift, with concrete domain examples?
-  - Soft vs Hard repair
-  - Reentry as a checkpoint, not just a phrase
-- Show how this maps to:
-  - Your agent’s flow
-  - Your tools / memory / RAG components
+* **Simplified Loop for beginners:** Drift → Repair → Reentry → Outcome
+* **Formal PLD v2 Lifecycle:**
+  **drift → repair → reentry → continue → outcome → failover**
 
-### Part 2 — Live Trace Tour (30–40 min)
+### **Map Reality to Spec**
 
-Take 3–5 real or demo transcripts and:
+Given a transcript, collaborators should be able to:
 
-- Ask collaborators to point where drift seems to begin
-- Show the actual PLD annotations:
-  - `drift.type`, `repair.mode`, `reentry.success`, `outcome.status`
-- Compare their intuition with the event log
-- Discuss:
-  - Which repairs felt appropriate?
-  - Where reentry was missing or weak?
-  - How the interaction ended (outcome)
+* Identify where drift occurs.
+* Assign correct **Level 3 taxonomy codes**:
 
-### Part 3 — Metrics Overview (15–20 min)
+  * `D1_instruction`
+  * `D2_context`
+  * `D3_repeated_plan`
+  * `D4_response`
+  * `D5_safety`
+* Distinguish types of repair (`R1–R5`).
 
-Show a simple dashboard or summary table (e.g., using the provided CLI dashboard tool):
+### **Verify Compliance**
 
-- Drift rate
-- Soft vs Hard repair ratio
-- Reentry success
-- Outcome distribution
+* Validate logs against the **Level 1 Schema**.
+* Confirm lifecycle correctness (Level 2 Semantics).
+* Ensure taxonomy codes follow **Level 3 Canonical Registry**.
 
-Explain how these connect to decisions:
+### **Ensure Safety**
 
-- When drift is high: tune prompts, tools, or memory
-- When hard repairs dominate: adjust architecture or UX
-- When reentry is weak: add confirmation patterns
-- When outcomes are poor: adjust task design or constraints
+* Perform **sanitization of payload only** (mask PII in payload.text).
+* Never mask PLD metadata or taxonomy information.
 
-### Part 4 — Next Steps (10 min)
+**Not Required:**
+
+* Deep understanding of the reference runtime internals.
+* Memorizing all operator codes.
+
+---
+
+# 2. 90-Minute Onboarding Session (Template)
+
+Use this structure before writing code or analyzing data.
+
+## **Part 1 — The Standard (20–30 min)**
+
+Cover the core definitions:
+
+### Lifecycle (L2 Semantics)
+
+* Drift is a **state of misalignment**, not just an error.
+* Repair is a **functional correction** attempt.
+* Reentry validates that the system has recovered.
+* Continue indicates safe forward progress.
+* Failover is a recovery path triggered when repairs are insufficient.
+
+### Taxonomy (L3 Standards)
+
+Present the Level 3 code families:
+
+* `D*` — Drift codes (instruction, context, repeated plan, safety, …)
+* `R*` — Repair strategies (R1–R5)
+* `RE*` — Reentry codes
+* `C*` — Continue states
+* `F*` — Failover
+* `O*` — Outcome
+
+Emphasize: **Canonical codes only. No private forks.**
+
+### Compliance & Schema (L1)
+
+Explain:
+
+* Why strict validation of the runtime envelope matters.
+* Why canonical metadata enables shared metrics.
+
+---
+
+## **Part 2 — Live Trace Mapping (30–40 min)**
+
+Walk through 3–5 demo or real transcripts.
+
+Perform **The Mapping Exercise**:
+
+1. **Spot the Drift** — Identify the misalignment.
+2. **Assign the Code** — Choose the correct `D*` (taxonomy v2).
+3. **Check the Repair** — Which `R*` strategy was used?
+4. **Check Recovery** — Was recovery validated properly?
+
+   * **reentry_observed** (explicit validation)
+   * **continue_allowed** (system-safe forward progress)
+5. **Check the Outcome** — Which `O*` code applies?
+
+Goal: Align human intuition with the **canonical lifecycle**.
+
+---
+
+## **Part 3 — Safety & Metrics (15–20 min)**
+
+### Sanitization Protocol
+
+Show examples of:
+
+* **Good Log:** payload.text masked, metadata preserved.
+* **Bad Log:** raw PII, missing schema fields, taxonomy errors.
+
+### Metrics Preview (v2)
+
+Introduce the core v2 metrics:
+
+* **PRDR** — Post-Repair Drift Recurrence
+* **VRL** — Verification / Recovery Latency
+* **FR** — Failover Recurrence
+
+Key takeaway:
+
+> **Metrics are meaningful only when logs satisfy L1–L3 eligibility.**
+
+---
+
+## **Part 4 — Next Steps (10 min)**
 
 Agree on:
 
-- What kind of sessions to collect in the next week
-- How often to review traces together
-- Who will adjust what (prompts, UX, routing, tools, etc.)
+* Producing 5–10 **sanitized, compliant traces**.
+* Scheduling the first **Joint Evaluation Ritual**.
+* Using a shared working document for diagnostics.
 
 ---
 
-## 3. Early Diagnostics Checklist
+# 3. Early Diagnostics Checklist (v2-Aligned)
 
-Use this after **1–2 weeks** of running a PLD-equipped system with a partner.
+Use after 1–2 weeks of running a PLD-equipped system.
 
-### 3.1 Drift
+## **3.1 Compliance & Safety**
 
-- [ ] Drift events are logged and visible
-- [ ] Drift types (e.g. intent, information, constraint) are distinguishable
-- [ ] Drift is not overwhelmingly concentrated in one scenario
+* [ ] Logs pass **Level 1 Schema** validation.
+* [ ] Sanitization affects **payload only**.
+* [ ] `event_id`, `turn_sequence` are unique & consistent.
 
-### 3.2 Repair
+## **3.2 Drift (Level 3 Taxonomy)**
 
-- [ ] Soft repairs are present and understandable to humans
-- [ ] Hard repairs are rare and clearly justified
-- [ ] Common repair templates are defined (LLM patterns / UX copy)
+* [ ] Drift events are logged where appropriate.
+* [ ] Drift codes come from the canonical registry.
+* [ ] D0/Unclassified usage is minimal.
 
-### 3.3 Reentry
+## **3.3 Repair (Level 2)**
 
-- [ ] Reentry confirmations exist (explicit or implicit)
-- [ ] Reentry success is measured
-- [ ] Sessions with failed reentry are easy to inspect
+* [ ] Correct `R*` strategy chosen (R1–R5).
+* [ ] Repairs occur **before** recovery.
+* [ ] Hard repairs (`R5_hard_reset`) are rare & justified.
 
-### 3.4 Outcome
+## **3.4 Recovery & Outcome**
 
-- [ ] Each session or task has an outcome label
-- [ ] “Partial but acceptable” vs “failed” is clearly separated
-- [ ] Catastrophic failures are rare and investigated
+* [ ] Recovery validation exists:
 
-### 3.5 Latency & Perception
-
-- [ ] Long latency phases are signaled (typing indicator, hold pattern)
-- [ ] No user abandons purely due to unexplained silence
-- [ ] High-latency events appear in PLD logs
+  * `reentry_observed` or `continue_allowed`.
+* [ ] Every session has a clear `O*` outcome code.
 
 ---
 
-## 4. Shared Diagnostics Document
+# 4. Shared Diagnostics Document
 
-For each collaboration, create a shared document with:
+Each collaboration should maintain a shared document containing:
 
-- Link(s) to PLD dashboards
-- A small set of **canonical traces**:
-  - 2–3 “good” sessions
-  - 2–3 “borderline” sessions
-  - 1–2 “failure” sessions
-- Current baseline metrics (drift, repair, reentry, outcome)
-- A short list of open questions:
-  - “What counts as acceptable partial completion?”
-  - “Which drifts are tolerable vs. critical?”
-  - “Which tools are most fragile?”
+### Baseline Metrics
 
-This becomes the **reference point** for:
+* PRDR, VRL, FR (v2 metrics)
 
-- deciding whether a PLD integration is “good enough”
-- tracking changes over time
-- onboarding new engineers or partners
+### Canonical Traces
 
----
+* 2–3 **Golden** sessions (ideal flow)
+* 2–3 **Borderline** sessions (recovered drift)
+* 1–2 **Failure** sessions (catastrophic drift)
 
-## 5. What Not to Over-Optimize in Early PoC
+### Known Issues
 
-During early joint experiments, avoid:
+Examples:
 
-- Numerical micro-optimization (±1–2% metric changes)
-- Overfitting to a single scenario
-- Treating every drift as a bug
+* "We struggle with D2_context on booking tool."
+* "High VRL in tool-heavy flows."
 
-Instead, focus on:
-
-- Are we seeing **the right kinds of repair**?
-- Is reentry helping, not annoying, users?
-- Are we catching catastrophic failures before they reach users?
+This becomes the reference point for evaluating progress.
 
 ---
 
-> Onboarding is not about teaching PLD in full.  
-> It is about giving collaborators **just enough structure**  
-> so their intuition lines up with the PLD runtime loop.
+# 5. What Not to Over-Optimize in Early PoC
 
+Avoid early premature optimization:
 
+* Do not micro-optimize tiny drift swings.
+* Do not create custom Drift Codes.
+
+Focus instead on:
+
+* **Valid Data (Compliance)**
+* **Safety (Sanitization)**
+* **Capturing major system failures (Utility)**
+
+Onboarding is calibration.
+It ensures Partner A & Partner B interpret each log **consistently and canonically**.

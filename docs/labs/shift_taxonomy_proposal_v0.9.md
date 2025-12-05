@@ -1,14 +1,11 @@
----
-title: "Drift vs Shift — Advanced Interaction Taxonomy"
-version: "0.9"
-status: "⚠️ Experimental / Research Proposal"
-stability: "Unstable — Subject to major revision"
-adoption: "NOT recommended for production use"
-category: "Future Work / PLD 1.1+ Candidate"
-updated: "2025-11-17"
-visibility: "Public"
----
-
+<!--
+component_id: docs_labs
+kind: doc
+area: labs
+status: experimental
+authority_level: 2
+purpose: Shift taxonomy proposal v0.9 within labs collection.
+-->
 
 > 🧪 This document is part of PLD Labs.
 > It represents an exploratory direction, not a normative part of Phase Loop Dynamics.

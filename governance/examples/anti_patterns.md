@@ -1,213 +1,232 @@
----
-title: "PLD Anti-Patterns — What NOT To Do"
-version: 2025.1
-status: active
-audience:
-  - agent engineers
-  - ux interaction designers
-  - agent ops evaluators
-purpose: "Identify and prevent interaction failure modes in multi-turn LLM runtimes."
----
+<!--
+component_id: governance_legacy
+kind: doc
+area: meta
+status: stable
+authority_level: 5
+purpose: Legacy examples of anti-patterns for governance and runtime behavior.
+-->
 
-# ❌ PLD Anti-Patterns  
-### *Patterns that Lead to Drift, Collapse, or Loss of Shared Reality*
+# Business-Facing Summary (for Non-Technical Stakeholders)
 
-This file documents **common failure modes** seen in multi-turn, tool-enabled LLM systems.
+This document explains the most common failure modes (“anti-patterns”) that appear when teams begin using PLD. You do not need deep technical knowledge to understand these examples. Each anti-pattern highlights a recognizable behavioral mistake—such as skipping verification or looping apologies—and connects it to the correct PLD interpretation (Drift, Repair, Reentry).
 
-These examples exist to help teams quickly recognize when a system is slipping outside the PLD loop — and apply the appropriate **repair + reentry** steps.
+Use this document to:
 
-> 📌 *These are not theoretical mistakes — they were observed in real-world experiments, agent deployments, and MultiWOZ-based trials.*
+* Identify problematic agent behavior during early PoCs
+* Understand which part of the PLD lifecycle is being violated
+* Align teams on why certain behaviors lead to instability
+* Apply the correct fix by restoring the PLD loop
 
----
-
-## 🧭 How to Use This Document
-
-If you're building or evaluating a system:
-
-- Use this file during **debugging**
-- Reference it when defining **evaluation criteria**
-- Share it during onboarding to avoid **repeat mistakes**
-- Link examples directly in **pull requests or logs**
-
-Each anti-pattern includes:
-
-Symptom → What Happens → Root Cause → Correct PLD Behavior → Example Trace Link
+These anti-patterns help engineers, PMs, QA reviewers, and partner teams quickly diagnose issues without reading the full PLD specification. They serve as a shared vocabulary for spotting and correcting unstable behavior.
 
 ---
 
+# PLD Anti-Patterns
+
+**Status:** Stable (Level 5 Governance Guidance)
+
+These anti-patterns represent common violations of the **Normative Triad**:
+
+* **Level 1 — Structure**
+* **Level 2 — Semantics (Lifecycle)**
+* **Level 3 — Taxonomy / Standards**
+
+This v2-aligned version categorizes anti-patterns by lifecycle phase, corrects taxonomy codes, and clarifies expected PLD event sequences.
+
+Use this document during PoC Reviews, Debug Sessions, and Compliance Audits.
+
 ---
 
-## ❌ Anti-Pattern #1 — Repair → Continue (No Reentry Check)
+## 1. How to Use This Document
 
-### Symptom
-The system acknowledges an error or misunderstanding, fixes it, **but immediately continues the task** without confirming alignment.
+1. Identify the observed behavior.
+2. Map it to the violated PLD level:
 
-### What Happens
-- Small divergence compounds  
-- Later turns contradict earlier constraints  
-- User loses trust because model appears inconsistent  
+   * L2: incorrect phase loop
+   * L3: wrong/missing taxonomy code
+   * L1: structurally invalid events
+3. Apply the correct lifecycle fix.
+4. Log the appropriate **D*** and **R*** codes to improve reproducibility.
 
-### Root Cause
-⚠️ Missing **Reentry Checkpoint** after repair.
+---
 
-### Correct PLD Behavior
+# Category A — Drift Detection Failures
+
+## ❌ A1 — Silent Failure (Missed D2_context)
+
+**Symptom:**
+The system confidently continues despite having lost track of tool state or conversation context.
+
+**Violation:** Level 2 — Drift was not detected (missing `D2_context`).
+
+**Root Cause:**
+A drift detector for context/state loss is absent or inactive.
+
+**Correct Behavior:**
 
 ```
-Drift → Soft Repair → Reentry → Continue
+drift_detected (D2_context)
+→ repair_triggered (R5_hard_reset OR R1_clarify)
+→ reentry_observed (state validation)
+→ continue_allowed (C0_normal)
 ```
-
-### Example Fix
-
-```
-"Thanks — to confirm, you want X under constraint Y, correct?"
-```
-
-📎 See canonical example: `trace_examples.md#soft-repair-with-reentry`
 
 ---
 
----
+## ❌ A2 — Tool Spin (Repeated Tool Errors)
 
-## ❌ Anti-Pattern #2 — Tool Retry Loop
+**Symptom:**
+The agent repeatedly calls a tool with invalid or incomplete parameters.
 
-### Symptom
-The agent repeatedly calls a tool with **incorrect or incomplete parameters**.
+**Violation:** Level 3 — Missing `D2_context` or erroneous continue.
 
-### What Happens
-- Looping behavior  
-- API quota waste  
-- User frustration ("Why are you doing the wrong thing again?")  
+**Root Cause:**
+Errors are treated as “ordinary turns” instead of drift.
 
-### Root Cause
-⚠ Drift was detected implicitly (tool failure), but **no repair policy fired**.
-
-### Correct PLD Behavior
+**Correct Behavior:**
 
 ```
-Failed Tool Call → Drift → Repair (clarify or restate constraints) → Reentry → Try again (once)
+drift_detected (D2_context)
+→ repair_triggered (R2_soft_repair or R4_request_clarification)
+→ reentry_observed
+→ continue_allowed
 ```
-
-### Example Fix
-
-```
-"The tool returned an error. I may be missing information — which of these values applies?"
-```
-
-📎 See: `trace_examples.md#tool-correction-with-pld`
 
 ---
 
----
+# Category B — Repair Misuse
 
-## ❌ Anti-Pattern #3 — Politeness Loop
+## ❌ B1 — Politeness Loop (Text Instead of Structural Repair)
 
-### Symptom
-The model repeatedly apologizes, restates the same content, or tries to "smooth things over" instead of progressing.
+**Symptom:**
+The model repeatedly apologizes without fixing the underlying issue.
 
-### What Happens
-- Interaction stalls  
-- No actionable next step  
-- User confidence drops  
+**Violation:** Level 2 — Still in drift; no repair event occurred.
 
-### Root Cause
-⚠ System opts for *social safe response* instead of structural correction.
+**Root Cause:**
+Agent substitutes social language for structural correction.
 
-### Correct PLD Behavior
+**Correct Behavior:**
 
 ```
-Polite apology (optional) → Repair → Reentry → Continue
+drift_detected (D1_instruction or D2_context)
+→ repair_triggered (R1_clarify or R2_soft_repair)
+→ reentry_observed
 ```
 
-### Example Fix
+---
+
+## ❌ B2 — Sledgehammer (Over-Repair)
+
+**Symptom:**
+The agent uses hard resets or handoff for minor issues.
+
+**Violation:** Level 3 — Misuse of repair mapping (`R5_hard_reset`).
+
+**Root Cause:**
+Repair strategy calibration is missing.
+
+**Correct Behavior:**
 
 ```
-"Thanks — let's correct it and continue. To confirm: the correct value is X, right?"
+D2_context (minor)
+→ R1_clarify or R2_soft_repair
 ```
 
-📎 Related trace: `trace_examples.md#dialog-stabilization`
-
 ---
 
----
+# Category C — Phase Loop Breakage
 
-## ❌ Anti-Pattern #4 — Silent Failure (No Recovery Path)
+## ❌ C1 — Skip-Check (Repair → Continue without Validation)
 
-### Symptom
-The system outputs an answer even though it lost context or state.
+**Symptom:**
+After repairing an issue, the agent continues without verifying correctness.
 
-### What Happens
-- Believable hallucination  
-- Inconsistent logic across turns  
-- System appears confident but wrong  
+**Violation:** Level 2 — Missing `reentry_observed`.
 
-### Root Cause
-⚠ No drift signal, no repair attempt, no checkpoint guard.
-
-### Correct PLD Flow
+**Correct Behavior:**
 
 ```
-Drift → Detect → Repair → Reentry → Continue
+repair_triggered
+→ reentry_observed (state verification)
+→ continue_allowed
 ```
 
-(Not: `Detect and ignore.`)
+**Bad:** “I fixed it. Moving on.”
 
-📎 Example: `trace_examples.md#state-loss-recovery`
-
----
+**Good:** “I updated it to July 5th. Does this look correct?”
 
 ---
 
-## ❌ Anti-Pattern #5 — Over-Repair (Reset When Not Needed)
+## ❌ C2 — Continue Without Validation
 
-### Symptom
-The agent resets or restates too aggressively, even when the drift was minor.
+**Symptom:**
+The agent uses `continue_allowed` even when state is uncertain.
 
-### What Happens
-- Increased latency  
-- Reduced conversational fluidity  
-- UX feels robotic or procedural  
+**Violation:** Level 2 — Incorrect phase selection.
 
-### Root Cause
-⚠ Repair logic is too sensitive or incorrectly prioritized.
+**Correct Behavior:**
+Use **reentry_observed** when validation is required.
 
-### Correct Behavior
+---
+
+# Category D — Failover Misinterpretation
+
+## ❌ D1 — Failover Without Recovery Event
+
+**Symptom:**
+After emitting `failover_triggered`, the agent does not emit a recovery event.
+
+**Violation:** Level 2 — Illegal transition (CAN-008 → recovery required).
+
+**Correct Behavior:**
 
 ```
-Small deviation → Soft Repair
-Major deviation → Hard Repair
+failover_triggered
+→ reentry_observed OR continue_allowed OR session_closed
 ```
 
-📎 Reference: `protocol.md#repair-selection-rules`
+---
+
+## ❌ D2 — Failover → Drift (Illegal Transition)
+
+**Symptom:**
+A failover event is followed immediately by a drift.
+
+**Violation:** Level 2 — Must pass through recovery.
+
+**Correct Behavior:**
+
+```
+failover_triggered
+→ recovery event (reentry or continue)
+→ drift_detected (if new drift occurs)
+```
 
 ---
 
----
+# Summary Table (v2-Aligned)
 
-## 🔧 Quick Reference Summary
-
-| Pattern | Risk Level | Fix Strategy |
-|--------|------------|---------------|
-| Repair → Continue (No Reentry) | ⭐⭐⭐⭐ | Always require confirmation checkpoint |
-| Tool Retry Loop | ⭐⭐⭐⭐⭐ | Add drift trigger + clarification step |
-| Politeness Loop | ⭐⭐⭐ | Replace apologies with structured reentry |
-| Silent Failure | ⭐⭐⭐⭐⭐ | Add mandatory drift detection hook |
-| Over-Repair | ⭐⭐ | Calibrate repair thresholds |
-
----
-
-## 🧪 What To Do If You See These in Logs
-
-1. Tag the event as `drift_detected`  
-2. Apply the appropriate repair class  
-3. Require a reentry checkpoint before execution resumes  
-4. Increase supervision weight during evaluation  
+| Anti-Pattern            | Category | Violated Spec | Severity | Correct Fix                                 |
+| ----------------------- | -------- | ------------- | -------- | ------------------------------------------- |
+| Silent Failure          | A        | L2            | ⭐⭐⭐⭐     | Add D2 detector & repair cycle              |
+| Tool Spin               | A        | L3            | ⭐⭐⭐⭐⭐    | Trigger soft/hard repair; reentry           |
+| Politeness Loop         | B        | L2            | ⭐⭐⭐      | Replace content-only response with repair   |
+| Sledgehammer            | B        | L3            | ⭐⭐       | Use proportional R* mapping                 |
+| Skip-Check              | C        | L2            | ⭐⭐⭐⭐     | Insert reentry before continue              |
+| Continue w/o Validation | C        | L2            | ⭐⭐⭐      | Select correct phase (reentry)              |
+| Failover w/o Recovery   | D        | L2            | ⭐⭐⭐⭐⭐    | Emit recovery event                         |
+| Failover → Drift        | D        | L2            | ⭐⭐⭐⭐     | Require recovery between failover and drift |
 
 ---
 
-> **Anti-patterns are not bugs — they are teaching signals.  
-> They show where the runtime and operator logic need alignment.**
+# Closing Note
 
-Maintainer: Kiyoshi Sasano  
+When these anti-patterns appear, do not simply "fix the code."
+Always log:
 
----
+* The missing **Drift Code (D*)**
+* The missing or misused **Repair Code (R*)**
 
+This improves cross-team consistency and strengthens the PLD Standard for everyone.

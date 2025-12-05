@@ -1,203 +1,197 @@
-# PLD Minimal Collaboration Protocol
+<!--
+component_id: governance_legacy
+kind: doc
+area: meta
+status: stable
+authority_level: 5
+purpose: Legacy protocol for proof-of-concept evaluation and governance review.
+-->
 
-This document describes a **minimal, practical protocol** for running a shared PoC or field study with PLD.
+# Business-Facing Summary (for Non-Technical Stakeholders)
 
-**Note:** PLD terms describe observable conversational behavior —  
-  not model psychology, internal reasoning, or intention inference.
+This document outlines the practical workflow for running a shared PLD Proof-of-Concept (PoC) with another team or organization. You can use it even without deep technical knowledge of PLD. Its purpose is to ensure both sides use the same definitions of Drift, Repair, Reentry, and Outcome, and follow a lightweight, consistent process for evaluating system behavior.
 
+Use this guide to:
 
-It is meant to answer:
+* Establish the scope and expectations of a joint PoC
+* Ensure both sides produce PLD-Compliant (L1–L3) behavioral logs
+* Choose safe and appropriate ways to exchange data
+* Review example sessions together and evaluate system performance
 
-- What are we testing together?  
-- How will we look at traces and metrics?  
-- When do we say “this worked” or “this needs rework”?  
-
-It is intentionally lightweight.  
-You may copy, adapt, or specialize it for your own collaborations.
-
----
-
-## 1. Shared Scope
-
-Before starting, both parties should agree on:
-
-1. **Target System**
-   - What system are we applying PLD to?
-   - Examples: support assistant, RAG agent, tool-using orchestrator, workflow bot.
-
-2. **Interaction Type**
-   - Multi-turn chat, API-driven tasks, scripted scenarios, etc.
-
-3. **Risk Level**
-   - Prototype only (no end users)
-   - Staging with internal users
-   - Limited production trial with guardrails
-
-4. **Time Box**
-   - Example: “Run this experiment for 2–4 weeks, then review.”
-
-Record this in a simple table:
-
-| Item | Value |
-|------|-------|
-| System | e.g., “Support agent with tools X + Y” |
-| Environment | Prototype / Staging / Limited Prod |
-| Time Box | e.g., 3 weeks |
-| Owner (Partner A) | Name / team |
-| Owner (Partner B) | Name / team |
+This is not a legal or technical specification—it is an operational agreement that helps teams collaborate safely and efficiently.
 
 ---
 
-## 2. Shared PLD Definitions
+# PLD Collaboration Protocol
 
-To avoid misalignment, agree on these **operational definitions**:
+This protocol answers:
 
-- **Drift**  
-  System diverges from intended task, constraints, or user intent.
+* **What are we testing?** (Scope)
+* **Is the data valid?** (Compliance)
+* **Is it safe to share?** (Sanitization / Policy)
+* **Did it work?** (Evaluation)
 
-- **Repair**  
-  A system-level correction step:  
-  - *Soft Repair:* clarification / constraint restatement  
-  - *Hard Repair:* reset / change strategy / restart
+It provides a lightweight governance framework ensuring that **Drift**, **Repair**, **Continue**, **Reentry**, and **Outcome** carry the same meaning across organizational boundaries.
 
-- **Reentry**  
-  The checkpoint where shared understanding is confirmed before continuing.
+---
 
-- **Outcome**  
-  Terminal status: complete, partial, failed, abandoned.
+## 1. Shared Scope Definition
 
-Both sides should confirm:
+Before implementation, collaborators jointly define the experimental boundary.
+
+| Item                 | Value                                          |
+| -------------------- | ---------------------------------------------- |
+| System               | e.g., "Customer Support Agent (RAG + Tools)"   |
+| Environment          | Prototype / Staging / Production (Limited)     |
+| Time Box             | e.g., "2 weeks data collection, 1 week review" |
+| Implementation Owner | Partner A                                      |
+| Governance Reviewer  | Partner B                                      |
+| Metrics Analyst      | Assigned jointly or by Partner B               |
+
+---
+
+## 2. The Foundation: Normative Compliance (L1–L3)
+
+To avoid incompatible evaluations, all parties agree to the **Normative Triad**. These conditions are **mandatory**.
+
+### **Rule 1 — Structural Compliance (Level 1)**
+
+All logs MUST validate against the **Level 1 PLD event schema**.
+
+* Ensures standard metric eligibility.
+
+### **Rule 2 — Semantic Compliance (Level 2)**
+
+Events MUST follow the official PLD v2 lifecycle phases:
+
+* **drift → repair → reentry / continue → outcome**
+* Failover paths MUST emit failover_triggered and a recovery event (continue or reentry).
+
+### **Rule 3 — Taxonomy Compliance (Level 3)**
+
+All classification MUST use the Level 3 PLD taxonomy:
+
+* Canonical examples: `D1_instruction`, `D2_context`, `D3_repeated_plan`, `R1_clarify`, `C0_normal`, `RE0_reentry`, `F1_failover`.
+* Deprecated or legacy forms MUST NOT be used.
+
+**Verification:** Partner A validates logs using a PLD-compliant runtime (e.g., SimpleObserver with ValidationMode=STRICT).
+
+---
+
+## 3. Data Exchange Protocol (Flexible)
+
+Two collaboration paths depending on data governance constraints.
+
+### **Path A — Shared Logs (Preferred)**
+
+If sharing sanitized logs is allowed:
+
+* Format: **PLD v2 JSONL** emitted by a compliant runtime.
+* Required fields: timestamps, phases, taxonomy codes, runtime metadata.
+* Sensitive text MUST be masked or hashed.
+
+Example snippet:
 
 ```
-We will label and discuss behavior using these PLD terms.
-We will not invent separate private vocabularies.
+{"event_type": "drift_detected", "pld": {"code": "D1_instruction"}, "payload": {"text": "<MASKED>"}}
 ```
 
----
+### **Path B — Results Only (High-Security Orgs)**
 
-## 3. Minimal Data Protocol
+Raw logs remain private.
 
-### 3.1 What We Share
+* Partner A runs evaluation scripts internally.
+* Partner A shares only **aggregated metrics** (e.g., PRDR=18%, VRL=2.4 turns).
+* Partner A MUST self-certify:
 
-At minimum, both sides should be able to exchange:
-
-- **PLD event logs** for selected sessions  
-  - drift: present / type / reason  
-  - repair: present / mode / code  
-  - reentry: present / success  
-  - outcome: status  
-  - timing: latency / high-latency markers  
-
-- **Anonymized transcripts**  
-  - enough context to understand why drift occurred  
-  - sensitive content redacted if needed  
-
-- **Configuration snapshot**  
-  - high-level prompt structure  
-  - routing / tool logic  
-  - no proprietary source code required
-
-> **⚠️ Privacy & Compliance Options**
-> If raw text or transcripts cannot be shared due to internal policy:
->
-> 1. **Structure-Only Logs:** Share PLD event logs with `payload` text redacted (retaining only drift/repair codes, phases, and timestamps).
-> 2. **Metrics-Only:** Run the dashboard tool locally (e.g., `python examples/dashboard/app.py`) and share only the **aggregated summary metrics**.
-
-### 3.2 What We Do NOT Require
-
-This protocol does **not** require exchanging:
-
-- model weights  
-- full system code  
-- raw production logs  
-- personal user data or PII  
-
-Only behavioral traces and metadata are required.
+  * Level 1 schema validation = **True**
+  * ValidationMode = **STRICT** for all events
+  * No taxonomy violations
 
 ---
 
-## 4. Joint Evaluation Ritual
+## 4. Joint Evaluation Ritual (Bi-weekly)
 
-A review session should include:
+Collaborators meet to assess semantic and behavioral quality.
 
-### Step 1 — Select 5–10 sessions
+### Step 1 — Compliance Check
 
-- 3 where PLD performed well  
-- 3 where drift+repair was recoverable  
-- 3 where it failed or escalated  
+* "Do the logs pass L1 schema validation?"
+* For Path B: "Did the internal strict-validation pass?"
 
-### Step 2 — Walk the Phase Loop
+### Step 2 — Select Sessions
 
-For each session, identify:
+Pick 5–10 representative sessions.
 
-- Where drift occurred  
-- Whether repair happened (soft / hard)  
-- Whether reentry succeeded  
-- Final outcome  
+* Path A: share sanitized JSONL snippets.
+* Path B: screen-share or share genericized examples.
 
-### Step 3 — Review Metrics
+### Step 3 — Walk the Phase Loop
 
-Metrics commonly examined:
+Validate lifecycle correctness:
 
-- Drift rate  
-- Soft vs hard repair ratio  
-- Reentry success rate  
-- Outcome distribution  
-- Latency and abandonment signals  
+* **Drift** — Is the D* code accurate? (`D2_context` vs `D1_instruction`)
+* **Repair** — Was the chosen repair appropriate? (`R2_soft_repair` vs `R5_hard_reset`)
+* **Continue vs Reentry** — Did the agent safely continue, or did it re-enter after validation?
+* **Failover** — Was a recovery event emitted (continue or reentry)?
 
-### Step 4 — Decide Actions
+### Step 4 — Review Metrics
 
-Possible next steps:
+Use canonical v2 metrics (Level 3):
 
-- adjust UX pacing or messaging  
-- modify operator pattern or prompts  
-- refine policy or routing logic  
-- add monitoring thresholds (if in staging/prod)
+* **PRDR** — Post-Repair Drift Recurrence
+* **VRL** — Recovery Latency
+* **FR** — Failover Recurrence Index
+* Optional: outcome distribution, drift rate, session health indicators
 
 ---
 
-## 5. Success Criteria Template
+## 5. Success Criteria Template (v2-Aligned)
 
-Define a shared interpretation of “success” for the PoC:
+Organizations predefine "good enough" thresholds.
 
-| Dimension | Example Target |
-|-----------|----------------|
-| Drift rate | ≤ 15% of turns |
-| Repair effectiveness | ≥ 70% soft repair recovery |
-| Reentry success | ≥ 80% confirmed alignment |
-| Outcome complete | ≥ 75% completion or acceptable partials |
-| Critical failures | 0 catastrophic failures |
-
-These values are **anchors**, not prescriptions — adjust based on risk and context.
-
----
-
-## 6. Roles & Cadence
-
-Clearly assign responsibilities:
-
-**Partner A:**
-
-- Manages runtime and logging  
-- Exports PLD events weekly  
-
-**Partner B:**
-
-- Performs PLD review  
-- Suggests adjustments and maintains scoreboards/dashboards  
-
-**Both:**
-
-- Biweekly review  
-- Joint rollout decision (go/no-go)
-
-Add this summary to your shared collaboration document.
+| Dimension                   | Typical Target                |
+| --------------------------- | ----------------------------- |
+| Drift Rate                  | ≤ 15% (domain-dependent)      |
+| PRDR                        | ≤ 10–20%                      |
+| VRL                         | ≤ 3 turns (fast recovery)     |
+| FR (Failover Recurrence)    | ≤ 5%                          |
+| Continue/Reentry Validation | ≥ 90% correctness             |
+| Critical Failures           | 0 semantic violations (L1–L3) |
 
 ---
 
-Minimal protocol = minimal friction.  
-The goal is shared interpretation — not imposed process.
+## 6. Roles & Responsibilities
 
+### **Implementation Owner (Partner A)**
 
+* Integrates PLD runtime (Level 5).
+* Ensures L1–L3 compliance.
+* Chooses Path A or Path B.
 
+### **Governance Reviewer (Partner B)**
 
+* Reviews semantic correctness (phase, taxonomy, transitions).
+* Ensures metrics eligibility (PRDR/VRL/FR require valid semantics).
+
+### **Metrics Analyst**
+
+* Computes and interprets canonical v2 metrics.
+* Flags anomalies requiring taxonomy or lifecycle review.
+
+### **Both**
+
+* Joint Go/No-Go decision.
+* Review and update Success Criteria periodically.
+
+---
+
+## Summary
+
+* **Define scope** collaboratively.
+* **Enforce L1–L3 compliance** (mandatory).
+* Choose **Path A (logs)** or **Path B (results)**.
+* Conduct bi-weekly **evaluation + metrics review**.
+* Use v2 canonical metrics (PRDR, VRL, FR) for consistent evaluation.
+
+PLD v2 governance ensures shared meaning, safe iteration, and consistent lifecycle reasoning across all collaborating organizations.

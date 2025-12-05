@@ -1,5 +1,13 @@
-# manifest.example.yaml
-# Reference example for METADATA_MANIFEST_SPEC v0.9.1
+# path: meta/manifest.example.yaml
+# component_id: manifest_example
+# kind: example
+# area: meta
+# status: draft
+# authority_level: 1
+# purpose: Example manifest for integrators and contributors.
+#          Reference example for METADATA_MANIFEST_SPEC v0.9.1
+# This is an example manifest file for demonstration purposes.
+# It does not represent the actual repository structure.
 # SPDX-License-Identifier: CC-BY-4.0
 
 version: 0.9.1
@@ -7,7 +15,7 @@ default_license: Apache-2.0
 
 components:
 
-  - path: pld_runtime/repair/repair_detector.py
+  - path: virtual/pld_runtime/repair/repair_detector.py
     component_id: repair_detector
     kind: runtime_module
     area: repair
@@ -25,7 +33,7 @@ components:
     #   - pld_runtime_standard_v2
 
 
-  - path: quickstart/hello_pld_runtime.py
+  - path: virtual/quickstart/hello_pld_runtime.py
     component_id: hello_pld_runtime
     kind: example
     area: onboarding
@@ -36,7 +44,7 @@ components:
       Used for teaching and validating the mental model before deeper integration.
 
 
-  - path: docs/07_pld_operational_metrics_cookbook.md
+  - path: virtual/docs/07_pld_operational_metrics_cookbook.md
     component_id: metrics_cookbook
     kind: doc
     area: analytics
@@ -47,7 +55,7 @@ components:
       Intended as a working reference for evaluation and field implementation teams.
 
 
-  - path: analytics/sample_traces/
+  - path: virtual/analytics/sample_traces/
     component_id: trace_examples
     kind: metric
     area: validation
@@ -56,3 +64,4 @@ components:
     purpose: >
       Sample traces used for evaluating PLD behavior in experiments and controlled testing environments.
       Contents may evolve rapidly and are not guaranteed stable.
+

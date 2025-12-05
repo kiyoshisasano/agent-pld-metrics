@@ -1,3 +1,10 @@
+# component_id: metrics_cli_summary_demo
+# kind: example
+# area: metrics
+# status: experimental
+# authority_level: 2
+# purpose: Demo metrics summary output for CLI dashboard sessions.
+
 === Metrics Summary ===
 Sessions: 4
 PRDR (Post-Repair Drift Recurrence): 0.00%  (0/1 sessions with repair)

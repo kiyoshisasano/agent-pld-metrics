@@ -1,152 +1,141 @@
-# ROLE ALIGNMENT — PLD Collaboration Model
+<!--
+component_id: governance_legacy
+kind: doc
+area: meta
+status: stable
+authority_level: 5
+purpose: Legacy description of community roles and responsibilities.
+-->
 
-This document clarifies how contributions, discussion, and framework evolution are handled within the PLD ecosystem.
+# Business-Facing Summary (for Non-Technical Stakeholders)
 
-It exists to maintain clarity and shared expectations between:
+This document explains the roles involved in PLD collaboration—both within a single organization and across partners. You do not need technical knowledge of schemas or runtimes. Its purpose is to clarify who owns what, how responsibilities are divided, and how decisions about Stability, Drift, and Compliance are made.
 
-- **Architect / Maintainer**
-- **Implementers**
-- **Collaborators and Reviewers**
+Use this document to understand:
 
-No single individual “owns” the future of PLD —  
-the goal is to evolve it **through shared reasoning, evidence, and community practice.**
+* **The Maintainer's role** (keeps the core PLD definitions consistent)
+* **The Partner/Implementer’s role** (runs experiments and provides data)
+* **How responsibilities split between specification and runtime work**
+* **How teams collaborate during PoCs and ongoing evaluation**
 
----
-
-## 1. The Role of the Architect (Maintainer / Steward)
-
-The maintainer is responsible for:
-
-- Defining the conceptual foundation (Drift → Repair → Reentry → Outcome)
-- Maintaining coherence of terminology, structure, and scope  
-- Guiding discussions about semantics, taxonomy, and core principles  
-- Ensuring changes follow a consistent design philosophy
-
-The maintainer:
-
-✔ provides structure  
-✔ supports alignment  
-✔ safeguards conceptual clarity  
-
-The maintainer **does not**:
-
-✘ control adoption  
-✘ gate domain-specific implementations  
-✘ dictate product usage or risk tolerance  
-
-Instead, the role is:
-
-> **A steward of shared language and reasoning — not a gatekeeper of implementation.**
+This guide ensures everyone—PMs, engineers, analysts, and partner teams—shares the same expectations about how PLD evolves and who contributes what.
 
 ---
 
-## 2. The Role of Implementers
+# ROLE ALIGNMENT — Collaboration Model
 
-Implementers include:
+This document clarifies how collaborators participate in the PLD ecosystem under the **v2 Governance Model**.
 
-- Applied AI engineers  
-- Agent orchestration developers  
-- RAG / agent integration teams  
-- Conversation runtime owners  
-
-Their responsibilities:
-
-- Apply PLD patterns to real systems  
-- Build and refine implementations
-- Generate logs and evidence
-- Contribute feedback and improvements
-
-Implementers may propose changes to the model, but these follow the shared governance process.
+PLD remains an evolving research-driven standard focused on solving **Agent Stability**.
+To iterate safely and consistently, we maintain clear boundaries between the **canonical specifications (L1–L3)** and the **runtime implementation (Level 5)**.
 
 ---
 
-## 3. The Role of Collaborators (Optional but Welcome)
+# 1. The Architect (Maintainer)
 
-Collaborators often include:
+**Role:** Steward of the Canonical Specification (Levels 1–3)
 
-- Evaluation / QA teams  
-- Research contributors  
-- UX and trust stakeholders  
-- AgentOps observability teams  
+**Responsibilities:**
 
-Their contributions focus on:
+* Maintains the **PLD lifecycle model**:
+  **drift → repair → reentry → continue → outcome → failover**
+* Defines and curates the **Normative Triad**:
 
-- Behavioral analysis
-- Field validation
-- Comparisons against baselines
-- Recommendations based on operational experience
+  * **Level 1 — Structure** (event schema)
+  * **Level 2 — Semantics** (lifecycle rules, transitions)
+  * **Level 3 — Taxonomy & Metrics** (D*/R*/RE*/C*/F*/O* codes, PRDR/VRL/FR metrics)
+* Ensures that all collaborators interpret the canonical codes and phases consistently.
+* Reviews evidence from partners and merges changes into L1–L3 based on **evidence-driven consensus**.
 
----
-
-## 4. Collaboration Boundaries
-
-| Area | Maintainer | Implementer | Collaborator |
-|------|-----------|-------------|--------------|
-| Conceptual model & taxonomy | Guides | Proposes | Advises |
-| Runtime implementation | Advises | Leads | Optional |
-| Metrics & evaluation schema | Guides | Generates data | Interprets |
-| Production usage decisions | No | **Yes** | Yes (context-based) |
+**Why this matters:**
+Consistency in L1–L3 is the foundation for scientific comparison.
+If two partners disagree on what "Drift" means, no cross-experiment learning is possible.
 
 ---
 
-## 5. Change Governance
+# 2. The Implementers (Partners)
 
-Updates follow:
+**Role:** Field Researchers / Applied Experimenters
 
-```
-Proposal → Discussion → Community Review → Merge → Version Note
-```
+**Responsibilities:**
 
-Changes involving:
+* Apply PLD in real-world agents and pipelines.
+* Ensure **strict L1–L3 compliance** so logs retain metric eligibility.
+* Surface edge cases such as:
 
-- core terminology  
-- event semantics  
-- runtime structure  
-- evaluation schema  
+  * Missing taxonomy codes
+  * Ambiguous lifecycle transitions
+  * Domain-specific failure patterns
+* Provide evidence (traces) that can inform L1–L3 evolution.
 
-→ require discussion and alignment.
-
-Changes involving:
-
-- code improvements  
-- adapters or integrations  
-- examples and recipes  
-- dataset extensions  
-
-→ may proceed via PR with review.
+Partners are not just “users.”
+They are co-authors of the standard via real-world experimentation.
 
 ---
 
-## 6. Why Alignment Matters
+# 3. The Governance Reviewer
 
-PLD is a **runtime reasoning model**, not a library or product.
+**Role:** Semantic & Lifecycle Auditor
 
-Clear roles avoid:
+**Responsibilities:**
 
-- private forks redefining semantics  
-- uncertainty about contribution paths  
-- misalignment across implementations  
+* Validates lifecycle correctness (no illegal transitions).
+* Confirms taxonomy usage (canonical Level 3 codes only).
+* Ensures reentry vs continue is selected correctly.
+* Reviews failover behavior for correctness.
 
-Instead, this structure supports:
-
-> **Shared understanding, responsible iteration, and interoperability across ecosystems.**
-
----
-
-## 7. Summary
-
-- The maintainer **guides the conceptual direction.**
-- Implementers **bring PLD into practice.**
-- Collaborators **validate and inform refinement.**
-
-Together, the community evolves PLD through:
-
-- evidence  
-- discussion  
-- practical application  
-- shared wisdom  
+This role ensures experiments remain **scientifically comparable** and free of semantic drift.
 
 ---
 
-> PLD grows through collaboration — not ownership.  
-> The model is shared; the ecosystem builds it together.
+# 4. The Metrics Analyst
+
+**Role:** Evaluator of PLD v2 Metrics
+
+**Responsibilities:**
+
+* Computes and interprets key metrics:
+
+  * **PRDR** (Post-Repair Drift Recurrence)
+  * **VRL** (Verification/Recovery Latency)
+  * **FR** (Failover Recurrence Index)
+* Ensures metrics are used only when logs satisfy L1–L3 eligibility.
+* Identifies anomalies requiring governance review.
+
+---
+
+# 5. Collaboration Boundaries
+
+To maintain agility while ensuring comparability, collaborators divide focus:
+
+| Area                     | Architect's Focus          | Partner's Focus                     |
+| ------------------------ | -------------------------- | ----------------------------------- |
+| **Core Specs (L1–L3)**   | Defines & Curates          | Uses & Validates (no private forks) |
+| **Runtime / Adapters**   | Provides Reference         | Builds & Customizes Freely          |
+| **Metrics**              | Defines Canonical Formulas | Generates Real-World Data           |
+| **Production Decisions** | Advises                    | Owns (Partner decides safety)       |
+
+---
+
+# 6. How We Evolve (Evidence-Driven)
+
+PLD evolves through a structured loop:
+
+1. **Hypothesis** — Maintainer proposes a spec change (e.g., new drift code).
+2. **Experiment** — Partners test in PoCs or prototypes.
+3. **Evidence** — Shared traces validate or disprove the proposal.
+4. **Consensus** — Maintainer merges change into L1–L3.
+
+*Working logs outperform theoretical arguments.*
+
+---
+
+# Summary
+
+* **Architect:** Maintains canonical definitions (L1–L3) and lifecycle correctness.
+* **Partners (Implementers):** Test hypotheses with real-world agents.
+* **Governance Reviewer:** Ensures semantic & taxonomic compliance.
+* **Metrics Analyst:** Computes v2 metrics and flags anomalies.
+
+Together we evolve PLD through research, evidence, and shared standards—
+not bureaucracy, but **scientific rigor and reproducibility**.

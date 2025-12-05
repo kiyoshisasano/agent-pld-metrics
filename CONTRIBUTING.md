@@ -10,127 +10,290 @@ license: Apache-2.0
 purpose: Contribution guidelines for maintainers and external collaborators.
 -->
 
-# **Contributing to PLD**
+# Business-Facing Summary (for Non-Technical Stakeholders)
 
-Thank you for your interest in contributing to Phase Loop Dynamics (PLD).  
-Whether you're improving runtime behavior, adding documentation, or experimenting with new repair strategies — contributions are welcome.  
-PLD is early-stage and evolving, so the goal is clarity, collaboration, and shared learning — not perfection.
+This document explains how contributions to PLD should be made, with a focus on clarity, safety, and standardization. Non-technical team members can use this summary to understand the rules of engagement without needing deep knowledge of schemas or runtimes.
 
-## **🧭 Before You Start**
+Use this guide to understand:
 
-PLD is used across research, experimental runtimes, and applied systems.  
-To keep things understandable as it grows, we rely on:
+* What kinds of contributions move fast (runtime examples, docs, adapters)
+* What requires formal review (core specifications L1–L3)
+* How to ensure any contribution remains PLD-Compliant
+* When sanitized logs or validation evidence are needed
 
-* clear structure  
-* traceable changes  
-* consistent metadata
+This document ensures that engineers, PMs, analysts, and partner teams can contribute effectively while protecting the integrity of the PLD standard.
 
-Please skim the following (not required to memorize):
+---
 
-| Topic | File |
-| :---- | :---- |
-| Repo structure overview | SUMMARY.md |
-| Component metadata format | meta/METADATA\_MANIFEST\_SPEC.md |
-| Manifest example | meta/manifest.example.yaml |
-| Roadmap (where the project is heading) | meta/ROADMAP.md |
+# Business-Facing Summary (for Non-Technical Stakeholders)
 
-## **🧩 Metadata & Manifest Rules**
+This document provides a high-level, business-friendly view of how PLD evolves over time. You do not need technical expertise in schemas or runtimes to understand it. The roadmap explains how PLD grows through real-world usage, evidence-based refinement, and community alignment.
 
-We have two tiers of contribution complexity:
+Use this roadmap to understand:
 
-### **🟢 Fast Track (Docs, Examples, Pitch, Analytics)**
-For contributions to `docs/`, `examples/`, `pitch/`, or `analytics/`:
-* **No manifest update required.** (These folders are automatically tracked).
-* **No metadata headers required** inside the files (optional).
-* Just add your files and submit a PR.
+* Where PLD is today (specification maturity & runtime stability)
+* What improvements are planned next (metrics, adapters, validation tools)
+* How your organization can influence the direction of PLD
+* How PLD moves from concept → standard → field-proven practice
 
-### **🔴 Core Track (Runtime Code, Governance)**
-For contributions to `pld_runtime/` or `meta/` (Level 4-5):
-* **Manifest Update Required:** You MUST add a specific entry to `manifest.yaml`.
-* **Metadata Headers Required:** Python files must include `# component_id: ...` headers.
-* **Strict Validation:** Changes must pass `python validate_manifest.py --level L2`.
+This is not a technical manual—it is a strategic guide for decision-makers, PMs, and partner organizations evaluating how PLD will evolve and support long-term stability efforts.
 
-### **How to validate**
+---
 
-Run the included validator to check integrity:
+# Business-Facing Summary (for Non-Technical Stakeholders)
 
-    python validate_manifest.py
+This document explains the roles involved in PLD collaboration—both within a single organization and across partners. You do not need technical knowledge of schemas or runtimes. Its purpose is to clarify who owns what, how responsibilities are divided, and how decisions about Stability, Drift, and Compliance are made.
 
-Optional stricter mode (Required for Core Runtime code):
+Use this document to understand:
 
-    python validate_manifest.py --level L2
+* **The Maintainer's role** (keeps the core PLD definitions consistent)
+* **The Partner/Implementer’s role** (runs experiments and provides data)
+* **How responsibilities split between specification and runtime work**
+* **How teams collaborate during PoCs and ongoing evaluation**
 
-Metadata is not bureaucracy — it’s how we keep the system explorable and maintainable.
+This guide ensures everyone—PMs, engineers, analysts, and partner teams—shares the same expectations about how PLD evolves and who contributes what.
 
-## **🧪 Code Contributions**
+---
 
-If your work touches runtime code (especially Python files):
+# Contributing to PLD (v2-Aligned)
 
-1. **Follow Naming Patterns:** Use snake_case and explicit function intent.
-2. **Add Metadata Headers (Crucial):**
-   To pass L2 validation, Python files (.py) MUST include a metadata block in the first 50 lines matching the manifest entry.
+**Status:** Stable (Level 5 Governance Guide)
 
-   ```python
-   # component_id: my_new_detector
-   # status: experimental
-   # authority_level: 5
+Thank you for your interest in contributing to **Phase Loop Dynamics (PLD)**! 🚀
+This document defines the standard contribution process for PLD under the **PLD v2** specification model.
 
-3. **Label Experimental Logic:** Use `status: experimental` in metadata.  
-4. **Prioritize Clarity:** PLD is meant to be studied and adapted.
+PLD follows a **Standard-First** philosophy. We distinguish strictly between the:
 
-If relevant, include a minimal runnable example under:
+* **Core Specification (Levels 1–3 — Immutable)**
+* **Runtime Implementation (Level 5 — Flexible)**
 
-quickstart/
+Maintaining this separation ensures the scientific integrity and comparability of PLD experiments across teams.
 
-Examples help others understand the intent behind behavior.
+---
 
-## **📚 Documentation Contributions**
+# ⚡ The Golden Rule: The Normative Triad
 
-Documentation, diagrams, and conceptual clarifications are valued equally to code.
+To contribute to PLD (runtime, adapters, or logs), your output **MUST comply** with the complete normative stack:
 
-Guidelines:
+| Layer                            | Requirement                                           | Why It Is Mandatory                                                       |
+| -------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Level 1 — Structure**          | Valid runtime envelope (strict schema)                | Ensures logs are structurally interoperable                               |
+| **Level 2 — Semantics**          | Valid lifecycle transitions                           | Ensures drift/repair/reentry/continue/failover mean the same across teams |
+| **Level 3 — Taxonomy & Metrics** | Canonical D*/R*/RE*/C*/F*/O* codes + v2 metric schema | Ensures PRDR/VRL/FR metrics remain comparable                             |
 
-* Keep tone exploratory, not absolute  
-* Note uncertainty when applicable  
-* Attribute sources, references, or field observations when relevant
+**Warning:**
+Meeting Level 1 alone (**valid JSON**) is **not** PLD compliance.
+Violating Level 2 or 3 produces only *"PLD-style JSON"* — not valid data.
 
-Documentation lives under:
+---
 
-docs/
+# 🚦 What Can I Contribute?
 
-## **🔁 Pull Request Process**
+Before opening an issue or PR, determine which **Zone** your contribution belongs to.
 
-1. Fork the repository (or branch if contributor access is granted)
-2. Make changes in small, intentional commits
-3. **Check Metadata Requirements:**
-   * If touching `pld_runtime/`: Update `manifest.yaml` and add headers.
-   * If touching `docs/` or `examples/`: **Skip this step.**
-4. Run validation (`python validate_manifest.py`)
-5. Submit PR with a short summary explaining **"why"**, not just "what changed".
+## 🟢 Green Zone — High-Velocity Contributions (Level 4 & 5)
 
-## **🤝 Collaboration Philosophy**
+Implementation, documentation, examples.
+We actively encourage contributions here.
 
-PLD is not a finished product — it’s a shared exploration of how to govern multi-turn agents.  
-That means contributions are evaluated based on:
+**Scope:**
 
-* clarity of intent  
-* usefulness to others  
-* alignment with the runtime model  
-* operational implications (when known)
+* quickstart/
+* examples/
+* docs/
+* analytics/
+* runtime adapters (LangGraph, AutoGen, custom frameworks)
 
-"Document reality — don’t legislate ahead of it."
+**Goal:** Improve usability, documentation, demonstrations.
 
-If you're unsure whether something belongs here, small experiments and drafts are welcome.  
-We iterate together.
+**Constraint:**
+Level 5 code **must not violate Level 1–3 specifications**.
 
-## **📩 Questions & Discussion**
+**Review Process:** Lightweight.
 
-If you're considering a larger contribution or want guidance, open a:
+---
 
-* **Discussion** (best for ideas)  
-* **Issue** (best for concrete problems)  
-* **Draft PR** (best for work-in-progress)
+## 🔴 Red Zone — Core Specification & Governance (Levels 1–3)
 
-Thank you again for helping shape the future of PLD.
+Changes here affect the **definition of PLD**.
 
-— Maintainer: **Kiyoshi Sasano**
+**Scope:**
+
+* docs/specifications/
+* meta/
+* canonical runtime invariants
+* manifest-controlled components
+
+**Includes:**
+
+* Schema changes (L1)
+* Lifecycle semantics (L2)
+* Taxonomy & Metrics (L3 canonical registry)
+
+**Process:**
+Requires Maintainer + Governance Reviewer approval.
+Submit a **Discussion** BEFORE filing a PR.
+
+---
+
+# 🛠 Validation (How to Ensure Compliance)
+
+Because PLD is a standard, all contributions must be validated.
+
+## Option A — Use the PLD v2 Reference Runtime (Python)
+
+Use **RuntimeSignalBridge** with **STRICT mode** to enforce Level 1/2 logic.
+
+```python
+from pld_runtime import RuntimeSignalBridge, ValidationMode, RuntimeSignal
+
+bridge = RuntimeSignalBridge(validation_mode=ValidationMode.STRICT)
+
+sig = RuntimeSignal(
+    source="assistant",
+    payload={"text": "Test"},
+)
+
+# STRICT mode checks:
+# - L1 envelope validity
+# - L2 legal transitions
+# - L3 taxonomy alignment (when codes are provided)
+
+event = bridge.build_event(sig)
+print("✅ Event accepted (L1/L2 enforced)")
+```
+
+Strict Mode ensures:
+
+* required fields are present
+* illegal transitions are rejected
+* INFO-only codes respect phase rules
+* taxonomy prefixes are canonical
+
+You MUST self-validate taxonomy correctness (Level 3).
+
+---
+
+## Option B — Custom Implementations (TS/Go/Rust/etc.)
+
+If implementing PLD outside Python:
+
+### **L1 Check**
+
+Your output MUST match the v2 runtime envelope schema.
+
+### **L2 Check** (examples of illegal transitions)
+
+* `reentry` without a preceding `repair`
+* `continue` after `drift` without recovery
+* emitting `failover` directly from `stable`
+* skipping recovery validation (reentry/continue)
+
+### **L3 Check**
+
+* Drift codes MUST come from canonical families:
+
+  * `D1_instruction`
+  * `D2_context`
+  * `D3_repeated_plan`
+  * `D4_response`
+  * `D5_safety`
+* Repair codes MUST use R1–R5
+* Outcomes MUST use O* codes from L3
+* No custom taxonomy forks
+
+---
+
+# 🧩 Metadata & Manifest Rules
+
+PLD uses **manifest.yaml** to track authority and provenance.
+
+## Implicit Tracking (Directory-Level)
+
+**Green Zone** files automatically inherit context.
+You do NOT need to modify `manifest.yaml`.
+
+## Explicit Tracking (File-Level)
+
+**Red Zone** contributions require manifest entries.
+
+Required file header:
+
+```python
+# component_id: my_new_component
+# status: experimental
+# authority_level: 5
+```
+
+Validate via:
+
+```
+python validate_manifest.py --level L2
+```
+
+---
+
+# 📝 Pull Request Checklist (v2)
+
+Before submitting, confirm:
+
+### **Scope**
+
+[ ] My change is in the Green Zone OR
+[ ] I opened a Discussion for Red Zone changes
+
+### **Standard Compliance**
+
+[ ] **L1**: Valid runtime envelope structure (schema passes)
+[ ] **L2**: All lifecycle transitions are legal under v2
+[ ] **L3**: Taxonomy codes use the canonical registry (no forks)
+
+### **Evidence (Policy Permitting)**
+
+Option A:
+[ ] I included sanitized v2-compliant traces (payload masked only)
+
+Option B:
+[ ] I cannot share logs, but I validated locally with STRICT mode
+
+### **Metadata**
+
+[ ] I updated `manifest.yaml` if touching Red Zone components
+
+---
+
+# 🤝 Collaboration Philosophy
+
+PLD is not a finished product — it is a shared scientific exploration.
+We iterate based on **evidence**, not speculation.
+
+We value:
+
+### **Clarity of Intent**
+
+Explain *why* your change is needed.
+
+### **Operational Reality**
+
+Document real observations, not hypothetical behavior.
+
+### **Flexible Data Sharing**
+
+Sanitized logs help improve the standard — but are not required.
+Internal validation is fully acceptable.
+
+### **Canonical Registry Stewardship**
+
+All contributors help maintain the integrity of:
+
+* the lifecycle model (L2)
+* the taxonomy registry (L3)
+* the metric schema
+
+This ensures that PLD remains interoperable across teams and organizations.
+
+---
+
+Thank you for helping build and refine PLD. 🎉
+
+— Maintainer: *Kiyoshi Sasano*

@@ -1,3 +1,12 @@
+<!--
+component_id: docs_labs
+kind: doc
+area: labs
+status: experimental
+authority_level: 2
+purpose: Experimental lab docs and proposals.
+-->
+
 # PLD Labs — Experimental Specifications
 
 This directory contains **research proposals, early-stage ideas, and unfinalized extensions** to the Phase Loop Dynamics (PLD) framework.
