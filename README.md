@@ -319,7 +319,9 @@ Metrics cookbook → `docs/metrics/pld_operational_metrics_cookbook.md`
 
 #### Text-based Metrics Dashboard (Experimental)
 
-A minimal console dashboard is available at `examples/dashboard/app.py`.
+A minimal console dashboard is available at `examples/dashboard/app.py`.  
+A sample CLI metrics summary output is available in  
+`examples/dashboard/metrics_cli_summary_demo.txt`.  
 
 Usage:
 

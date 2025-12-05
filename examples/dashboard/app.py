@@ -27,7 +27,7 @@ This example script:
 
 IMPORTANT:
   - This module operates strictly as an ANALYTICS-LAYER example.
-  - It DOES NOT mutate PLD events or redefine Level 1–3 semantics.
+  - It DOES NOT mutate PLD events or redefine Level 1-3 semantics.
   - It only reads already-emitted PLD-compliant events and derives
     advisory metrics from them.
 

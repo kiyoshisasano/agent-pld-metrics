@@ -5,7 +5,9 @@
 # authority_level: 1
 # version: 2.0.0
 # license: Apache-2.0
-# purpose: Quickstart demonstration of SimpleObserver showing simple log_turn usage, traced turns with latency, and optional keyword-based drift detectors.
+# purpose: Quickstart demonstration of SimpleObserver showing simple log_turn usage,
+#          traced turns with latency, optional keyword-based drift detectors, and
+#          a drift → repair → recovery + session_closed event flow example.
 
 """
 easy_pld_demo.py
@@ -24,9 +26,17 @@ SimpleObserver quickstart examples:
 3) Optional detectors injection:
     observer = SimpleObserver("session-x", detectors=[keyword_detector])
 
+4) Drift → Repair → Recovery + Session Closed flow:
+    drift_repair_recovery_demo()
+
 Note:
     In this demo, detectors are executed synchronously when `trace_turn.complete()`
     is called, so the call will block until all detectors finish.
+
+    The drift → repair → recovery example shows how to emit a sequence of
+    PLD-compliant events that can be used for metrics like VRL / PRDR, without
+    redefining schema, taxonomy, or lifecycle semantics. Actual metric
+    definitions remain governed by the Level 3 metrics specification.
 """
 
 from __future__ import annotations
@@ -85,10 +95,84 @@ def detectors_injection_demo() -> None:
         turn.complete("We noticed your term and handled it.")
 
 
+def drift_repair_recovery_demo() -> None:
+    """
+    4) Drift → Repair → Recovery + Session Closed flow demo.
+
+    This example shows one possible PLD-compliant event sequence that can be
+    used by metrics such as VRL (recovery latency) and PRDR (post-repair drift
+    recurrence), without redefining any Level 1–3 semantics.
+
+    Conceptual flow:
+
+        Turn 1: Normal user turn (continue_allowed)
+        Turn 2: Drift recorded (drift_detected)
+        Turn 3: Repair recorded (repair_triggered)
+        Turn 4: Recovery turn (continue_allowed)
+        Turn 5: Session closed (session_closed)
+
+    Notes:
+        - All PLD events are emitted via SimpleObserver, which internally uses
+          RuntimeSignalBridge and Level 5 runtime mappings.
+        - No PLD event dictionaries are constructed manually here.
+    """
+    session_id = "session-recovery-demo"
+    observer = SimpleObserver(session_id=session_id)
+
+    # Turn 1 — Normal initial turn (continue_allowed, phase=continue, C0_* code family).
+    observer.log_turn(
+        "user",
+        "Hello",
+        "Hi there",
+    )
+
+    # Turn 2 — Record a drift event explicitly.
+    # This represents a detected instruction-level drift (e.g., forbidden term).
+    observer.observe_drift(
+        code="D1_instruction",
+        payload={
+            "text": "This contains a forbidden term",
+            "detector": "manual_demo",
+        },
+        metadata={
+            "reason": "forbidden_term",
+        },
+    )
+
+    # Turn 3 — Record a repair attempt.
+    # The canonical pld.code is provided by the runtime mapping (R*-family);
+    # the requested code is stored as advisory metadata.
+    observer.observe_repair(
+        code="R1_clarify",
+        payload={
+            "strategy": "keyword_block_and_explanation",
+        },
+        metadata={
+            "note": "demo_repair_step",
+        },
+    )
+
+    # Turn 4 — Recovery turn: user-visible safe continuation.
+    # This produces a continue_allowed event that can act as the "recovery"
+    # endpoint for VRL-style metrics, while remaining schema- and taxonomy-
+    # compliant (C0_* family).
+    with observer.trace_turn(
+        "user",
+        "Please retry safely after the drift.",
+    ) as turn:
+        turn.complete(
+            "Safe alternative response after handling the drift.",
+        )
+
+    # Turn 5 — Session closed outcome event.
+    observer.log_session_closed(reason="demo_completed")
+
+
 def main() -> None:
     simple_mode_demo()
     advanced_mode_demo()
     detectors_injection_demo()
+    drift_repair_recovery_demo()
 
 
 if __name__ == "__main__":

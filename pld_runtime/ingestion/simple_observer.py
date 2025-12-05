@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Protocol
+import logging
 
 from pld_runtime.detection.runtime_signal_bridge import (
     RuntimeSignalBridge,
@@ -22,6 +23,10 @@ from pld_runtime.detection.runtime_signal_bridge import (
 )
 from pld_runtime.logging.structured_logger import StructuredLogger
 from pld_runtime.logging.event_writer import EventWriter, make_stdout_writer
+
+
+LOGGER_NAME = "pld_runtime.ingestion.simple_observer"
+logger = logging.getLogger(LOGGER_NAME)
 
 
 def _utc_now() -> datetime:
@@ -115,6 +120,12 @@ class _TurnContext:
         - If exception and the turn was never completed:
             - emit a D4_tool_error drift event (SignalKind.TOOL_ERROR)
             - preserve the original exception (return False)
+
+        Important:
+            Exceptions that occur after a successful `complete()` call inside
+            the `with` block are treated as outside the scope of this turn
+            and do NOT result in an additional TOOL_ERROR event. They still
+            propagate to the caller as normal Python exceptions.
         """
         if (
             exc_type is not None
@@ -144,11 +155,13 @@ class SimpleObserver:
             - trace_turn(...) with latency measurement
             - observe_drift/observe_repair(...)
             - log_turn(...)
+            - log_session_closed(...)
 
     Semantics:
         - `turn_sequence` is treated as a logical conversation turn id.
           All events emitted for a given turn share the same `turn_sequence`.
         - `observe_drift/observe_repair` treat each call as its own turn.
+        - `log_session_closed` emits a lifecycle outcome event for the session.
 
     Concurrency:
         - SimpleObserver is intended for single-threaded / per-session use.
@@ -314,6 +327,47 @@ class SimpleObserver:
             current_phase="repair",
         )
 
+    def log_session_closed(
+        self,
+        *,
+        reason: Optional[str] = None,
+        payload: Optional[Dict[str, Any]] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        user_visible_state_change: bool = False,
+    ) -> None:
+        """Emit a session_closed outcome event for this observer's session.
+
+        This helper:
+            - Allocates a new logical turn_sequence.
+            - Emits a session_closed event via RuntimeSignalBridge using the
+              existing SESSION_CLOSED mapping (event_type=session_closed,
+              phase=outcome, O*-family code as defined by Level 5).
+            - Records the provided reason and metadata under pld.metadata.
+
+        Notes:
+            - This method does NOT construct PLD event dictionaries directly.
+              All schema and semantic enforcement remains in RuntimeSignalBridge.
+            - No new taxonomy codes or phases are introduced; the canonical
+              pld.code is taken from the runtime mapping.
+        """
+        meta: Dict[str, Any] = dict(metadata or {})
+        if reason:
+            meta.setdefault("reason", reason)
+
+        signal = RuntimeSignal(
+            kind=SignalKind.SESSION_CLOSED,
+            payload=payload or {},
+            metadata=meta,
+        )
+
+        turn_sequence = self._allocate_turn_sequence()
+        self._emit_signal(
+            signal=signal,
+            turn_sequence=turn_sequence,
+            current_phase="outcome",
+            user_visible_state_change=user_visible_state_change,
+        )
+
     # ------------------------------------------------------------------ #
     # Internal helpers                                                   #
     # ------------------------------------------------------------------ #
@@ -466,6 +520,7 @@ class SimpleObserver:
             - Receive the same `turn_sequence` as the parent turn.
             - Are expected to return PLD-valid event dicts (or None).
             - Returned events are logged as-is via StructuredLogger.
+              Obvious structural mismatches are skipped with a warning log.
         """
         if not self._detectors:
             return
@@ -484,10 +539,33 @@ class SimpleObserver:
                 user_visible_state_change=False,
                 payload=payload,
             )
-            if event is not None:
-                # Drift events are already PLD-compliant dicts built by the detector
-                # (via Level 5 DriftDetector templates). We do not modify them.
-                self._logger.log(event)
+            if event is None:
+                continue
+
+            # Minimal structural sanity check to avoid obviously invalid records.
+            if not isinstance(event, dict):
+                logger.warning(
+                    "Detector %r returned non-dict event (skipping): %r",
+                    detector,
+                    event,
+                )
+                continue
+
+            if not (
+                "schema_version" in event
+                and "event_type" in event
+                and "pld" in event
+            ):
+                logger.warning(
+                    "Detector %r returned dict missing PLD keys (skipping): %r",
+                    detector,
+                    event,
+                )
+                continue
+
+            # Drift events are already PLD-compliant dicts built by the detector
+            # (via Level 5 DriftDetector templates or equivalent). We do not modify them.
+            self._logger.log(event)
 
     @staticmethod
     def _select_drift_signal_kind(code: str) -> SignalKind:

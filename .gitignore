@@ -20,3 +20,7 @@ build/
 
 # Local data (Optional)
 analytics/multiwoz_2.4_n200/
+
+# Virtual environment
+venv/
+.venv/

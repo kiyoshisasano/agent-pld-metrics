@@ -1,0 +1,50 @@
+=== Metrics Summary ===
+Sessions: 4
+PRDR (Post-Repair Drift Recurrence): 0.00%  (0/1 sessions with repair)
+VRL (Recovery Latency): mean=0.00s  samples=1
+FR (Failover Recurrence): 0.00  (failover_events=0, lifecycle_events=5)
+
+=== Session session-001 ===
+status: incomplete (no session_closed event)
+
+turn | timestamp                | event_type         | phase     | code
+-----+--------------------------+--------------------+-----------+----------------------
+   1 | 2025-12-04T15:05:42.711259 | continue_allowed   | continue  | C0_user_turn
+
+drift_events=0, repair_events=0, continue_events=1, failover_events=0
+has_repair=False, has_post_repair_drift=False
+
+=== Session session-002 ===
+status: incomplete (no session_closed event)
+
+turn | timestamp                | event_type         | phase     | code
+-----+--------------------------+--------------------+-----------+----------------------
+   1 | 2025-12-04T15:05:42.711259 | continue_allowed   | continue  | C0_user_turn
+
+drift_events=0, repair_events=0, continue_events=1, failover_events=0
+has_repair=False, has_post_repair_drift=False
+
+=== Session session-recovery-demo ===
+status: closed
+
+turn | timestamp                | event_type         | phase     | code
+-----+--------------------------+--------------------+-----------+----------------------
+   1 | 2025-12-04T15:05:42.711259 | continue_allowed   | continue  | C0_user_turn
+   2 | 2025-12-04T15:05:42.711259 | drift_detected     | drift     | D1_instruction
+   3 | 2025-12-04T15:05:42.711259 | repair_triggered   | repair    | R1_clarify
+   4 | 2025-12-04T15:05:42.711259 | continue_allowed   | continue  | C0_user_turn
+   5 | 2025-12-04T15:05:42.711259 | session_closed     | outcome   | O0_session_closed
+
+drift_events=1, repair_events=1, continue_events=2, failover_events=0
+has_repair=True, has_post_repair_drift=False
+
+=== Session session-x ===
+status: incomplete (no session_closed event)
+
+turn | timestamp                | event_type         | phase     | code
+-----+--------------------------+--------------------+-----------+----------------------
+   1 | 2025-12-04T15:05:42.711259 | continue_allowed   | continue  | C0_user_turn
+   1 | 2025-12-04T15:05:42Z     | drift_detected     | drift     | D1_instruction
+
+drift_events=1, repair_events=0, continue_events=1, failover_events=0
+has_repair=False, has_post_repair_drift=False
