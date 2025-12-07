@@ -1,12 +1,12 @@
-<!==
-    path: docs/README.md
-    component_id: docs_readme
-    kind: doc
-    area: meta
-    status: stable
-    authority_level: 2
-    purpose: Top-level index for documentation tree.
-    ==>
+<!--
+path: docs/README.md
+component_id: docs_readme
+kind: doc
+area: meta
+status: stable
+authority_level: 2
+purpose: Top-level index for documentation tree.
+==>
 
 # Phase Loop Dynamics (PLD) — Documentation Index
 
@@ -110,5 +110,6 @@ Details: `/LICENSES/LICENSES.md`
 ---
 
 Maintainer: **Kiyoshi Sasano**
+
 
 
