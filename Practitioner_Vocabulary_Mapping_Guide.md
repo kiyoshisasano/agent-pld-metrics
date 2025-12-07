@@ -14,16 +14,15 @@ The PLD lifecycle consists of five phases:
 
 This section offers a direct mapping between **Practitioner Vocabulary** and **PLD Formal Terms**.
 
-| Practitioner Vocabulary                                | PLD Formal Phase | Canonical Elements (Levels 1–3)                            |
-| ------------------------------------------------------ | ---------------- | ---------------------------------------------------------- |
-| "wobble", "off-track", "drift", "going sideways"       | **Drift**        | D-family taxonomy (e.g., `drift_detected`, D1–D4 codes)    |
-| "self-correction", "retry", "cleanup", "fixing itself" | **Repair**       | R-family taxonomy (`repair_triggered`, `repair_escalated`) |
-| "back on track", "looks fine now", "recovered"         | **Reentry**      | `reentry_observed`, reentry validation rules               |
-| "normal operation", "keep going", "continue"           | **Continue**     | `continue_allowed`, `continue_blocked`                     |
-| "completed", "failed", "gave up", "final state"        | **Outcome**      | O-family taxonomy (`outcome_generated`, `session_closed`)  |
+| Practitioner Vocabulary                                | PLD Formal Phase | Canonical Elements (Levels 1–3)                                 |
+| ------------------------------------------------------ | ---------------- | --------------------------------------------------------------- |
+| "wobble", "off-track", "drift", "going sideways"       | **Drift**        | D-family taxonomy (`drift_detected`, D1–D4 classifications)     |
+| "self-correction", "retry", "cleanup", "fixing itself" | **Repair**       | R-family taxonomy (`repair_triggered`, R1–R5 patterns)          |
+| "back on track", "looks fine now", "recovered"         | **Reentry**      | *Expressed implicitly via subsequent evaluation/continue rules* |
+| "normal operation", "keep going", "continue"           | **Continue**     | `continue_allowed`, `continue_blocked`                          |
+| "completed", "failed", "gave up", "final state"        | **Outcome**      | O-family taxonomy (`outcome_generated`, `session_closed`)       |
 
-> **Only the terms in the PLD Formal Phase column are normative.**
-> Practitioner vocabulary is descriptive and informal.
+> **Reentry has no dedicated event type in Levels 1–3.** It is inferred through successful evaluation leading to `continue_allowed`.
 
 ---
 
@@ -46,15 +45,13 @@ This guide **does not**:
 
 # 2. Practitioner Vocabulary → PLD Formal Terminology
 
-This section maps the most common practitioner expressions into the appropriate PLD concepts.
-
 ## 2.1 Drift Phase
 
 | Practitioner Says…          | PLD Maps To          | Notes                                 |
 | --------------------------- | -------------------- | ------------------------------------- |
 | "The agent is wobbling"     | Drift                | Early signs of deviation              |
 | "It went off-track"         | `drift_detected`     | Often corresponds to D1–D4 categories |
-| "Bad tool call"             | Drift (tool-related) | Often D4_tool_error or equivalent     |
+| "Bad tool call"             | Drift (tool-related) | Often D4_tool_error                   |
 | "Lost the plot"             | Drift                | Intent or context drift               |
 | "Answer degraded over time" | Drift episode        | Progressive divergence                |
 
@@ -73,10 +70,12 @@ This section maps the most common practitioner expressions into the appropriate 
 
 ## 2.3 Reentry Phase
 
-| Practitioner Says…       | PLD Maps To | Notes                                      |
-| ------------------------ | ----------- | ------------------------------------------ |
-| "It seems back on track" | Reentry     | Indicates restored integrity               |
-| "Ready to continue"      | Reentry     | Precedes Continue phase                    |
+| Practitioner Says…       | PLD Maps To | Notes                                              |
+| ------------------------ | ----------- | -------------------------------------------------- |
+| "It seems back on track" | Reentry     | Inferred from successful evaluation + continuation |
+| "Ready to continue"      | Reentry     | Occurs prior to an allowed continuation transition |
+
+> **No formal Level 1–3 event corresponds to "reentry".** It is a lifecycle concept inferred when repair has succeeded and evaluation no longer blocks continuation.
 
 ---
 
@@ -121,10 +120,9 @@ They must **never** be used as PLD event names or taxonomy codes.
 
 ---
 
-# 4. Interpretation Notes (Optional Middle Layer)
+# 4. Interpretive Pattern Layer (Optional)
 
 This section clarifies conceptual patterns **seen in traces**, not formal PLD terminology.
-
 These are **pattern descriptors**, not lifecycle events.
 
 | Interpretive Term  | Meaning                                    | Not PLD Because…                   |
@@ -134,7 +132,7 @@ These are **pattern descriptors**, not lifecycle events.
 | mode shift         | Behavior changes abruptly (timing/quality) | Not a lifecycle phase              |
 | recovery window    | Turns between repair and reentry           | Derived, not canonical             |
 
-This section provides intuition only, and should **not** be used in code or telemetry fields.
+These descriptors provide intuition only, and should **not** be used in code or telemetry fields.
 
 ---
 
@@ -157,14 +155,12 @@ Not recommended usage:
 
 # 6. Boundaries of This Guide
 
-To avoid ambiguity:
-
 This guide **does not**:
 
 * Add new formal terms to PLD
 * Introduce new phases
 * Modify lifecycle semantics
-* Serve as a replacement for Level 1–3 specifications
+* Replace Level 1–3 specifications
 
 This guide **does**:
 
@@ -184,4 +180,4 @@ This guide **does**:
 
 ---
 
-End of document. This guide is non-normative and meant solely for practitioner interpretation.
+End of document. This guide is non-normative and intended solely to improve practitioner understanding of formal PLD semantics.
