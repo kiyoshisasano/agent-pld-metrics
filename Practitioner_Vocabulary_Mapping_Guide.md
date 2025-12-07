@@ -1,104 +1,188 @@
-# Practitioner Vocabulary Mapping Guide
+# PLD Practitioner Vocabulary Mapping Guide
 
-*A conceptual bridge between practitioner language and PLD formal terminology*
+This document provides a **practitioner-friendly mapping** between everyday operational vocabulary used by engineers and the **formal terminology** defined in the PLD specification (Levels 1–3).
 
-This document provides a **practitioner-friendly mapping** for understanding PLD terminology.
-It does **not** describe internal implementations; it only offers conceptual alignment between the shapes observed by practitioners in multi-turn agent traces and the corresponding formal terms used in PLD.
-
----
-
-## 1. High-Level Conceptual Mapping
-
-| Practitioner Vocabulary           | PLD Formal Terminology       | Notes                                                 |
-| --------------------------------- | ---------------------------- | ----------------------------------------------------- |
-| Agent wobble                      | Early instability episode    | First detectable deviation from expected behavior.    |
-| Latency bulge / drift             | Latency deviation sequence   | Temporal signature around instability onset.          |
-| Reasoning going off-track         | Divergent reasoning branch   | Practitioner intuition aligned with structural shift. |
-| Self-correction / retrying        | Correction sub-loop          | Structured recovery attempt.                          |
-| Relapse after correction          | Post-correction instability  | Drift reappears after stabilization.                  |
-| Break in consistency across turns | Multi-turn coherence failure | Deviations in expectations across turns.              |
-| Bad tool call / tool confusion    | Tool-chain inconsistency     | Mismatch across planned vs executed operations.       |
-| Loss of focus                     | Attention drift event        | Informal symptom matched to trace pattern.            |
-| Looping                           | Recovery failure loop        | Repeated unsuccessful corrections.                    |
-| Session died early                | Premature closure pattern    | Abnormal termination category.                        |
-| Slow degradation over time        | Long-horizon drift curve     | Gradual instability progression.                      |
+It does **not** redefine PLD rules, introduce new lifecycle phases, or alter taxonomy codes. Its purpose is purely interpretive: to help practitioners understand how their natural language maps to the PLD lifecycle and event semantics.
 
 ---
 
-## 2. Trace-Level Vocabulary Mapping
+# 0. Core Phase Mapping (Start Here)
 
-### 2.1 Event-Level Concepts
+The PLD lifecycle consists of five phases:
 
-| Practitioner Vocabulary | PLD Formal Concept      | Notes                                   |
-| ----------------------- | ----------------------- | --------------------------------------- |
-| Event                   | Timestamped node        | Anchored point in the lifecycle.        |
-| Span                    | Execution segment       | Parent/child structured unit.           |
-| User turn / Agent turn  | Turn-indexed sequence   | Core frame for instability windows.     |
-| Tool call result        | External operation node | Leaf nodes feeding back into reasoning. |
-| Monitoring alert        | Side-channel signal     | Auxiliary event type.                   |
+**Drift → Repair → Reentry → Continue → Outcome**
 
----
+This section offers a direct mapping between **Practitioner Vocabulary** and **PLD Formal Terms**.
 
-## 3. Instability Pattern Vocabulary Mapping
+| Practitioner Vocabulary                                | PLD Formal Phase | Canonical Elements (Levels 1–3)                            |
+| ------------------------------------------------------ | ---------------- | ---------------------------------------------------------- |
+| "wobble", "off-track", "drift", "going sideways"       | **Drift**        | D-family taxonomy (e.g., `drift_detected`, D1–D4 codes)    |
+| "self-correction", "retry", "cleanup", "fixing itself" | **Repair**       | R-family taxonomy (`repair_triggered`, `repair_escalated`) |
+| "back on track", "looks fine now", "recovered"         | **Reentry**      | `reentry_observed`, reentry validation rules               |
+| "normal operation", "keep going", "continue"           | **Continue**     | `continue_allowed`, `continue_blocked`                     |
+| "completed", "failed", "gave up", "final state"        | **Outcome**      | O-family taxonomy (`outcome_generated`, `session_closed`)  |
 
-| Practitioner Description       | PLD Pattern                          | Description                                   |
-| ------------------------------ | ------------------------------------ | --------------------------------------------- |
-| Output became verbose/rambling | Expansion drift                      | Output length inflation without mandate.      |
-| Skipped a required step        | Missing-step divergence              | Omission relative to expected structure.      |
-| Confused tool-choice           | Misaligned tool-selection transition | Selection diverges from plan.                 |
-| Made up new constraints        | Constraint hallucination             | Added internal rules not grounded in context. |
-| Keeps fixing the same issue    | Unsuccessful correction loop         | Repeated correction attempts.                 |
-| Quality drops every few turns  | Gradual degradation slope            | Slow weakening of structure/coherence.        |
-| Sudden sharp failure           | Sudden-break anomaly                 | Abrupt deviation in timing or logic.          |
+> **Only the terms in the PLD Formal Phase column are normative.**
+> Practitioner vocabulary is descriptive and informal.
 
 ---
 
-## 4. Latency & Timing Vocabulary Mapping
+# 1. Purpose of This Guide
 
-| Practitioner Vocabulary | PLD Timing Construct       | Meaning                            |
-| ----------------------- | -------------------------- | ---------------------------------- |
-| Latency spike           | Local positive deviation   | Early marker of instability onset. |
-| Pattern changed shape   | Temporal-mode shift        | Mode transition across segments.   |
-| Slower after turn N     | Post-drift latency plateau | Stabilization or degradation zone. |
-| Jitter                  | High-variance window       | Noisy instability region.          |
+This guide:
 
----
+* Helps practitioners interpret PLD lifecycle terminology in familiar language.
+* Establishes a consistent bridge between real-world debugging terminology and PLD’s structured taxonomy.
+* Avoids inventing new PLD terms or pseudo-canonical language.
+* Improves communication between platform engineers, observability teams, and PLD authors.
 
-## 5. Session Outcome Vocabulary Mapping
+This guide **does not**:
 
-| Practitioner Description    | PLD Outcome Category  | Notes                                   |
-| --------------------------- | --------------------- | --------------------------------------- |
-| Completed fine              | Stable termination    | Expected lifecycle closure.             |
-| Ended early / hung          | Premature closure     | Termination outside expected lifecycle. |
-| Recovered eventually        | Recovery completion   | Stabilized after instability.           |
-| Recovered then failed again | Post-recovery relapse | Strong signal of deeper instability.    |
+* Modify the PLD specification (Levels 1–3).
+* Add new lifecycle phases or taxonomy codes.
+* Define any events or semantics not already present in the canonical spec.
 
 ---
 
-## 6. Higher-Level Behavioral Mapping
+# 2. Practitioner Vocabulary → PLD Formal Terminology
 
-| Practitioner Model       | PLD Formal View         | Notes                                 |
-| ------------------------ | ----------------------- | ------------------------------------- |
-| Agent state drift        | Latent-state divergence | State inferred from structure/timing. |
-| Forgot prior steps       | Dependency break        | Broken referential alignment.         |
-| Lost the thread          | Context-deficit pattern | Reduced contextual linkage.           |
-| Exploring the wrong path | Divergent branch        | Structural fork forming.              |
+This section maps the most common practitioner expressions into the appropriate PLD concepts.
 
----
+## 2.1 Drift Phase
 
-## 7. Purpose of This Mapping Document
-
-This document exists to:
-
-* help practitioners read PLD pattern descriptions,
-* align practitioner symptoms with formal lifecycle terminology,
-* reduce ambiguity when interpreting instability episodes,
-* provide a conceptual bridge layer without implementation details.
+| Practitioner Says…          | PLD Maps To          | Notes                                 |
+| --------------------------- | -------------------- | ------------------------------------- |
+| "The agent is wobbling"     | Drift                | Early signs of deviation              |
+| "It went off-track"         | `drift_detected`     | Often corresponds to D1–D4 categories |
+| "Bad tool call"             | Drift (tool-related) | Often D4_tool_error or equivalent     |
+| "Lost the plot"             | Drift                | Intent or context drift               |
+| "Answer degraded over time" | Drift episode        | Progressive divergence                |
 
 ---
 
-## 8. Recommended Usage
+## 2.2 Repair Phase
 
-* Place this file at the **root of the PLD repository**.
-* Link it from README or CONTRIBUTING for clarity.
-* Use during onboarding, cross-team reviews, debugging sessions, instability walkthroughs.
+| Practitioner Says…       | PLD Maps To | Notes                              |
+| ------------------------ | ----------- | ---------------------------------- |
+| "It corrected itself"    | Repair      | `repair_triggered` (R-family)      |
+| "It’s retrying"          | Repair      | Often soft repair or guided retry  |
+| "It adjusted output"     | Repair      | Applies to static or guided repair |
+| "It patched the mistake" | Repair      | General correction behavior        |
+
+---
+
+## 2.3 Reentry Phase
+
+| Practitioner Says…       | PLD Maps To | Notes                                      |
+| ------------------------ | ----------- | ------------------------------------------ |
+| "Okay, looks stable now" | Reentry     | `reentry_observed` after successful repair |
+| "It seems back on track" | Reentry     | Indicates restored integrity               |
+| "Ready to continue"      | Reentry     | Precedes Continue phase                    |
+
+---
+
+## 2.4 Continue Phase
+
+| Practitioner Says…     | PLD Maps To        | Notes                     |
+| ---------------------- | ------------------ | ------------------------- |
+| "Continue execution"   | `continue_allowed` | Safe to proceed           |
+| "Wait, it paused"      | `continue_blocked` | Often HITL or policy gate |
+| "It kept going anyway" | Continue           | Normal loop iteration     |
+
+---
+
+## 2.5 Outcome Phase
+
+| Practitioner Says…  | PLD Maps To                             |
+| ------------------- | --------------------------------------- |
+| "It finished"       | Outcome (`outcome_generated`)           |
+| "It failed out"     | Outcome (`session_closed`, fail reason) |
+| "It gave up"        | Outcome (premature termination)         |
+| "Done successfully" | Outcome (normal completion)             |
+
+---
+
+# 3. Practitioner Vocabulary (Not part of the PLD spec)
+
+These terms are **not** part of any PLD specification.
+They are included only to help interpret informal engineering conversations.
+
+They must **never** be used as PLD event names or taxonomy codes.
+
+| Practitioner Term | Meaning (Interpretive Only)                   |
+| ----------------- | --------------------------------------------- |
+| wobble            | Minor, early drift-like behavior              |
+| relapse           | Drift after apparent recovery                 |
+| looping           | Repeated corrective cycles (repair churn)     |
+| late wobble       | Drift occurring after long stable period      |
+| misalignment      | General divergence from intent or constraints |
+| bad tool call     | Tool error producing drift                    |
+
+> These are **not** PLD terms. They describe symptoms, not lifecycle states.
+
+---
+
+# 4. Interpretation Notes (Optional Middle Layer)
+
+This section clarifies conceptual patterns **seen in traces**, not formal PLD terminology.
+
+These are **pattern descriptors**, not lifecycle events.
+
+| Interpretive Term  | Meaning                                    | Not PLD Because…                   |
+| ------------------ | ------------------------------------------ | ---------------------------------- |
+| early instability  | Initial drift symptoms                     | Drift already covers this formally |
+| divergence pattern | Output diverges from constraints           | No standalone lifecycle meaning    |
+| mode shift         | Behavior changes abruptly (timing/quality) | Not a lifecycle phase              |
+| recovery window    | Turns between repair and reentry           | Derived, not canonical             |
+
+This section provides intuition only, and should **not** be used in code or telemetry fields.
+
+---
+
+# 5. How to Use This Mapping
+
+Recommended usage:
+
+* **Debugging:** Translate practitioner remarks ("it’s drifting") into PLD phases.
+* **Trace review:** Identify lifecycle transitions using formal events.
+* **Metrics interpretation:** Understand PRDR / VRL / FR behavior in practitioner language.
+* **Cross-team communication:** Offer a shared vocabulary between operators and PLD designers.
+
+Not recommended usage:
+
+* Defining new event types
+* Naming new lifecycle phases
+* Extending taxonomy codes
+
+---
+
+# 6. Boundaries of This Guide
+
+To avoid ambiguity:
+
+This guide **does not**:
+
+* Add new formal terms to PLD
+* Introduce new phases
+* Modify lifecycle semantics
+* Serve as a replacement for Level 1–3 specifications
+
+This guide **does**:
+
+* Help practitioners interpret PLD output
+* Provide shared language for operational diagnosis
+* Improve clarity during debugging and design review
+
+---
+
+# 7. References (Non-normative)
+
+* PLD Concepts → `concepts/01_introduction.md`
+* Drift–Repair Model → `concepts/02_drift_repair_model.md`
+* Repair Strategies → `concepts/03_repair_strategies.md`
+* Runtime Standards (implementation-specific)
+* PLD formal taxonomy (Level 2 / Level 3 definitions)
+
+---
+
+End of document. This guide is non-normative and meant solely for practitioner interpretation.
