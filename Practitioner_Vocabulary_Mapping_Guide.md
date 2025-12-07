@@ -75,7 +75,6 @@ This section maps the most common practitioner expressions into the appropriate 
 
 | Practitioner Says…       | PLD Maps To | Notes                                      |
 | ------------------------ | ----------- | ------------------------------------------ |
-| "Okay, looks stable now" | Reentry     | `reentry_observed` after successful repair |
 | "It seems back on track" | Reentry     | Indicates restored integrity               |
 | "Ready to continue"      | Reentry     | Precedes Continue phase                    |
 
