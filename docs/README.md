@@ -1,5 +1,5 @@
 <!==
-  - path: docs/README.md
+    path: docs/README.md
     component_id: docs_readme
     kind: doc
     area: meta
@@ -110,4 +110,5 @@ Details: `/LICENSES/LICENSES.md`
 ---
 
 Maintainer: **Kiyoshi Sasano**
+
 
