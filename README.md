@@ -63,7 +63,7 @@ PLD describes the same phenomena with formal lifecycle terminology.
 
 A complete **practitioner ↔ PLD vocabulary mapping** is available here:
 
-📄 `./Practitioner_Vocabulary_Mapping_Guide.md`
+📄 ［Practitioner_Vocabulary_Mapping_Guide.md］（./Practitioner_Vocabulary_Mapping_Guide.md）
 
 Use this guide when interpreting PLD metrics, trace patterns, or stability reports.
 
