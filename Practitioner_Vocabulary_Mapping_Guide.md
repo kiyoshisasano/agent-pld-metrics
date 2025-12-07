@@ -14,13 +14,13 @@ The PLD lifecycle consists of five phases:
 
 This section offers a direct mapping between **Practitioner Vocabulary** and **PLD Formal Terms**.
 
-| Practitioner Vocabulary                                | PLD Formal Phase | Canonical Elements (Levels 1–3)                                 |
-| ------------------------------------------------------ | ---------------- | --------------------------------------------------------------- |
-| "wobble", "off-track", "drift", "going sideways"       | **Drift**        | D-family taxonomy (`drift_detected`, D1–D4 classifications)     |
-| "self-correction", "retry", "cleanup", "fixing itself" | **Repair**       | R-family taxonomy (`repair_triggered`, R1–R5 patterns)          |
-| "back on track", "looks fine now", "recovered"         | **Reentry**      | *Expressed implicitly via subsequent evaluation/continue rules* |
-| "normal operation", "keep going", "continue"           | **Continue**     | `continue_allowed`, `continue_blocked`                          |
-| "completed", "failed", "gave up", "final state"        | **Outcome**      | O-family taxonomy (`outcome_generated`, `session_closed`)       |
+| Practitioner Vocabulary                                | PLD Formal Phase | Canonical Elements (Levels 1–3)                                           |
+| ------------------------------------------------------ | ---------------- | ------------------------------------------------------------------------- |
+| "wobble", "off-track", "drift", "going sideways"       | **Drift**        | D-family taxonomy (`drift_detected`, D1–D4 classifications)               |
+| "self-correction", "retry", "cleanup", "fixing itself" | **Repair**       | R-family taxonomy (`repair_triggered`, R1–R5 patterns)                    |
+| "back on track", "looks fine now", "recovered"         | **Reentry**      | *Expressed implicitly via subsequent evaluation/continue rules*           |
+| "normal operation", "keep going", "continue"           | **Continue**     | `continue_allowed`, `continue_blocked`                                    |
+| "completed", "failed", "gave up", "final state"        | **Outcome**      | O-family taxonomy (`session_closed`, normal completion, `session_closed`) |
 
 > **Reentry has no dedicated event type in Levels 1–3.** It is inferred through successful evaluation leading to `continue_allowed`.
 
