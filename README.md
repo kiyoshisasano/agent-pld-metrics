@@ -6,12 +6,66 @@
 
 *A Runtime Phase Model for Stable Multi-Turn LLM Systems*
 
-### 👋 Welcome to PLD
+---
 
-**Phase Loop Dynamics (PLD)** is a runtime stability & governance model designed to help  
+## 🔎 What is PLD (High-Level)
+
+**Phase Loop Dynamics (PLD)** is a behavioral stability layer for multi-turn LLM systems.  
+It formalizes how systems **detect instability, attempt correction, verify recovery,  
+and resume execution** across long reasoning sequences.
+
+In short:
+
+**Single responses measure quality.  
+PLD measures stability across turns.**
+
+---
+
+## 👋 Welcome to PLD
+
+PLD is a runtime stability & governance model designed to help  
 multi-turn LLM systems remain **stable, aligned, and predictable — across turns, tools, and models.**
 
-This repository contains **specifications, runtime components, examples, adoption resources, and evaluation patterns.**
+This repository contains:
+
+- **specifications**  
+- **runtime components**  
+- **examples & reference traces**  
+- **adoption resources**  
+- **evaluation patterns & metrics**
+
+---
+
+## 📘 Practitioner-Friendly Companion Repository
+
+If you're looking for a **PLD-free, practitioner-language explanation** of instability phenomena  
+(e.g., *early instability signals*, *trace divergence*, *post-correction relapse*, *latency gaps*),  
+see the companion repository:
+
+👉 **https://github.com/kiyoshisasano/agent-instability-notes**
+
+This companion repo expresses the same behavioral ideas **without PLD terminology**,  
+making it ideal for engineers, observability teams, and applied ML practitioners.
+
+---
+
+## 🗂 Practitioner Vocabulary Mapping (Bridge Layer)
+
+Practitioners often describe failures using informal terms such as:
+
+- “wobble”
+- “going off-track”
+- “slow degradation”
+- “looping”
+- “bad tool call”
+
+PLD describes the same phenomena with formal lifecycle terminology.
+
+A complete **practitioner ↔ PLD vocabulary mapping** is available here:
+
+📄 `./Practitioner_Vocabulary_Mapping_Guide.md`
+
+Use this guide when interpreting PLD metrics, trace patterns, or stability reports.
 
 ---
 
