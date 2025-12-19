@@ -205,9 +205,9 @@ This guide **does**:
 
 # 7. References (Non-normative)
 
-* PLD Concepts → `concepts/01_introduction.md`
-* Drift–Repair Model → `concepts/02_drift_repair_model.md`
-* Repair Strategies → `concepts/03_repair_strategies.md`
+* PLD Concepts → `docs/concepts/01_introduction.md`
+* Drift–Repair Model → `docs/concepts/02_drift_repair_model.md`
+* Repair Strategies → `docs/concepts/03_repair_strategies.md`
 * Runtime Standards (implementation-specific)
 * PLD formal taxonomy (Level 2 / Level 3 definitions)
 
