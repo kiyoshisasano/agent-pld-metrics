@@ -43,6 +43,39 @@ This guide **does not**:
 
 ---
 
+# 1.1 Applicability Across Execution Scales (Interpretive)
+
+PLD terminology is often associated with **long-running or multi-turn agent systems**.
+However, the same lifecycle semantics also apply to **short-lived executions**,
+including single-session RAG pipelines and tool-using request flows.
+
+The distinction is **not duration**, but **the presence of multiple execution steps
+with state that must remain consistent**.
+
+The table below provides an *interpretive* mapping between common short-lived
+agent behaviors and the PLD lifecycle concepts they correspond to.
+
+> This mapping is **interpretive only**.
+> It does not introduce new PLD terms, phases, or taxonomy codes.
+
+| Execution Context (Practitioner View) | Interpreted as PLD Concept | Notes |
+| ------------------------------------- | -------------------------- | ----- |
+| Single user request with retries      | Multi-step interaction    | Multiple execution steps constitute a PLD loop |
+| RAG pipeline with re-ranking          | Repair attempt            | Retrieval adjustment is a form of repair |
+| Tool failure followed by retry        | Drift → Repair            | Even within one request |
+| Output correction before response     | Reentry (inferred)        | Successful repair allows continuation |
+| Latency spike or partial degradation  | Drift signal              | Early instability, not necessarily failure |
+
+In other words:
+
+> **“Multi-turn” in PLD refers to execution state transitions,  
+> not to long-lived agents or persistent online learning.**
+
+This allows PLD concepts to be applied consistently across both
+short-lived and long-running agent architectures.
+
+---
+
 # 2. Practitioner Vocabulary → PLD Formal Terminology
 
 ## 2.1 Drift Phase
