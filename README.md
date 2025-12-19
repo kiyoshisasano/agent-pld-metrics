@@ -4,7 +4,8 @@
 [![SPDX-License](https://img.shields.io/badge/SPDX-Apache--2.0_AND_CC--BY--4.0-blue)](LICENSE)
 ![Status: Active](https://img.shields.io/badge/status-active-brightgreen)
 
-*A Runtime Phase Model for Stable Multi-Turn LLM Systems*
+*A Runtime Phase Model for Stable LLM Agent Execution*
+(Across Short and Multi-Turn Interactions)
 
 ---
 
@@ -342,12 +343,19 @@ python examples/dashboard/app.py --no-sessions                # Metrics summary 
 
 ## 🧪 PLD is most useful when:
 
-✔ interaction spans multiple turns  
-✔ tools, retrieval, memory, or planning are involved  
-✔ alignment persistence matters more than single-response quality  
+PLD is most useful when:
+
+✔ an interaction involves multiple execution steps or retries  
+  (e.g., tool calls, retrieval, validation, correction)  
+
+✔ state or intent must remain consistent across those steps  
+  — even within a single user session  
+
+✔ failures are detected and corrected during execution,  
+  not only after a response is returned  
 
 Less relevant for:  
-⚠ single-turn Q&A  
+⚠ single-shot Q&A with no intermediate state  
 ⚠ fully deterministic scripted flows
 
 ---
