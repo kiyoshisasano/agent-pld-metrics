@@ -4,7 +4,7 @@
 [![SPDX-License](https://img.shields.io/badge/SPDX-Apache--2.0_AND_CC--BY--4.0-blue)](LICENSE)
 ![Status: Active](https://img.shields.io/badge/status-active-brightgreen)
 
-*A Runtime Phase Model for Stable LLM Agent Execution*
+*A Runtime Phase Model for Stable LLM Agent Execution*  
 (Across Short and Multi-Turn Interactions)
 
 ---
