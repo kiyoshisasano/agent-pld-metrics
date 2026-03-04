@@ -305,6 +305,7 @@ These detectors:
 quickstart/     → start here (code, demos, and built-in drift detectors)
 pld_runtime/    → runtime reference implementation
 docs/           → specifications (L1-3) & architecture (L4-5)
+docs/labs/      → non-normative experiments (e.g., semantic cache behavior benchmark)
 analytics/      → evaluation datasets & reports
 governance/     → collaboration, roles, and PoC protocols
 ```
