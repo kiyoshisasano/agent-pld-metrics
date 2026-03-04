@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340">
+  <defs>
+    <style>
+      .title { font-family: system-ui, -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #1f2937; }
+      .subtitle { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #6b7280; }
+      .chart-title { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 600; fill: #374151; }
+      .axis-label { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #6b7280; }
+      .value-label { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #374151; }
+      .impact-label { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 700; fill: #059669; }
+      .legend-text { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #4b5563; }
+      .bar-off { fill: #ef4444; }
+      .bar-on { fill: #10b981; }
+      .bar-hit { fill: #10b981; }
+      .bar-miss { fill: #f59e0b; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="340" fill="#fafafa"/>
+
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" class="title">Semantic Cache Benchmark Summary</text>
+  <text x="400" y="50" text-anchor="middle" class="subtitle">Workload: 100 queries per run (60 repeated, 40 new) • Non-normative lab result</text>
+
+  <!-- Legend -->
+  <g transform="translate(150, 62)">
+    <rect x="0" y="0" width="14" height="14" rx="2" class="bar-off"/>
+    <text x="20" y="11" class="legend-text">Cache OFF</text>
+
+    <rect x="120" y="0" width="14" height="14" rx="2" class="bar-on"/>
+    <text x="140" y="11" class="legend-text">Cache ON</text>
+
+    <rect x="240" y="0" width="14" height="14" rx="2" class="bar-hit"/>
+    <text x="260" y="11" class="legend-text">Cache hit</text>
+
+    <rect x="340" y="0" width="14" height="14" rx="2" class="bar-miss"/>
+    <text x="360" y="11" class="legend-text">Cache miss (LLM)</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="50" y1="90" x2="750" y2="90" stroke="#e5e7eb" stroke-width="1"/>
+
+  <!-- Chart 1: Latency -->
+  <g transform="translate(80, 110)">
+    <text x="80" y="0" text-anchor="middle" class="chart-title">Median Response Latency</text>
+
+    <!-- Bars -->
+    <rect x="20" y="20" width="50" height="140" rx="4" class="bar-off"/>
+    <rect x="90" y="151" width="50" height="9" rx="4" class="bar-on"/>
+
+    <!-- Values -->
+    <text x="45" y="175" text-anchor="middle" class="value-label">3,244 ms</text>
+    <text x="115" y="175" text-anchor="middle" class="value-label">206 ms</text>
+
+    <!-- Axis labels -->
+    <text x="45" y="195" text-anchor="middle" class="axis-label">Cache OFF</text>
+    <text x="115" y="195" text-anchor="middle" class="axis-label">Cache ON</text>
+
+    <!-- Impact -->
+    <text x="80" y="220" text-anchor="middle" class="impact-label">≈16× faster</text>
+  </g>
+
+  <!-- Chart 2: LLM Calls -->
+  <g transform="translate(320, 110)">
+    <text x="80" y="0" text-anchor="middle" class="chart-title">LLM Invocation Rate</text>
+
+    <!-- Bars -->
+    <rect x="20" y="20" width="50" height="140" rx="4" class="bar-off"/>
+    <rect x="90" y="104" width="50" height="56" rx="4" class="bar-on"/>
+
+    <!-- Values -->
+    <text x="45" y="175" text-anchor="middle" class="value-label">100%</text>
+    <text x="115" y="175" text-anchor="middle" class="value-label">40%</text>
+
+    <!-- Axis labels -->
+    <text x="45" y="195" text-anchor="middle" class="axis-label">Cache OFF</text>
+    <text x="115" y="195" text-anchor="middle" class="axis-label">Cache ON</text>
+
+    <!-- Impact -->
+    <text x="80" y="220" text-anchor="middle" class="impact-label">60% fewer calls</text>
+  </g>
+
+  <!-- Chart 3: Hit / Miss Split -->
+  <g transform="translate(560, 110)">
+    <text x="80" y="0" text-anchor="middle" class="chart-title">Cache Hit / Miss Split</text>
+
+    <!-- Stacked bar -->
+    <rect x="45" y="20" width="70" height="56" rx="4" class="bar-miss"/>
+    <rect x="45" y="76" width="70" height="84" rx="4" class="bar-hit"/>
+
+    <!-- Labels -->
+    <text x="135" y="52" class="value-label">LLM 40%</text>
+    <text x="135" y="120" class="value-label">Cache 60%</text>
+
+    <!-- Impact -->
+    <text x="80" y="220" text-anchor="middle" class="impact-label">Stable hit rate</text>
+  </g>
+
+  <!-- Bottom note -->
+  <line x1="50" y1="290" x2="750" y2="290" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="400" y="312" text-anchor="middle" class="subtitle">Cache hits observed only for same-intent paraphrases. No cross-intent reuse detected in this workload.</text>
+</svg>
