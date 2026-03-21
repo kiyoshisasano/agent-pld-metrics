@@ -98,6 +98,32 @@ If your agent drifts — PLD makes the drift visible and recoverable.
 
 ---
 
+## 🔗 Concrete Implementations
+
+PLD defines the behavioral contract. The following repositories implement specific layers of that contract as working tools:
+
+| Repository | Implements | Description |
+|---|---|---|
+| [llm-failure-atlas](https://github.com/kiyoshisasano/llm-failure-atlas) | Drift Detection (Level 4) | 12 failure patterns, causal graph, signal-based matcher, adapters for LangChain/LangSmith |
+| [agent-failure-debugger](https://github.com/kiyoshisasano/agent-failure-debugger) | Repair + Outcome (Level 4) | Causal diagnosis, fix generation, confidence-gated auto-apply with rollback |
+
+These tools map directly to the PLD runtime loop:
+
+| PLD Phase | Tool |
+|---|---|
+| Drift | Atlas matcher detects failures from agent traces |
+| Repair | Debugger generates and applies fixes |
+| Reentry | Debugger evaluates fix effectiveness (before/after) |
+| Outcome | Learning loop updates priorities for next cycle |
+
+Both tools are MIT licensed and require only `pyyaml`. Run the full pipeline in 1 minute:
+```bash
+git clone https://github.com/kiyoshisasano/llm-failure-atlas.git
+cd llm-failure-atlas && pip install -r requirements.txt && python quickstart_demo.py
+```
+
+---
+
 ### Maintainer Role & Change Boundary
 
 The maintainer functions primarily as:
