@@ -104,22 +104,33 @@ PLD defines the behavioral contract. The following repositories implement specif
 
 | Repository | Implements | Description |
 |---|---|---|
-| [llm-failure-atlas](https://github.com/kiyoshisasano/llm-failure-atlas) | Drift Detection (Level 4) | 12 failure patterns, causal graph, signal-based matcher, adapters for LangChain/LangSmith |
-| [agent-failure-debugger](https://github.com/kiyoshisasano/agent-failure-debugger) | Repair + Outcome (Level 4) | Causal diagnosis, fix generation, confidence-gated auto-apply with rollback |
+| [llm-failure-atlas](https://github.com/kiyoshisasano/llm-failure-atlas) | Drift Detection (Level 4) | 17 failure patterns, 34 signals, causal graph, signal-based matcher, 6 adapters (LangChain/LangSmith/CrewAI/Redis) |
+| [agent-failure-debugger](https://github.com/kiyoshisasano/agent-failure-debugger) | Repair + Outcome (Level 4) | Causal diagnosis, execution quality assessment, fix generation, self-healing (LangGraph), multi-run stability analysis |
+| [pytest-agent-health](https://github.com/kiyoshisasano/pytest-agent-health) | CI Integration (Level 4) | pytest plugin for catching silent agent failures, regression detection via baseline comparison |
 
 These tools map directly to the PLD runtime loop:
 
 | PLD Phase | Tool |
 |---|---|
-| Drift | Atlas matcher detects failures from agent traces |
-| Repair | Debugger generates and applies fixes |
+| Drift | Atlas matcher detects failures from agent traces (17 patterns) |
+| Repair | Debugger generates fixes; `create_health_check()` enables self-healing in LangGraph |
 | Reentry | Debugger evaluates fix effectiveness (before/after) |
 | Outcome | Learning loop updates priorities for next cycle |
+| CI Gate | pytest-agent-health catches regressions before deployment |
 
-Both tools are MIT licensed and require only `pyyaml`. Run the full pipeline in 1 minute:
+All three tools are MIT licensed and available on PyPI:
+
 ```bash
-git clone https://github.com/kiyoshisasano/llm-failure-atlas.git
-cd llm-failure-atlas && pip install -r requirements.txt && python quickstart_demo.py
+pip install llm-failure-atlas agent-failure-debugger pytest-agent-health
+```
+
+Quick start:
+
+```python
+from agent_failure_debugger import diagnose
+
+result = diagnose(raw_log, adapter="langchain")
+print(result["summary"]["execution_quality"]["status"])  # healthy / degraded / failed
 ```
 
 ---
