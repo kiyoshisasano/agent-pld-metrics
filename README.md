@@ -115,6 +115,7 @@ These tools map directly to the PLD runtime loop:
 | Drift | Atlas matcher detects failures from agent traces (17 patterns) |
 | Repair | Debugger generates fixes; `create_health_check()` enables self-healing in LangGraph |
 | Reentry | Debugger evaluates fix effectiveness (before/after) |
+| Continue | Agent resumes execution after verified recovery |
 | Outcome | Learning loop updates priorities for next cycle |
 
 All three tools are MIT licensed and available on PyPI:
@@ -515,7 +516,7 @@ Full details: `LICENSES/OVERVIEW.md`
 ### Maintainer
 
 **Maintainer:** Kiyoshi Sasano  
-© 2025 — All rights reserved where applicable.
+© 2026 — All rights reserved where applicable.
 
 ---
 
